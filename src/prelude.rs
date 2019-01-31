@@ -1,11 +1,11 @@
-pub use as_slice::AsSlice;
+pub use crate::as_slice::AsSlice;
 
-pub use name::BufferNameArray;
-pub use name::FramebufferNameArray;
-pub use name::TextureNameArray;
-pub use name::VertexArrayNameArray;
+pub use crate::name::BufferNameArray;
+pub use crate::name::FramebufferNameArray;
+pub use crate::name::TextureNameArray;
+pub use crate::name::VertexArrayNameArray;
 
-pub use name::OptionBufferNameArray;
-pub use name::OptionFramebufferNameArray;
-pub use name::OptionTextureNameArray;
-pub use name::OptionVertexArrayNameArray;
+pub use crate::name::OptionBufferNameArray;
+pub use crate::name::OptionFramebufferNameArray;
+pub use crate::name::OptionTextureNameArray;
+pub use crate::name::OptionVertexArrayNameArray;

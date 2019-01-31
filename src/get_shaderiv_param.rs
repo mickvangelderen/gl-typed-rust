@@ -1,4 +1,4 @@
-use param::*;
+use crate::param::*;
 
 pub trait GetShaderivParam: Param {
     type Value;

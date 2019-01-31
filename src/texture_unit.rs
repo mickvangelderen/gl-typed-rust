@@ -1,5 +1,5 @@
 use gl;
-use max_combined_texture_image_units::MaxCombinedTextureImageUnits;
+use crate::max_combined_texture_image_units::MaxCombinedTextureImageUnits;
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub struct TextureUnit(u32);

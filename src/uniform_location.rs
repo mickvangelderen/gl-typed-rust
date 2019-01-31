@@ -1,5 +1,5 @@
 use core::marker::PhantomData;
-use num::NonMinusOneI32;
+use crate::num::NonMinusOneI32;
 
 pub struct UniformLocation<T: ?Sized>(NonMinusOneI32, PhantomData<*const T>);
 

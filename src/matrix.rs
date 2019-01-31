@@ -87,5 +87,5 @@ impl_matrices!(
 #[test]
 fn test() {
     let m: [[f32; 2]; 2] = [[1.1, 1.2], [2.1, 2.2]];
-    let r: &RowMajorMatrix<[[f32; 2]; 2]> = (&m).into();
+    let _r: &RowMajorMatrix<[[f32; 2]; 2]> = (&m).into();
 }

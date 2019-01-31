@@ -1,4 +1,4 @@
-use num::NonMinusOneU32;
+use crate::num::NonMinusOneU32;
 
 pub struct AttributeLocation(NonMinusOneU32);
 

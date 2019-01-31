@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 use std::ptr;
-use marker::Freeze;
+use crate::marker::Freeze;
 
 fn phantom_data_from<T>(_: T) -> PhantomData<T> {
     PhantomData

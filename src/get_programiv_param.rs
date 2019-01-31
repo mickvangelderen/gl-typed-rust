@@ -1,4 +1,4 @@
-use param::*;
+use crate::param::*;
 
 pub trait GetProgramivParam: Param {
     type Value;

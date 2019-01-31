@@ -1,5 +1,5 @@
 use gl;
-use texture_parameter::*;
+use crate::texture_parameter::*;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 #[repr(u32)]

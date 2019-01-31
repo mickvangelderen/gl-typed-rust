@@ -1,6 +1,6 @@
 use super::*;
-use array::Array;
-use array::SourceArray;
+use crate::array::Array;
+use crate::array::SourceArray;
 use gl;
 use std::ffi::CStr;
 
