@@ -1,64 +1,119 @@
-#![feature(optin_builtin_traits)]
-#![feature(const_fn)]
-
-// Macros first.
-#[macro_use]
-mod name;
-#[macro_use]
-pub mod string;
-
-pub mod array;
-
-mod attribute_location;
-mod buffer_target;
-mod framebuffer_attachment;
-mod framebuffer_status;
-mod framebuffer_target;
-mod functions;
-mod get_programiv_param;
-mod get_shaderiv_param;
 pub mod gl;
-mod marker;
-mod matrix;
-mod max_combined_texture_image_units;
-mod num;
-mod param;
-pub mod prelude;
-mod program;
-mod shader;
-mod shader_kind;
-mod small_ref;
-mod texture_filter;
-mod texture_parameter;
-mod texture_target;
-mod texture_unit;
-mod texture_wrap;
-mod uniform_location;
-mod viewport;
 
-pub use self::attribute_location::*;
-pub use self::buffer_target::*;
-pub use self::framebuffer_attachment::*;
-pub use self::framebuffer_status::*;
-pub use self::framebuffer_target::*;
-pub use self::functions::*;
-pub use self::get_programiv_param::*;
-pub use self::get_shaderiv_param::*;
-pub use self::marker::*;
-pub use self::matrix::*;
-pub use self::max_combined_texture_image_units::*;
-pub use self::name::*;
-pub use self::num::*;
-pub use self::param::*;
-pub use self::program::*;
-pub use self::shader::*;
-pub use self::shader_kind::*;
-pub use self::small_ref::*;
-pub use self::string::*;
-pub use self::texture_filter::*;
-pub use self::texture_parameter::*;
-pub use self::texture_target::*;
-pub use self::texture_unit::*;
-pub use self::texture_wrap::*;
-pub use self::uniform_location::*;
-pub use self::viewport::*;
+use std::num::NonZeroU32;
+
+pub struct GlTyped {
+    gl: gl::Gl,
+}
+
+pub trait ShaderKind: Copy {
+    type Name: ShaderName;
+
+    fn as_u32(&self) -> u32;
+}
+
+pub trait ShaderName: Sized {
+    type Kind: ShaderKind;
+
+    fn from_raw_parts(kind: Self::Kind, name: u32) -> Option<Self>;
+
+    fn kind(&self) -> Self::Kind;
+
+    fn as_u32(&self) -> u32;
+}
+
+macro_rules! impl_shader_kinds_and_names {
+    ($($Kind: ident, $Name: ident, $const: ident, $value: expr),*) => {
+        $(
+            #[derive(Debug, Copy, Clone)]
+            #[repr(transparent)]
+            pub struct $Kind(u32);
+
+            impl ShaderKind for $Kind {
+                type Name = $Name;
+
+                #[inline]
+                fn as_u32(&self) -> u32 {
+                    self.0
+                }
+            }
+
+            pub const $const: $Kind = $Kind($value);
+
+            #[derive(Debug)]
+            #[repr(transparent)]
+            pub struct $Name(NonZeroU32);
+
+            impl ShaderName for $Name {
+                type Kind = $Kind;
+
+                #[inline]
+                fn from_raw_parts(_: $Kind, name: u32) -> Option<Self> {
+                    NonZeroU32::new(name).map($Name)
+                }
+
+                #[inline]
+                fn kind(&self) -> Self::Kind {
+                    $const
+                }
+
+                #[inline]
+                fn as_u32(&self) -> u32 {
+                    self.0.get()
+                }
+            }
+        )*
+    }
+}
+
+impl_shader_kinds_and_names!(
+    VertexShaderKind, VertexShaderName, VERTEX_SHADER, gl::VERTEX_SHADER,
+    FragmentShaderKind, FragmentShaderName, FRAGMENT_SHADER, gl::FRAGMENT_SHADER
+);
+
+#[derive(Debug, Copy, Clone)]
+#[repr(u32)]
+pub enum DynamicShaderKind {
+    Vertex = gl::VERTEX_SHADER,
+    Fragment = gl::FRAGMENT_SHADER,
+}
+
+impl ShaderKind for DynamicShaderKind {
+    type Name = DynamicShaderName;
+
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        *self as u32
+    }
+}
+
+pub struct DynamicShaderName {
+    kind: DynamicShaderKind,
+    name: NonZeroU32,
+}
+
+impl ShaderName for DynamicShaderName {
+    type Kind = DynamicShaderKind;
+
+    #[inline]
+    fn from_raw_parts(kind: DynamicShaderKind, name: u32) -> Option<Self> {
+        NonZeroU32::new(name).map(|name| DynamicShaderName { kind, name })
+    }
+
+    #[inline]
+    fn kind(&self) -> Self::Kind {
+        self.kind
+    }
+
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        self.name.get()
+    }
+}
+
+impl GlTyped {
+    #[inline]
+    pub unsafe fn create_shader<SN: ShaderName>(&self, kind: SN::Kind) -> Option<SN> {
+        SN::from_raw_parts(kind, self.gl.CreateShader(kind.as_u32()))
+    }
+}

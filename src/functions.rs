@@ -1,7 +1,7 @@
 use super::*;
 use crate::array::Array;
 use crate::array::SourceArray;
-use gl;
+use crate::gl;
 use std::ffi::CStr;
 
 // Shader names.

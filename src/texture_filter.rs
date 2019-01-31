@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 use crate::texture_parameter::*;
 
 #[derive(Copy, Clone, Eq, PartialEq)]

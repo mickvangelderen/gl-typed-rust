@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 use crate::max_combined_texture_image_units::MaxCombinedTextureImageUnits;
 
 #[derive(Clone, Copy, Eq, PartialEq)]

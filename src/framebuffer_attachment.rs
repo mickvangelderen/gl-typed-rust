@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct FramebufferAttachment(u32);

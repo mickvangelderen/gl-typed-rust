@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 
 pub trait Param {
     fn as_u32(&self) -> u32;

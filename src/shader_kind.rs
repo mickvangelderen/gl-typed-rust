@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 use super::*;
 
 macro_rules! impl_enum_struct {

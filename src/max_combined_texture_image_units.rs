@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 
 #[derive(Clone, Copy)]
 pub struct MaxCombinedTextureImageUnits(u32);

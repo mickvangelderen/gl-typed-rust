@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 #[repr(u32)]

@@ -1,4 +1,4 @@
-use gl;
+use crate::gl;
 
 #[repr(u8)]
 pub enum MajorAxis {
