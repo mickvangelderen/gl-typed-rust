@@ -1,0 +1,15 @@
+[package]
+authors = ["Mick van Gelderen <mickvangelderen@gmail.com>"]
+name = "gl-typed"
+version = "0.1.0"
+
+[features]
+default = []
+
+[dependencies]
+gl = "0.10.0"
+static_assertions = "0.2.5"
+
+[dev-dependencies]
+glutin = "0.18.0"
+lazy_static = "1.0.0"
