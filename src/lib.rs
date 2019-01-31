@@ -1,9 +1,6 @@
 #![feature(optin_builtin_traits)]
 #![feature(const_fn)]
 
-extern crate core;
-extern crate gl;
-
 // Macros first.
 #[macro_use]
 mod name;
@@ -11,7 +8,7 @@ mod name;
 pub mod string;
 
 pub mod array;
-mod as_slice;
+
 mod attribute_location;
 mod buffer_target;
 mod framebuffer_attachment;
@@ -20,6 +17,7 @@ mod framebuffer_target;
 mod functions;
 mod get_programiv_param;
 mod get_shaderiv_param;
+pub mod gl;
 mod marker;
 mod matrix;
 mod max_combined_texture_image_units;

@@ -1,5 +1,7 @@
 [package]
 authors = ["Mick van Gelderen <mickvangelderen@gmail.com>"]
+build = "build.rs"
+edition = "2018"
 name = "gl-typed"
 version = "0.1.0"
 
@@ -7,7 +9,8 @@ version = "0.1.0"
 default = []
 
 [dependencies]
-gl = "0.10.0"
-static_assertions = "0.2.5"
+
+[build-dependencies]
+gl_generator = "0.10.0"
 
 [dev-dependencies]
