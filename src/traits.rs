@@ -5,6 +5,10 @@ pub trait ShaderKind: Into<enums::ShaderKind> + Copy + Sized {}
 
 pub trait CompileStatus: Into<enums::CompileStatus> + Copy + Sized {}
 
+pub trait UncompiledCompileStatus: CompileStatus {
+    const UNCOMPILED: Self;
+}
+
 pub trait GetShaderivParam: Into<enums::GetShaderivParam> + Copy + Sized {}
 
 pub trait GetShaderivValue: Sized {

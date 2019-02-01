@@ -20,12 +20,12 @@ pub struct GlTyped {
 
 impl GlTyped {
     #[inline]
-    pub unsafe fn create_shader<K: traits::ShaderKind>(
+    pub unsafe fn create_shader<K: traits::ShaderKind, S: traits::UncompiledCompileStatus>(
         &self,
         kind: K,
-    ) -> Option<Shader<K, symbols::Uncompiled>> {
+    ) -> Option<Shader<K, S>> {
         ShaderName::from_raw(self.gl.CreateShader(kind.into() as u32))
-            .map(|name| Shader::from_raw_parts(kind, name, symbols::Uncompiled))
+            .map(|name| Shader::from_raw_parts(kind, name, S::UNCOMPILED))
     }
 
     #[inline]
@@ -128,6 +128,18 @@ mod tests {
                     let _: Shader<Vertex, Uncompiled> = uncompiled;
                 }
             }
+        }
+    }
+
+    #[test]
+    fn run_time_shader_fun() {
+        use enums::{CompileStatus, ShaderKind};
+        unsafe {
+            let gl: GlTyped = std::mem::zeroed();
+            let runtime_kind = ShaderKind::Vertex;
+            let mut vs: Shader<ShaderKind, CompileStatus> = gl.create_shader(runtime_kind).unwrap();
+            gl.compile_shader(&mut vs);
+            gl.check_shader_status(&mut vs);
         }
     }
 }

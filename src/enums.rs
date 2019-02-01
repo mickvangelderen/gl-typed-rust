@@ -59,12 +59,20 @@ pub enum CompileStatus {
 
 impl traits::CompileStatus for CompileStatus {}
 
+impl traits::UncompiledCompileStatus for CompileStatus {
+    const UNCOMPILED: Self = CompileStatus::Uncompiled;
+}
+
 impl_variants!(
     CompileStatus,
     traits::CompileStatus,
     (symbols::Uncompiled, CompileStatus::Uncompiled),
     (symbols::Compiled, CompileStatus::Compiled),
 );
+
+impl traits::UncompiledCompileStatus for symbols::Uncompiled {
+    const UNCOMPILED: Self = symbols::Uncompiled;
+}
 
 /// Allowed pname arguments to `glGetShaderiv`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
