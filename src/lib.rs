@@ -19,7 +19,7 @@ impl GlTyped {
     }
 
     #[inline]
-    pub unsafe fn create_shader<S: Shader>(&self, kind: S::Kind) -> Option<S> {
+    pub unsafe fn create_shader<S: ShaderKindName>(&self, kind: S::Kind) -> Option<S> {
         self.create_shader_any(kind.into())
             .map(|name| S::from_parts(kind, name))
     }
@@ -30,7 +30,7 @@ impl GlTyped {
     }
 
     #[inline]
-    pub unsafe fn delete_shader<S: Shader>(&self, shader: S) {
+    pub unsafe fn delete_shader<S: ShaderKindName>(&self, shader: S) {
         let (_kind, name) = shader.into_parts();
         self.delete_shader_any(name);
     }
@@ -44,7 +44,7 @@ mod tests {
     fn create_generic_shader() {
         unsafe {
             let gl: GlTyped = ::std::mem::zeroed();
-            let _shader: ShaderKindName = gl.create_shader(ShaderKind::Vertex).unwrap();
+            let _shader: Shader = gl.create_shader(ShaderKind::Vertex).unwrap();
         }
     }
 
@@ -52,7 +52,7 @@ mod tests {
     fn create_specialized_shader() {
         unsafe {
             let gl: GlTyped = ::std::mem::zeroed();
-            let _shader: VertexShaderName = gl.create_shader(VERTEX_SHADER).unwrap();
+            let _shader: VertexShader = gl.create_shader(VERTEX_SHADER).unwrap();
         }
     }
 }

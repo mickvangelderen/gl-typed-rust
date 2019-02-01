@@ -1,6 +1,6 @@
 use crate::gl;
 
-pub trait Shader {
+pub trait ShaderKindName {
     type Kind: Into<ShaderKind> + Copy;
 
     fn from_parts(kind: Self::Kind, name: ShaderName) -> Self;
@@ -27,22 +27,22 @@ pub enum ShaderKind {
 /// Name of a shader, without the kind.
 impl_name!(ShaderName);
 
-/// Shader kind and name.
+/// ShaderKindName kind and name.
 #[derive(Debug)]
-pub struct ShaderKindName {
+pub struct Shader {
     kind: ShaderKind,
     name: ShaderName,
 }
 
-impl Shader for ShaderKindName {
+impl ShaderKindName for Shader {
     type Kind = ShaderKind;
 
     fn from_parts(kind: Self::Kind, name: ShaderName) -> Self {
-        ShaderKindName { kind, name }
+        Shader { kind, name }
     }
 
     fn into_parts(self) -> (Self::Kind, ShaderName) {
-        let ShaderKindName { kind, name } = self;
+        let Shader { kind, name } = self;
         (kind, name)
     }
 
@@ -58,7 +58,7 @@ impl Shader for ShaderKindName {
 macro_rules! impl_shader_kinds_and_names {
     ($(($Kind: ident, $Shader: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
         $(
-            /// Shader kind known at compile-time.
+            /// ShaderKindName kind known at compile-time.
             #[derive(Debug, Copy, Clone, Eq, PartialEq)]
             pub struct $Kind(());
 
@@ -71,7 +71,7 @@ macro_rules! impl_shader_kinds_and_names {
 
             pub const $const: $Kind = $Kind(());
 
-            /// Shader name of which we know the kind at compile-time.
+            /// ShaderKindName name of which we know the kind at compile-time.
             #[derive(Debug)]
             #[repr(transparent)]
             pub struct $Shader {
@@ -94,7 +94,7 @@ macro_rules! impl_shader_kinds_and_names {
                 }
             }
 
-            impl Shader for $Shader {
+            impl ShaderKindName for $Shader {
                 type Kind = $Kind;
 
                 fn from_parts(kind: Self::Kind, name: ShaderName) -> Self {
