@@ -1,5 +1,3 @@
-#![feature(trait_alias)]
-
 // Macros first.
 #[macro_use]
 mod name;

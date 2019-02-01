@@ -1,11 +1,11 @@
 use crate::enums;
 use crate::symbols;
 
-pub trait ShaderKind = Into<enums::ShaderKind> + Copy + Sized;
+pub trait ShaderKind: Into<enums::ShaderKind> + Copy + Sized {}
 
-pub trait CompileStatus = Into<enums::CompileStatus> + Copy + Sized;
+pub trait CompileStatus: Into<enums::CompileStatus> + Copy + Sized {}
 
-pub trait GetShaderivParam = Into<enums::GetShaderivParam> + Copy + Sized;
+pub trait GetShaderivParam: Into<enums::GetShaderivParam> + Copy + Sized {}
 
 pub trait GetShaderivValue: Sized {
     type Param: GetShaderivParam;

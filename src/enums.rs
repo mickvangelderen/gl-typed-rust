@@ -4,20 +4,23 @@
 
 use crate::gl;
 use crate::symbols;
+use crate::traits;
 
 macro_rules! impl_variants {
-    ($Enum: ty, $(($Symbol: ty, $variant: expr $(,)?)),* $(,)?) => {
+    ($Enum: ty, $Trait: ty, $(($Symbol: ty, $variant: expr $(,)?)),* $(,)?) => {
         $(
-            impl_variants!(IMPL $Enum, $Symbol, $variant);
+            impl_variants!(IMPL $Enum, $Trait, $Symbol, $variant);
         )*
     };
-    (IMPL $Enum: ty, $Symbol: ty, $variant: expr) => {
+    (IMPL $Enum: ty, $Trait: ty, $Symbol: ty, $variant: expr) => {
         /// Convert from compile-time variant into run-time variant.
         impl From<$Symbol> for $Enum {
             fn from(_: $Symbol) -> Self {
                 $variant
             }
         }
+
+        impl $Trait for $Symbol {}
     };
 }
 
@@ -33,8 +36,11 @@ pub enum ShaderKind {
     Fragment = gl::FRAGMENT_SHADER,
 }
 
+impl traits::ShaderKind for ShaderKind {}
+
 impl_variants!(
     ShaderKind,
+    traits::ShaderKind,
     (symbols::Compute, ShaderKind::Compute),
     (symbols::Vertex, ShaderKind::Vertex),
     (symbols::TessControl, ShaderKind::TessControl),
@@ -51,8 +57,11 @@ pub enum CompileStatus {
     Compiled = gl::TRUE as u32,
 }
 
+impl traits::CompileStatus for CompileStatus {}
+
 impl_variants!(
     CompileStatus,
+    traits::CompileStatus,
     (symbols::Uncompiled, CompileStatus::Uncompiled),
     (symbols::Compiled, CompileStatus::Compiled),
 );
@@ -68,11 +77,17 @@ pub enum GetShaderivParam {
     ShaderSourceLength = gl::SHADER_SOURCE_LENGTH,
 }
 
+impl traits::GetShaderivParam for GetShaderivParam {}
+
 impl_variants!(
     GetShaderivParam,
+    traits::GetShaderivParam,
     (symbols::ShaderType, GetShaderivParam::ShaderType),
     (symbols::DeleteStatus, GetShaderivParam::DeleteStatus),
     (symbols::CompileStatus, GetShaderivParam::CompileStatus),
     (symbols::InfoLogLength, GetShaderivParam::InfoLogLength),
-    (symbols::ShaderSourceLength, GetShaderivParam::ShaderSourceLength),
+    (
+        symbols::ShaderSourceLength,
+        GetShaderivParam::ShaderSourceLength
+    ),
 );
