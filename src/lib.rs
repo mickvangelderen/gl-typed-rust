@@ -14,45 +14,16 @@ pub struct GlTyped {
 
 impl GlTyped {
     #[inline]
-    unsafe fn create_shader_any(&self, kind: ShaderKind) -> Option<ShaderName> {
-        ShaderName::from_u32(self.gl.CreateShader(kind as u32))
+    pub unsafe fn create_shader<K: Into<ShaderKind> + Copy>(
+        &self,
+        kind: K,
+    ) -> Option<shader::generic::Shader<K>> {
+        ShaderName::from_raw(self.gl.CreateShader(kind.into() as u32))
+            .map(|name| shader::generic::Shader::from_raw_parts(kind, name))
     }
 
     #[inline]
-    pub unsafe fn create_shader<S: ShaderKindName>(&self, kind: S::Kind) -> Option<S> {
-        self.create_shader_any(kind.into())
-            .map(|name| S::from_parts(kind, name))
-    }
-
-    #[inline]
-    unsafe fn delete_shader_any(&self, name: ShaderName) {
-        self.gl.DeleteShader(name.as_u32())
-    }
-
-    #[inline]
-    pub unsafe fn delete_shader<S: ShaderKindName>(&self, shader: S) {
-        let (_kind, name) = shader.into_parts();
-        self.delete_shader_any(name);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn create_generic_shader() {
-        unsafe {
-            let gl: GlTyped = ::std::mem::zeroed();
-            let _shader: Shader = gl.create_shader(ShaderKind::Vertex).unwrap();
-        }
-    }
-
-    #[test]
-    fn create_specialized_shader() {
-        unsafe {
-            let gl: GlTyped = ::std::mem::zeroed();
-            let _shader: VertexShader = gl.create_shader(VERTEX_SHADER).unwrap();
-        }
+    pub unsafe fn delete_shader<N: Into<ShaderName>>(&self, name: N) {
+        self.gl.DeleteShader(name.into().into_raw());
     }
 }

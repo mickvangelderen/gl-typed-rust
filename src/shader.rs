@@ -1,18 +1,6 @@
 use crate::gl;
 
-pub trait ShaderKindName {
-    type Kind: Into<ShaderKind> + Copy;
-
-    fn from_parts(kind: Self::Kind, name: ShaderName) -> Self;
-
-    fn into_parts(self) -> (Self::Kind, ShaderName);
-
-    fn kind(&self) -> Self::Kind;
-
-    fn name(&self) -> &ShaderName;
-}
-
-/// Kind of a shader.
+/// The kind of a shader.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[repr(u32)]
 pub enum ShaderKind {
@@ -24,101 +12,79 @@ pub enum ShaderKind {
     Fragment = gl::FRAGMENT_SHADER,
 }
 
-/// Name of a shader, without the kind.
+/// The name of a shader, without the kind.
 impl_name!(ShaderName);
 
-/// ShaderKindName kind and name.
-#[derive(Debug)]
-pub struct Shader {
-    kind: ShaderKind,
-    name: ShaderName,
+pub mod generic {
+    use super::*;
+
+    /// A generic shader object for which we may know the kind at compile-time.
+    #[derive(Debug)]
+    pub struct Shader<K> {
+        kind: K,
+        name: ShaderName,
+    }
+
+    impl<K> Shader<K> {
+        /// Does not verify whether name is actually of the given kind.
+        pub const unsafe fn from_raw_parts(kind: K, name: ShaderName) -> Self {
+            Shader { kind, name }
+        }
+
+        pub fn into_raw_parts(self) -> (K, ShaderName) {
+            let Shader { kind, name } = self;
+            (kind, name)
+        }
+
+        pub const fn kind(&self) -> &K {
+            &self.kind
+        }
+
+        pub const fn name(&self) -> &ShaderName {
+            &self.name
+        }
+    }
+
+    impl<K> From<Shader<K>> for ShaderName {
+        fn from(shader: Shader<K>) -> Self {
+            let (_kind, name) = shader.into_raw_parts();
+            name
+        }
+    }
 }
 
-impl ShaderKindName for Shader {
-    type Kind = ShaderKind;
+/// A shader for which we know the kind at run-time.
+pub type Shader = generic::Shader<ShaderKind>;
 
-    fn from_parts(kind: Self::Kind, name: ShaderName) -> Self {
-        Shader { kind, name }
-    }
-
-    fn into_parts(self) -> (Self::Kind, ShaderName) {
-        let Shader { kind, name } = self;
-        (kind, name)
-    }
-
-    fn kind(&self) -> Self::Kind {
-        self.kind
-    }
-
-    fn name(&self) -> &ShaderName {
-        &self.name
-    }
-}
-
-macro_rules! impl_shader_kinds_and_names {
+macro_rules! impl_shaders {
     ($(($Kind: ident, $Shader: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
         $(
-            /// ShaderKindName kind known at compile-time.
-            #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-            pub struct $Kind(());
-
-            /// Convert from compile-time variant into run-time variant.
-            impl From<$Kind> for ShaderKind {
-                fn from(_: $Kind) -> Self {
-                    $value
-                }
-            }
-
-            pub const $const: $Kind = $Kind(());
-
-            /// ShaderKindName name of which we know the kind at compile-time.
-            #[derive(Debug)]
-            #[repr(transparent)]
-            pub struct $Shader {
-                kind: $Kind,
-                name: ShaderName,
-            }
-
-            /// Permanently lose the shader kind.
-            impl From<$Shader> for ShaderName {
-                fn from(shader: $Shader) -> Self {
-                    let (_, name) = shader.into_parts();
-                    name
-                }
-            }
-
-            /// Temporarily lose the shader kind.
-            impl AsRef<ShaderName> for $Shader {
-                fn as_ref(&self) -> &ShaderName {
-                    &self.name
-                }
-            }
-
-            impl ShaderKindName for $Shader {
-                type Kind = $Kind;
-
-                fn from_parts(kind: Self::Kind, name: ShaderName) -> Self {
-                    $Shader { kind, name }
-                }
-
-                fn into_parts(self) -> (Self::Kind, ShaderName) {
-                    let $Shader { kind, name } = self;
-                    (kind, name)
-                }
-
-                fn kind(&self) -> Self::Kind {
-                    self.kind
-                }
-
-                fn name(&self) -> &ShaderName {
-                    &self.name
-                }
-            }
+            impl_shaders!(IMPL $Kind, $Shader, $const, $value, concat!(
+                "let _:Option<", stringify!($Shader), "> = gl.create_shader(", stringify!($const), ");"
+            ));
         )*
-    }
+    };
+
+    (IMPL $Kind: ident, $Shader: ident, $const: ident, $value: expr, $doc1: expr) => {
+        /// A compile-time ShaderKind.
+        #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+        pub struct $Kind(());
+
+        /// Convert from compile-time variant into run-time variant.
+        impl From<$Kind> for ShaderKind {
+            fn from(_: $Kind) -> Self {
+                $value
+            }
+        }
+
+        pub const $const: $Kind = $Kind(());
+
+        /// A shader for which we know the kind at compile-time.
+        pub type $Shader = generic::Shader<$Kind>;
+    };
 }
 
-impl_shader_kinds_and_names!(
+impl_shaders!(
     (
         ComputeShaderKind,
         ComputeShader,
@@ -156,3 +122,14 @@ impl_shader_kinds_and_names!(
         ShaderKind::Fragment
     )
 );
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem::size_of;
+    #[test]
+    fn sizes_are_optimized() {
+        assert_eq!(size_of::<Option<Shader>>(), 8);
+        assert_eq!(size_of::<Option<ComputeShader>>(), 4);
+    }
+}

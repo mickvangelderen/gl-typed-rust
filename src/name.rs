@@ -1,3 +1,4 @@
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_name {
     ($Name:ident) => {
@@ -6,19 +7,22 @@ macro_rules! impl_name {
         pub struct $Name(::std::num::NonZeroU32);
 
         impl $Name {
+            /// Does not verify whether name is actually a valid name.
             #[inline]
-            pub unsafe fn from_u32(name: u32) -> Option<Self> {
+            pub unsafe fn from_raw(name: u32) -> Option<Self> {
                 std::num::NonZeroU32::new(name).map($Name)
             }
 
+            /// Does not verify whether name is actually a non-zero nor whether
+            /// it is a valid name.
             #[inline]
-            pub const unsafe fn from_u32_unchecked(name: u32) -> Self {
+            pub const unsafe fn from_raw_unchecked(name: u32) -> Self {
                 $Name(std::num::NonZeroU32::new_unchecked(name))
             }
 
-            /// Converts the name into a number without dropping it.
+            /// Converts the name into its raw representation without dropping.
             #[inline]
-            pub unsafe fn into_u32(self) -> u32 {
+            pub unsafe fn into_raw(self) -> u32 {
                 std::mem::ManuallyDrop::new(self).as_u32()
             }
 
@@ -31,6 +35,7 @@ macro_rules! impl_name {
         impl Drop for $Name {
             #[cold]
             fn drop(&mut self) {
+                // TODO(mickvangelderen): Warn on drop/Abort on drop.
             }
         }
     };
