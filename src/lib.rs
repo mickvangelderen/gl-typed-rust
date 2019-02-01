@@ -1,10 +1,9 @@
-pub mod gl;
-
-// Private.
+// Macros first.
 #[macro_use]
 mod name;
 
-// Public.
+pub mod gl;
+
 pub mod shader;
 pub use shader::*;
 

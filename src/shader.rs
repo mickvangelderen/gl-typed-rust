@@ -59,14 +59,16 @@ pub type Shader = generic::Shader<ShaderKind>;
 macro_rules! impl_shaders {
     ($(($Kind: ident, $Shader: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
         $(
-            impl_shaders!(IMPL $Kind, $Shader, $const, $value, concat!(
-                "let _:Option<", stringify!($Shader), "> = gl.create_shader(", stringify!($const), ");"
-            ));
+            impl_shaders!(IMPL $Kind, $Shader, $const, $value,
+                concat!("The compile-time version of [", stringify!($value), "]."),
+                concat!("Singleton for [", stringify!($Kind), "]."),
+                concat!("Shader for which we know the kind is [", stringify!($value), "] at compile-time.")
+            );
         )*
     };
 
-    (IMPL $Kind: ident, $Shader: ident, $const: ident, $value: expr, $doc1: expr) => {
-        /// A compile-time ShaderKind.
+    (IMPL $Kind: ident, $Shader: ident, $const: ident, $value: expr, $doc_kind: expr, $doc_const: expr, $doc_shader: expr) => {
+        #[doc = $doc_kind]
         #[derive(Debug, Copy, Clone, Eq, PartialEq)]
         pub struct $Kind(());
 
@@ -77,9 +79,10 @@ macro_rules! impl_shaders {
             }
         }
 
+        #[doc = $doc_const]
         pub const $const: $Kind = $Kind(());
 
-        /// A shader for which we know the kind at compile-time.
+        #[doc = $doc_shader]
         pub type $Shader = generic::Shader<$Kind>;
     };
 }
