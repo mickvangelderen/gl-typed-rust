@@ -56,60 +56,62 @@ impl Shader for ShaderKindName {
 }
 
 macro_rules! impl_shader_kinds_and_names {
-    ($(($Kind: ident, $Name: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
+    ($(($Kind: ident, $Shader: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
         $(
-            /// Shader kind of which we know the variant at compile-time.
+            /// Shader kind known at compile-time.
             #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-            #[repr(transparent)]
-            pub struct $Kind(ShaderKind);
+            pub struct $Kind(());
 
             /// Convert from compile-time variant into run-time variant.
             impl From<$Kind> for ShaderKind {
-                fn from(kind: $Kind) -> Self {
-                    kind.0
+                fn from(_: $Kind) -> Self {
+                    $value
                 }
             }
 
-            pub const $const: $Kind = $Kind($value);
+            pub const $const: $Kind = $Kind(());
 
             /// Shader name of which we know the kind at compile-time.
             #[derive(Debug)]
             #[repr(transparent)]
-            pub struct $Name(ShaderName);
+            pub struct $Shader {
+                kind: $Kind,
+                name: ShaderName,
+            }
 
-            // NOTE(mickvangelderen): I do not want to encourage losing the
-            // kind. Maybe there is a use case for it though.
-            // /// Permanently lose the shader kind.
-            // impl From<$Name> for ShaderName {
-            //     fn from(name: $Name) -> Self {
-            //         name.0
-            //     }
-            // }
-
-            /// Temporarily lose the shader kind.
-            impl AsRef<ShaderName> for $Name {
-                fn as_ref(&self) -> &ShaderName {
-                    &self.0
+            /// Permanently lose the shader kind.
+            impl From<$Shader> for ShaderName {
+                fn from(shader: $Shader) -> Self {
+                    let (_, name) = shader.into_parts();
+                    name
                 }
             }
 
-            impl Shader for $Name {
+            /// Temporarily lose the shader kind.
+            impl AsRef<ShaderName> for $Shader {
+                fn as_ref(&self) -> &ShaderName {
+                    &self.name
+                }
+            }
+
+            impl Shader for $Shader {
                 type Kind = $Kind;
 
-                fn from_parts(_: Self::Kind, name: ShaderName) -> Self {
-                    $Name(name)
+                fn from_parts(kind: Self::Kind, name: ShaderName) -> Self {
+                    $Shader { kind, name }
                 }
 
                 fn into_parts(self) -> (Self::Kind, ShaderName) {
-                    ($const, self.0)
+                    let $Shader { kind, name } = self;
+                    (kind, name)
                 }
 
                 fn kind(&self) -> Self::Kind {
-                    $const
+                    self.kind
                 }
 
                 fn name(&self) -> &ShaderName {
-                    self.as_ref()
+                    &self.name
                 }
             }
         )*
@@ -119,37 +121,37 @@ macro_rules! impl_shader_kinds_and_names {
 impl_shader_kinds_and_names!(
     (
         ComputeShaderKind,
-        ComputeShaderName,
+        ComputeShader,
         COMPUTE_SHADER,
         ShaderKind::Compute,
     ),
     (
         VertexShaderKind,
-        VertexShaderName,
+        VertexShader,
         VERTEX_SHADER,
         ShaderKind::Vertex
     ),
     (
         TessControlShaderKind,
-        TessControlShaderName,
+        TessControlShader,
         TESS_CONTROL_SHADER,
         ShaderKind::TessControl
     ),
     (
         TessEvaluationShaderKind,
-        TessEvaluationShaderName,
+        TessEvaluationShader,
         TESS_EVALUATION_SHADER,
         ShaderKind::TessEvaluation
     ),
     (
         GeometryShaderKind,
-        GeometryShaderName,
+        GeometryShader,
         GEOMETRY_SHADER,
         ShaderKind::Geometry
     ),
     (
         FragmentShaderKind,
-        FragmentShaderName,
+        FragmentShader,
         FRAGMENT_SHADER,
         ShaderKind::Fragment
     )
