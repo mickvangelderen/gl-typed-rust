@@ -1,138 +1,80 @@
-use crate::gl;
-
-/// The kind of a shader.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-#[repr(u32)]
-pub enum ShaderKind {
-    Compute = gl::COMPUTE_SHADER,
-    Vertex = gl::VERTEX_SHADER,
-    TessControl = gl::TESS_CONTROL_SHADER,
-    TessEvaluation = gl::TESS_EVALUATION_SHADER,
-    Geometry = gl::GEOMETRY_SHADER,
-    Fragment = gl::FRAGMENT_SHADER,
-}
+use crate::enums;
+use crate::symbols;
+use crate::traits;
 
 /// The name of a shader, without the kind.
 impl_name!(ShaderName);
 
-pub mod generic {
-    use super::*;
+/// A generic shader object for which we may know the kind at compile-time.
+#[derive(Debug)]
+pub struct Shader<K, S> {
+    kind: K,
+    name: ShaderName,
+    status: S,
+}
 
-    /// A generic shader object for which we may know the kind at compile-time.
-    #[derive(Debug)]
-    pub struct Shader<K> {
-        kind: K,
-        name: ShaderName,
+impl<K, S> Shader<K, S> {
+    /// Does not verify whether name is of the given kind and status.
+    #[inline]
+    pub unsafe fn from_raw_parts(kind: K, name: ShaderName, status: S) -> Self {
+        Shader { kind, name, status }
     }
 
-    impl<K> Shader<K> {
-        /// Does not verify whether name is actually of the given kind.
-        pub const unsafe fn from_raw_parts(kind: K, name: ShaderName) -> Self {
-            Shader { kind, name }
-        }
-
-        pub fn into_raw_parts(self) -> (K, ShaderName) {
-            let Shader { kind, name } = self;
-            (kind, name)
-        }
-
-        pub const fn kind(&self) -> &K {
-            &self.kind
-        }
-
-        pub const fn name(&self) -> &ShaderName {
-            &self.name
-        }
+    #[inline]
+    pub fn into_raw_parts(self) -> (K, ShaderName, S) {
+        let Shader { kind, name, status } = self;
+        (kind, name, status)
     }
 
-    impl<K> From<Shader<K>> for ShaderName {
-        fn from(shader: Shader<K>) -> Self {
-            let (_kind, name) = shader.into_raw_parts();
-            name
-        }
+    #[inline]
+    pub fn kind(&self) -> &K {
+        &self.kind
+    }
+
+    /// Be careful, allows changing the kind to an incorrect value.
+    #[inline]
+    pub unsafe fn kind_mut(&mut self) -> &mut K {
+        &mut self.kind
+    }
+
+    #[inline]
+    pub fn name(&self) -> &ShaderName {
+        &self.name
+    }
+
+    /// Be careful, allows changing the name to an incorrect value.
+    #[inline]
+    pub unsafe fn name_mut(&mut self) -> &mut ShaderName {
+        &mut self.name
+    }
+
+    #[inline]
+    pub fn status(&self) -> &S {
+        &self.status
+    }
+
+    /// Be careful, allows changing the status to an incorrect value.
+    #[inline]
+    pub unsafe fn status_mut(&mut self) -> &mut S {
+        &mut self.status
     }
 }
 
-/// A shader for which we know the kind at run-time.
-pub type Shader = generic::Shader<ShaderKind>;
-
-macro_rules! impl_shaders {
-    ($(($Kind: ident, $Shader: ident, $const: ident, $value: expr $(,)?)),* $(,)?) => {
-        $(
-            impl_shaders!(IMPL $Kind, $Shader, $const, $value,
-                concat!("The compile-time version of [", stringify!($value), "]."),
-                concat!("Singleton for [", stringify!($Kind), "]."),
-                concat!("Shader for which we know the kind is [", stringify!($value), "] at compile-time.")
-            );
-        )*
-    };
-
-    (IMPL $Kind: ident, $Shader: ident, $const: ident, $value: expr, $doc_kind: expr, $doc_const: expr, $doc_shader: expr) => {
-        #[doc = $doc_kind]
-        #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-        pub struct $Kind(());
-
-        /// Convert from compile-time variant into run-time variant.
-        impl From<$Kind> for ShaderKind {
-            fn from(_: $Kind) -> Self {
-                $value
+impl<K, S: traits::CompileStatus> Shader<K, S> {
+    #[inline]
+    pub fn into_compiled(
+        self,
+    ) -> Result<Shader<K, symbols::Compiled>, Shader<K, symbols::Uncompiled>> {
+        unsafe {
+            let (kind, name, status) = self.into_raw_parts();
+            match status.into() {
+                enums::CompileStatus::Uncompiled => {
+                    Err(Shader::from_raw_parts(kind, name, symbols::Uncompiled))
+                }
+                enums::CompileStatus::Compiled => {
+                    Ok(Shader::from_raw_parts(kind, name, symbols::Compiled))
+                }
             }
         }
-
-        #[doc = $doc_const]
-        pub const $const: $Kind = $Kind(());
-
-        #[doc = $doc_shader]
-        pub type $Shader = generic::Shader<$Kind>;
-    };
-}
-
-impl_shaders!(
-    (
-        ComputeShaderKind,
-        ComputeShader,
-        COMPUTE_SHADER,
-        ShaderKind::Compute,
-    ),
-    (
-        VertexShaderKind,
-        VertexShader,
-        VERTEX_SHADER,
-        ShaderKind::Vertex
-    ),
-    (
-        TessControlShaderKind,
-        TessControlShader,
-        TESS_CONTROL_SHADER,
-        ShaderKind::TessControl
-    ),
-    (
-        TessEvaluationShaderKind,
-        TessEvaluationShader,
-        TESS_EVALUATION_SHADER,
-        ShaderKind::TessEvaluation
-    ),
-    (
-        GeometryShaderKind,
-        GeometryShader,
-        GEOMETRY_SHADER,
-        ShaderKind::Geometry
-    ),
-    (
-        FragmentShaderKind,
-        FragmentShader,
-        FRAGMENT_SHADER,
-        ShaderKind::Fragment
-    )
-);
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::mem::size_of;
-    #[test]
-    fn sizes_are_optimized() {
-        assert_eq!(size_of::<Option<Shader>>(), 8);
-        assert_eq!(size_of::<Option<ComputeShader>>(), 4);
     }
 }
