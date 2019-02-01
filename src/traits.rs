@@ -29,9 +29,7 @@ impl GetShaderivValue for enums::CompileStatus {
     type Param = symbols::CompileStatus;
 
     fn as_i32_mut(&mut self) -> &mut i32 {
-        unsafe {
-            &mut *(self as *mut enums::CompileStatus as *mut i32)
-        }
+        unsafe { &mut *(self as *mut enums::CompileStatus as *mut i32) }
     }
 }
 
