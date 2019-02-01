@@ -34,7 +34,7 @@ impl GlTyped {
         self.gl.DeleteShader(name.into_raw());
     }
 
-    /// Sets the shader status to [CompileStatus::Uncompiled].
+    /// Sets the shader status to [Uncompiled](enums::CompileStatus::Uncompiled).
     #[inline]
     pub unsafe fn compile_shader<K>(&self, shader: &mut Shader<K, enums::CompileStatus>) {
         self.gl.CompileShader(shader.name().as_u32());
