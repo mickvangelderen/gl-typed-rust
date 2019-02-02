@@ -4,23 +4,23 @@
 
 use crate::gl;
 use crate::symbols;
-use crate::traits;
 
 macro_rules! impl_variants {
-    ($Enum: ty, $Trait: ty, $(($Symbol: ty, $variant: expr $(,)?)),* $(,)?) => {
+    ($e: ident { $($v: ident,)* }) => {
         $(
-            impl_variants!(IMPL $Enum, $Trait, $Symbol, $variant);
+            impl_variants!(
+                enum = $e,
+                variant = $e::$v,
+                symbol = symbols::$v,
+            );
         )*
     };
-    (IMPL $Enum: ty, $Trait: ty, $Symbol: ty, $variant: expr) => {
-        /// Convert from compile-time variant into run-time variant.
-        impl From<$Symbol> for $Enum {
-            fn from(_: $Symbol) -> Self {
+    (enum = $enum: path, variant = $variant: path, symbol = $symbol: path,) => {
+        impl From<$symbol> for $enum {
+            fn from(_: $symbol) -> Self {
                 $variant
             }
         }
-
-        impl $Trait for $Symbol {}
     };
 }
 
@@ -36,17 +36,15 @@ pub enum ShaderKind {
     Fragment = gl::FRAGMENT_SHADER,
 }
 
-impl traits::ShaderKind for ShaderKind {}
-
 impl_variants!(
-    ShaderKind,
-    traits::ShaderKind,
-    (symbols::Compute, ShaderKind::Compute),
-    (symbols::Vertex, ShaderKind::Vertex),
-    (symbols::TessControl, ShaderKind::TessControl),
-    (symbols::TessEvaluation, ShaderKind::TessEvaluation),
-    (symbols::Geometry, ShaderKind::Geometry),
-    (symbols::Fragment, ShaderKind::Fragment),
+    ShaderKind {
+        Compute,
+        Vertex,
+        TessControl,
+        TessEvaluation,
+        Geometry,
+        Fragment,
+    }
 );
 
 /// The compile status of a shader.
@@ -57,22 +55,12 @@ pub enum CompileStatus {
     Compiled = gl::TRUE as u32,
 }
 
-impl traits::CompileStatus for CompileStatus {}
-
-impl traits::UncompiledCompileStatus for CompileStatus {
-    const UNCOMPILED: Self = CompileStatus::Uncompiled;
-}
-
 impl_variants!(
-    CompileStatus,
-    traits::CompileStatus,
-    (symbols::Uncompiled, CompileStatus::Uncompiled),
-    (symbols::Compiled, CompileStatus::Compiled),
+    CompileStatus {
+        Uncompiled,
+        Compiled,
+    }
 );
-
-impl traits::UncompiledCompileStatus for symbols::Uncompiled {
-    const UNCOMPILED: Self = symbols::Uncompiled;
-}
 
 /// Allowed pname arguments to `glGetShaderiv`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -85,17 +73,12 @@ pub enum GetShaderivParam {
     ShaderSourceLength = gl::SHADER_SOURCE_LENGTH,
 }
 
-impl traits::GetShaderivParam for GetShaderivParam {}
-
 impl_variants!(
-    GetShaderivParam,
-    traits::GetShaderivParam,
-    (symbols::ShaderType, GetShaderivParam::ShaderType),
-    (symbols::DeleteStatus, GetShaderivParam::DeleteStatus),
-    (symbols::CompileStatus, GetShaderivParam::CompileStatus),
-    (symbols::InfoLogLength, GetShaderivParam::InfoLogLength),
-    (
-        symbols::ShaderSourceLength,
-        GetShaderivParam::ShaderSourceLength
-    ),
+    GetShaderivParam {
+        ShaderType,
+        DeleteStatus,
+        CompileStatus,
+        InfoLogLength,
+        ShaderSourceLength,
+    }
 );

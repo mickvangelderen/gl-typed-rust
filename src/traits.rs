@@ -2,14 +2,25 @@ use crate::enums;
 use crate::symbols;
 
 pub trait ShaderKind: Into<enums::ShaderKind> + Copy + Sized {}
+impl<T: Into<enums::ShaderKind> + Copy + Sized> ShaderKind for T {}
 
 pub trait CompileStatus: Into<enums::CompileStatus> + Copy + Sized {}
+impl<T: Into<enums::CompileStatus> + Copy + Sized> CompileStatus for T {}
 
 pub trait UncompiledCompileStatus: CompileStatus {
     const UNCOMPILED: Self;
 }
 
+impl UncompiledCompileStatus for enums::CompileStatus {
+    const UNCOMPILED: Self = enums::CompileStatus::Uncompiled;
+}
+
+impl UncompiledCompileStatus for symbols::Uncompiled {
+    const UNCOMPILED: Self = symbols::Uncompiled;
+}
+
 pub trait GetShaderivParam: Into<enums::GetShaderivParam> + Copy + Sized {}
+impl<T: Into<enums::GetShaderivParam> + Copy + Sized> GetShaderivParam for T {}
 
 pub trait GetShaderivValue: Sized {
     type Param: GetShaderivParam;
