@@ -45,3 +45,7 @@ impl GetShaderivValue for enums::CompileStatus {
 }
 
 // TODO(mickvangelderen): Implement remaining GetShaderivValue types.
+
+fn x<KI, KO: From<KI>>(k: KI) -> KO {
+    From::from(k)
+}

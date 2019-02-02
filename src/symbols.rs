@@ -2,11 +2,26 @@
 //! whatever. The symbols can be re-used to represent different variants in
 //! multiple enums, which is why are defined in their own module.
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Unknown;
+
+macro_rules! impl_unknown_from {
+    ($T: path) => {
+        impl From<$T> for Unknown {
+            fn from(_: $T) -> Self {
+                Unknown
+            }
+        }
+    };
+}
+
 macro_rules! impl_symbols {
-    ($($Symbol: ident),*) => {
+    ($($Symbol: ident,)*) => {
         $(
             #[derive(Debug, Copy, Clone, Eq, PartialEq)]
             pub struct $Symbol;
+
+            impl_unknown_from!($Symbol);
         )*
     };
 }
@@ -24,6 +39,5 @@ impl_symbols!(
     TessControl,
     TessEvaluation,
     Uncompiled,
-    Unknown,
-    Vertex
+    Vertex,
 );

@@ -27,14 +27,26 @@ impl<K, S> Shader<K, S> {
     }
 
     #[inline]
+    pub fn without_kind(self) -> Shader<symbols::Unknown, S> {
+        let Shader { name, status, .. } = self;
+        Shader { kind: symbols::Unknown, name, status }
+    }
+
+    #[inline]
+    pub fn without_status(self) -> Shader<K, symbols::Unknown> {
+        let Shader { kind, name, .. } = self;
+        Shader { kind, name, status: symbols::Unknown }
+    }
+
+    #[inline]
     pub fn kind(&self) -> &K {
         &self.kind
     }
 
     /// Be careful, allows changing the kind to an incorrect value.
     #[inline]
-    pub unsafe fn kind_mut(&mut self) -> &mut K {
-        &mut self.kind
+    pub unsafe fn set_kind(&mut self, kind: K) {
+        self.kind = kind
     }
 
     #[inline]
@@ -44,8 +56,8 @@ impl<K, S> Shader<K, S> {
 
     /// Be careful, allows changing the name to an incorrect value.
     #[inline]
-    pub unsafe fn name_mut(&mut self) -> &mut ShaderName {
-        &mut self.name
+    pub unsafe fn set_name(&mut self, name: ShaderName) {
+        self.name = name;
     }
 
     #[inline]
@@ -55,8 +67,8 @@ impl<K, S> Shader<K, S> {
 
     /// Be careful, allows changing the status to an incorrect value.
     #[inline]
-    pub unsafe fn status_mut(&mut self) -> &mut S {
-        &mut self.status
+    pub unsafe fn set_status(&mut self, status: S) {
+        self.status = status;
     }
 }
 

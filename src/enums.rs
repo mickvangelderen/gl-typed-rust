@@ -5,6 +5,16 @@
 use crate::gl;
 use crate::symbols;
 
+macro_rules! impl_unknown_from {
+    ($T: path) => {
+        impl From<$T> for symbols::Unknown {
+            fn from(_: $T) -> Self {
+                symbols::Unknown
+            }
+        }
+    };
+}
+
 macro_rules! impl_variants {
     ($e: ident { $($v: ident,)* }) => {
         $(
@@ -36,6 +46,8 @@ pub enum ShaderKind {
     Fragment = gl::FRAGMENT_SHADER,
 }
 
+impl_unknown_from!(ShaderKind);
+
 impl_variants!(
     ShaderKind {
         Compute,
@@ -55,6 +67,8 @@ pub enum CompileStatus {
     Compiled = gl::TRUE as u32,
 }
 
+impl_unknown_from!(CompileStatus);
+
 impl_variants!(
     CompileStatus {
         Uncompiled,
@@ -72,6 +86,8 @@ pub enum GetShaderivParam {
     InfoLogLength = gl::INFO_LOG_LENGTH,
     ShaderSourceLength = gl::SHADER_SOURCE_LENGTH,
 }
+
+impl_unknown_from!(GetShaderivParam);
 
 impl_variants!(
     GetShaderivParam {

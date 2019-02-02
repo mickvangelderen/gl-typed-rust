@@ -20,12 +20,12 @@ pub struct GlTyped {
 
 impl GlTyped {
     #[inline]
-    pub unsafe fn create_shader<K: traits::ShaderKind, S: traits::UncompiledCompileStatus>(
+    pub unsafe fn create_shader<K: traits::ShaderKind, KO: From<K>, S: traits::UncompiledCompileStatus>(
         &self,
         kind: K,
-    ) -> Option<Shader<K, S>> {
+    ) -> Option<Shader<KO, S>> {
         ShaderName::from_raw(self.gl.CreateShader(kind.into() as u32))
-            .map(|name| Shader::from_raw_parts(kind, name, S::UNCOMPILED))
+            .map(|name| Shader::from_raw_parts(From::from(kind), name, S::UNCOMPILED))
     }
 
     #[inline]
@@ -38,7 +38,7 @@ impl GlTyped {
     #[inline]
     pub unsafe fn compile_shader<K>(&self, shader: &mut Shader<K, enums::CompileStatus>) {
         self.gl.CompileShader(shader.name().as_u32());
-        *shader.status_mut() = enums::CompileStatus::Uncompiled;
+        shader.set_status(enums::CompileStatus::Uncompiled);
     }
 
     #[inline]
@@ -56,7 +56,7 @@ impl GlTyped {
     pub unsafe fn check_shader_status<K>(&self, shader: &mut Shader<K, enums::CompileStatus>) {
         let mut status = ::std::mem::uninitialized();
         self.get_shaderiv(shader, symbols::CompileStatus, &mut status);
-        *shader.status_mut() = status;
+        shader.set_status(status);
     }
 
     /// Turn compile-time unknown shader status into run-time known shader
@@ -140,6 +140,18 @@ mod tests {
             let mut vs: Shader<ShaderKind, CompileStatus> = gl.create_shader(runtime_kind).unwrap();
             gl.compile_shader(&mut vs);
             gl.check_shader_status(&mut vs);
+        }
+    }
+
+    #[test]
+    fn unknown_shader_type() {
+        use std::mem;
+        use symbols::{Unknown, Uncompiled};
+
+        unsafe {
+            let gl: GlTyped = std::mem::zeroed();
+            let s: Shader<Unknown, Uncompiled> = gl.create_shader(VERTEX_SHADER).unwrap();
+            assert_eq!(mem::size_of_val(&s), 4);
         }
     }
 }
