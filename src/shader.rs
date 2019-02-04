@@ -13,6 +13,22 @@ pub struct Shader<K, S> {
     status: S,
 }
 
+#[derive(Debug)]
+pub enum ShaderKind<C> {
+    Compute(Shader<symbols::Compute, C>),
+    Vertex(Shader<symbols::Vertex, C>),
+    TessControl(Shader<symbols::TessControl, C>),
+    TessEvaluation(Shader<symbols::TessEvaluation, C>),
+    Geometry(Shader<symbols::Geometry, C>),
+    Fragment(Shader<symbols::Fragment, C>),
+}
+
+#[derive(Debug)]
+pub enum CompileStatus<K> {
+    Uncompiled(Shader<K, symbols::Uncompiled>),
+    Compiled(Shader<K, symbols::Compiled>),
+}
+
 impl<K, S> Shader<K, S> {
     /// Does not verify whether name is of the given kind and status.
     #[inline]
@@ -29,13 +45,21 @@ impl<K, S> Shader<K, S> {
     #[inline]
     pub fn without_kind(self) -> Shader<symbols::Unknown, S> {
         let Shader { name, status, .. } = self;
-        Shader { kind: symbols::Unknown, name, status }
+        Shader {
+            kind: symbols::Unknown,
+            name,
+            status,
+        }
     }
 
     #[inline]
     pub fn without_status(self) -> Shader<K, symbols::Unknown> {
         let Shader { kind, name, .. } = self;
-        Shader { kind, name, status: symbols::Unknown }
+        Shader {
+            kind,
+            name,
+            status: symbols::Unknown,
+        }
     }
 
     #[inline]
@@ -72,19 +96,50 @@ impl<K, S> Shader<K, S> {
     }
 }
 
+impl<K: traits::ShaderKind, S> Shader<K, S> {
+    #[inline]
+    pub fn determine_kind(self) -> ShaderKind<S> {
+        unsafe {
+            let (kind, name, status) = self.into_raw_parts();
+            match kind.into() {
+                enums::ShaderKind::Compute => {
+                    ShaderKind::Compute(Shader::from_raw_parts(symbols::Compute, name, status))
+                }
+                enums::ShaderKind::Vertex => {
+                    ShaderKind::Vertex(Shader::from_raw_parts(symbols::Vertex, name, status))
+                }
+                enums::ShaderKind::TessControl => ShaderKind::TessControl(Shader::from_raw_parts(
+                    symbols::TessControl,
+                    name,
+                    status,
+                )),
+                enums::ShaderKind::TessEvaluation => ShaderKind::TessEvaluation(
+                    Shader::from_raw_parts(symbols::TessEvaluation, name, status),
+                ),
+                enums::ShaderKind::Geometry => {
+                    ShaderKind::Geometry(Shader::from_raw_parts(symbols::Geometry, name, status))
+                }
+                enums::ShaderKind::Fragment => {
+                    ShaderKind::Fragment(Shader::from_raw_parts(symbols::Fragment, name, status))
+                }
+            }
+        }
+    }
+}
+
 impl<K, S: traits::CompileStatus> Shader<K, S> {
     #[inline]
-    pub fn into_compiled(
+    pub fn determine_status(
         self,
-    ) -> Result<Shader<K, symbols::Compiled>, Shader<K, symbols::Uncompiled>> {
+    ) -> CompileStatus<K> {
         unsafe {
             let (kind, name, status) = self.into_raw_parts();
             match status.into() {
                 enums::CompileStatus::Uncompiled => {
-                    Err(Shader::from_raw_parts(kind, name, symbols::Uncompiled))
+                    CompileStatus::Uncompiled(Shader::from_raw_parts(kind, name, symbols::Uncompiled))
                 }
                 enums::CompileStatus::Compiled => {
-                    Ok(Shader::from_raw_parts(kind, name, symbols::Compiled))
+                    CompileStatus::Compiled(Shader::from_raw_parts(kind, name, symbols::Compiled))
                 }
             }
         }

@@ -120,11 +120,11 @@ mod tests {
             let vs: Shader<Vertex, Uncompiled> = gl.create_shader(VERTEX_SHADER).unwrap();
             let vs: Shader<Vertex, Unknown> = gl.compile_shader_move(vs);
             let vs: Shader<Vertex, CompileStatus> = gl.check_shader_status_move(vs);
-            match vs.into_compiled() {
-                Ok(compiled) => {
+            match vs.determine_status() {
+                shader::CompileStatus::Compiled(compiled) => {
                     let _: Shader<Vertex, Compiled> = compiled;
                 }
-                Err(uncompiled) => {
+                shader::CompileStatus::Uncompiled(uncompiled) => {
                     let _: Shader<Vertex, Uncompiled> = uncompiled;
                 }
             }
