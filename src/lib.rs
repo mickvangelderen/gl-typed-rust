@@ -1,18 +1,14 @@
-// Macros first.
-#[macro_use]
-mod name;
-
 pub mod gl;
 
 pub mod enums;
 pub mod symbols;
 pub mod traits;
 
+pub mod names;
+pub use names::*;
+
 pub mod constants;
 pub use constants::*;
-
-pub mod shader;
-pub use shader::*;
 
 pub struct GlTyped {
     gl: gl::Gl,
@@ -20,86 +16,49 @@ pub struct GlTyped {
 
 impl GlTyped {
     #[inline]
-    pub unsafe fn create_shader<K: traits::ShaderKind, KO: From<K>, S: traits::UncompiledCompileStatus>(
-        &self,
-        kind: K,
-    ) -> Option<Shader<KO, S>> {
+    pub unsafe fn create_shader<K>(&self, kind: K) -> Option<ShaderName>
+    where
+        K: Into<enums::ShaderKind>,
+    {
         ShaderName::from_raw(self.gl.CreateShader(kind.into() as u32))
-            .map(|name| Shader::from_raw_parts(From::from(kind), name, S::UNCOMPILED))
     }
 
     #[inline]
-    pub unsafe fn delete_shader<K, S>(&self, shader: Shader<K, S>) {
-        let (_, name, _) = shader.into_raw_parts();
+    pub unsafe fn delete_shader(&self, name: ShaderName) {
         self.gl.DeleteShader(name.into_raw());
     }
 
-    /// Sets the shader status to [Uncompiled](enums::CompileStatus::Uncompiled).
     #[inline]
-    pub unsafe fn compile_shader<K>(&self, shader: &mut Shader<K, enums::CompileStatus>) {
-        self.gl.CompileShader(shader.name().as_u32());
-        shader.set_status(enums::CompileStatus::Uncompiled);
-    }
-
-    #[inline]
-    pub unsafe fn compile_shader_move<K, S: traits::CompileStatus>(
-        &self,
-        shader: Shader<K, S>,
-    ) -> Shader<K, symbols::Unknown> {
-        let (kind, name, _) = shader.into_raw_parts();
+    pub unsafe fn compile_shader(&self, name: &mut ShaderName) {
         self.gl.CompileShader(name.as_u32());
-        Shader::from_raw_parts(kind, name, symbols::Unknown)
-    }
-
-    /// Queries and sets the shader status.
-    #[inline]
-    pub unsafe fn check_shader_status<K>(&self, shader: &mut Shader<K, enums::CompileStatus>) {
-        let mut status = ::std::mem::uninitialized();
-        self.get_shaderiv(shader, symbols::CompileStatus, &mut status);
-        shader.set_status(status);
-    }
-
-    /// Turn compile-time unknown shader status into run-time known shader
-    /// status.
-    #[inline]
-    pub unsafe fn check_shader_status_move<K>(
-        &self,
-        shader: Shader<K, symbols::Unknown>,
-    ) -> Shader<K, enums::CompileStatus> {
-        let mut status = ::std::mem::uninitialized();
-        self.get_shaderiv(&shader, symbols::CompileStatus, &mut status);
-        let (kind, name, _) = shader.into_raw_parts();
-        Shader::from_raw_parts(kind, name, status)
     }
 
     #[inline]
     pub unsafe fn get_shaderiv<
-        K,
-        S,
-        P: traits::GetShaderivParam,
+        P: Into<enums::GetShaderivParam>,
         V: traits::GetShaderivValue<Param = P>,
     >(
         &self,
-        shader: &Shader<K, S>,
+        name: &ShaderName,
         pname: P,
         pvalue: &mut V,
     ) {
         self.gl.GetShaderiv(
-            shader.name().as_u32(),
+            name.as_u32(),
             pname.into() as u32,
-            pvalue.as_i32_mut() as *mut i32,
+            pvalue.as_mut(),
         );
     }
 
     #[inline]
     pub unsafe fn get_shader_info_log<K, S>(
         &self,
-        shader: &Shader<K, S>,
+        name: &ShaderName,
         length: &mut i32,
         buffer: &mut [u8],
     ) {
         self.gl.GetShaderInfoLog(
-            shader.name().as_u32(),
+            name.as_u32(),
             buffer.len() as i32,
             length,
             buffer.as_mut_ptr() as *mut i8,
@@ -113,40 +72,22 @@ mod tests {
 
     #[test]
     fn compile_time_shader_fun() {
-        use enums::CompileStatus;
-        use symbols::{Compiled, Uncompiled, Unknown, Vertex};
         unsafe {
             let gl: GlTyped = std::mem::zeroed();
-            let vs: Shader<Vertex, Uncompiled> = gl.create_shader(VERTEX_SHADER).unwrap();
-            let vs: Shader<Vertex, Unknown> = gl.compile_shader_move(vs);
-            let vs: Shader<Vertex, CompileStatus> = gl.check_shader_status_move(vs);
-            match vs.determine_status() {
-                shader::CompileStatus::Compiled(compiled) => {
-                    let _: Shader<Vertex, Compiled> = compiled;
-                }
-                shader::CompileStatus::Uncompiled(uncompiled) => {
-                    let _: Shader<Vertex, Uncompiled> = uncompiled;
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn run_time_shader_fun() {
-        use enums::{CompileStatus, ShaderKind};
-        unsafe {
-            let gl: GlTyped = std::mem::zeroed();
-            let runtime_kind = ShaderKind::Vertex;
-            let mut vs: Shader<ShaderKind, CompileStatus> = gl.create_shader(runtime_kind).unwrap();
+            let mut vs: ShaderName = gl.create_shader(VERTEX_SHADER).unwrap();
             gl.compile_shader(&mut vs);
-            gl.check_shader_status(&mut vs);
+            let mut status: enums::RawShaderCompileStatus = std::mem::uninitialized();
+            gl.get_shaderiv(&vs, COMPILE_STATUS, &mut status);
+            if status != enums::ShaderCompileStatus::Compiled.into() {
+                panic!("Boom");
+            }
         }
     }
 
     #[test]
     fn unknown_shader_type() {
         use std::mem;
-        use symbols::{Unknown, Uncompiled};
+        use symbols::{Uncompiled, Unknown};
 
         unsafe {
             let gl: GlTyped = std::mem::zeroed();

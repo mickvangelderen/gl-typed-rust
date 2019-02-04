@@ -1,47 +1,36 @@
 use crate::enums;
 use crate::symbols;
 
-pub trait ShaderKind: Into<enums::ShaderKind> + Copy + Sized {}
-impl<T: Into<enums::ShaderKind> + Copy + Sized> ShaderKind for T {}
-
-pub trait CompileStatus: Into<enums::CompileStatus> + Copy + Sized {}
-impl<T: Into<enums::CompileStatus> + Copy + Sized> CompileStatus for T {}
-
-pub trait UncompiledCompileStatus: CompileStatus {
-    const UNCOMPILED: Self;
+pub trait FromUnchecked<T>: From<T> {
+    unsafe fn from_unchecked(v: T) -> Self;
 }
 
-impl UncompiledCompileStatus for enums::CompileStatus {
-    const UNCOMPILED: Self = enums::CompileStatus::Uncompiled;
+pub trait IntoUnchecked<T>: Into<T> {
+    unsafe fn into_unchecked(self) -> T;
 }
 
-impl UncompiledCompileStatus for symbols::Uncompiled {
-    const UNCOMPILED: Self = symbols::Uncompiled;
-}
-
-pub trait GetShaderivParam: Into<enums::GetShaderivParam> + Copy + Sized {}
-impl<T: Into<enums::GetShaderivParam> + Copy + Sized> GetShaderivParam for T {}
-
-pub trait GetShaderivValue: Sized {
-    type Param: GetShaderivParam;
-
-    fn as_i32_mut(&mut self) -> &mut i32;
-}
-
-impl GetShaderivValue for i32 {
-    type Param = enums::GetShaderivParam;
-
-    fn as_i32_mut(&mut self) -> &mut i32 {
-        self
+impl<T> FromUnchecked<T> for T {
+    unsafe fn from_unchecked(v: Self) -> Self {
+        v
     }
 }
 
-impl GetShaderivValue for enums::CompileStatus {
+impl<F, T> IntoUnchecked<F> for T
+where
+    F: FromUnchecked<T>,
+{
+    unsafe fn into_unchecked(self) -> F {
+        FromUnchecked::from_unchecked(self)
+    }
+}
+
+pub unsafe trait GetShaderivValue: AsMut<i32> {
+    type Param: Into<enums::GetShaderivParam>;
+}
+
+unsafe impl GetShaderivValue for enums::RawShaderCompileStatus {
     type Param = symbols::CompileStatus;
-
-    fn as_i32_mut(&mut self) -> &mut i32 {
-        unsafe { &mut *(self as *mut enums::CompileStatus as *mut i32) }
-    }
 }
 
 // TODO(mickvangelderen): Implement remaining GetShaderivValue types.
+

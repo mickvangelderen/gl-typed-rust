@@ -3,10 +3,48 @@
 //! through the symbols.
 
 use crate::gl;
+use crate::traits::FromUnchecked;
+
+macro_rules! impl_from_transmute {
+    ($f:path, $t:path) => {
+        impl From<$f> for $t {
+            fn from(value: $f) -> Self {
+                unsafe { std::mem::transmute(value) }
+            }
+        }
+    };
+}
+
+macro_rules! impl_transparent_fns {
+    ($outer:ident, $inner:ident) => {
+        impl AsRef<$inner> for $outer {
+            fn as_ref(&self) -> &$inner {
+                unsafe { &*(self as *const Self as *const $inner) }
+            }
+        }
+
+        impl AsMut<$inner> for $outer {
+            fn as_mut(&mut self) -> &mut $inner {
+                unsafe { &mut *(self as *mut Self as *mut $inner) }
+            }
+        }
+
+        impl_from_transmute!($inner, $outer);
+        impl_from_transmute!($outer, $inner);
+    }
+}
 
 macro_rules! impl_enums_u32 {
-    ($($(#[$em:meta])* pub enum $e:ident { $($v:ident = $g:path,)* })*) => {
+    ($($(#[$rm:meta])* $r:ident $(#[$em:meta])* $e:ident { $($v:ident = $g:path,)* })*) => {
         $(
+            $(#[$rm])*
+            #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[repr(transparent)]
+            pub struct $r(u32);
+
+            impl_transparent_fns!($r, u32);
+            impl_transparent_fns!($r, i32);
+
             $(#[$em])*
             #[derive(Debug, Clone, Copy, Eq, PartialEq)]
             #[repr(u32)]
@@ -16,22 +54,32 @@ macro_rules! impl_enums_u32 {
                 )*
             }
 
-            impl $e {
+            impl From<$e> for $r {
                 #[inline]
-                pub unsafe fn from_u32_unchecked(v: u32) -> Self {
-                    std::mem::transmute(v)
+                fn from(val: $e) -> Self {
+                    $r(val as u32)
                 }
             }
 
-            impl From<u32> for $e {
+            impl From<$r> for $e {
+                /// # Panics
+                /// Panics when the passed value does not correspond to any of
+                /// the known variants.
                 #[inline]
-                fn from(v: u32) -> Self {
-                    match v {
+                fn from(raw: $r) -> Self {
+                    match raw.0 {
                         $(
                             $g => $e::$v,
                         )*
-                        v => panic!("$e has no variant corresponding to {}.", v),
+                        v => panic!("No known variant corresponds to {}.", v),
                     }
+                }
+            }
+
+            impl FromUnchecked<$r> for $e {
+                #[inline]
+                unsafe fn from_unchecked(raw: $r) -> Self {
+                    std::mem::transmute(raw)
                 }
             }
 
@@ -43,13 +91,6 @@ macro_rules! impl_enums_u32 {
                     }
                 }
             )*
-
-            impl From<$e> for crate::symbols::Unknown {
-                #[inline]
-                fn from(_: $e) -> Self {
-                    crate::symbols::Unknown
-                }
-            }
         )*
     }
 }
@@ -58,8 +99,9 @@ const TRUE: u32 = gl::TRUE as u32;
 const FALSE: u32 = gl::FALSE as u32;
 
 impl_enums_u32! {
+    RawShaderKind
     /// The kind of a shader.
-    pub enum ShaderKind {
+    ShaderKind {
         Compute = gl::COMPUTE_SHADER,
         Vertex = gl::VERTEX_SHADER,
         TessControl = gl::TESS_CONTROL_SHADER,
@@ -68,14 +110,16 @@ impl_enums_u32! {
         Fragment = gl::FRAGMENT_SHADER,
     }
 
+    RawShaderCompileStatus
     /// The compile status of a shader.
-    pub enum CompileStatus {
+    ShaderCompileStatus {
         Uncompiled = FALSE,
         Compiled = TRUE,
     }
 
+    RawGetShaderivParam
     /// Allowed pname arguments to `glGetShaderiv`.
-    pub enum GetShaderivParam {
+    GetShaderivParam {
         ShaderType = gl::SHADER_TYPE,
         DeleteStatus = gl::DELETE_STATUS,
         CompileStatus = gl::COMPILE_STATUS,
