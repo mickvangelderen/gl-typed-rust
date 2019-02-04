@@ -1,49 +1,150 @@
-pub trait Array<T> {
+pub trait Array {
+    type Item;
+
     fn len(&self) -> usize;
-    fn as_ptr(&self) -> *const T;
-    fn as_mut_ptr(&mut self) -> *mut T;
-    fn as_slice(&self) -> &[T];
-    fn as_mut_slice(&mut self) -> &mut [T];
+
+    fn as_slice(&self) -> &[Self::Item];
+
+    fn as_mut_slice(&mut self) -> &mut [Self::Item];
+
+    fn as_ptr(&self) -> *const Self::Item;
+
+    fn as_mut_ptr(&mut self) -> *mut Self::Item;
 }
 
-pub trait SourceArray<'a>: Array<&'a [u8]> {
-    type RawLengthArray: Array<i32>;
-    type RawSourceArray: Array<*const u8>;
+pub trait ArrayMap<ItemOut>: Array {
+    type ArrayOut: Array<Item = ItemOut>;
+
+    fn map<F: FnMut(&Self::Item) -> ItemOut>(&self, f: F) -> Self::ArrayOut;
+}
+
+impl<T> Array for [T] {
+    type Item = T;
+
+    #[inline]
+    fn len(&self) -> usize {
+        <[T]>::len(self)
+    }
+
+    #[inline]
+    fn as_slice(&self) -> &[T] {
+        &*self
+    }
+
+    #[inline]
+    fn as_mut_slice(&mut self) -> &mut [T] {
+        &mut *self
+    }
+
+    #[inline]
+    fn as_ptr(&self) -> *const T {
+        <[T]>::as_ptr(self)
+    }
+
+    #[inline]
+    fn as_mut_ptr(&mut self) -> *mut T {
+        <[T]>::as_mut_ptr(self)
+    }
+}
+
+impl<T, U> ArrayMap<U> for [T] {
+    type ArrayOut = Vec<U>;
+
+    #[inline]
+    fn map<F: FnMut(&Self::Item) -> U>(&self, f: F) -> Self::ArrayOut {
+        self.iter().map(f).collect()
+    }
+}
+
+impl<T> Array for Vec<T>  {
+    type Item = T;
+
+    #[inline]
+    fn len(&self) -> usize {
+        Vec::len(self)
+    }
+
+    #[inline]
+    fn as_slice(&self) -> &[T] {
+        Vec::as_slice(self)
+    }
+
+    #[inline]
+    fn as_mut_slice(&mut self) -> &mut [T] {
+        Vec::as_mut_slice(self)
+    }
+
+    #[inline]
+    fn as_ptr(&self) -> *const T {
+        <[T]>::as_ptr(self)
+    }
+
+    #[inline]
+    fn as_mut_ptr(&mut self) -> *mut T {
+        <[T]>::as_mut_ptr(self)
+    }
+}
+
+impl<T, U> ArrayMap<U> for Vec<T> {
+    type ArrayOut = Vec<U>;
+
+    #[inline]
+    fn map<F: FnMut(&Self::Item) -> U>(&self, f: F) -> Self::ArrayOut {
+        self.iter().map(f).collect()
+    }
 }
 
 macro_rules! impl_array {
     ($($N:expr,)+) => {
         $(
-            impl<T> Array<T> for [T; $N] {
+            impl<T> Array for [T; $N] {
+                type Item = T;
+
                 #[inline]
                 fn len(&self) -> usize {
-                    $N
-                }
-
-                #[inline]
-                fn as_ptr(&self) -> *const T {
-                    self as *const [T; $N] as *const T
-                }
-
-                #[inline]
-                fn as_mut_ptr(&mut self) -> *mut T {
-                    self as *mut [T; $N] as *mut T
+                    <[T]>::len(self)
                 }
 
                 #[inline]
                 fn as_slice(&self) -> &[T] {
-                    &self[..]
+                    self
                 }
 
                 #[inline]
                 fn as_mut_slice(&mut self) -> &mut [T] {
-                    &mut self[..]
+                    self
+                }
+
+                #[inline]
+                fn as_ptr(&self) -> *const T {
+                    <[T]>::as_ptr(self)
+                }
+
+                #[inline]
+                fn as_mut_ptr(&mut self) -> *mut T {
+                    <[T]>::as_mut_ptr(self)
                 }
             }
 
-            impl<'a> SourceArray<'a> for [&'a [u8]; $N] {
-                type RawLengthArray = [i32; $N];
-                type RawSourceArray = [*const u8; $N];
+            impl<T, U> ArrayMap<U> for [T; $N] {
+                type ArrayOut = [U; $N];
+
+                #[inline]
+                fn map<F: FnMut(&Self::Item) -> U>(&self, mut f: F) -> Self::ArrayOut {
+                    use std::mem::{uninitialized, ManuallyDrop};
+
+                    unsafe {
+                        // We don't want to drop a partially initialized array in case of a
+                        // panic, so we wrap it in a ManuallyDrop.
+                        let mut array: ManuallyDrop<Self::ArrayOut> = ManuallyDrop::new(uninitialized());
+
+                        for i in 0..array.len() {
+                            array[i] = f(&self[i])
+                        }
+
+                        ManuallyDrop::into_inner(array)
+                    }
+                }
             }
         )+
     };

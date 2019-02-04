@@ -1,5 +1,8 @@
 pub mod gl;
 
+pub mod array;
+pub use array::*;
+
 pub mod enums;
 pub mod symbols;
 pub mod traits;
@@ -15,6 +18,16 @@ pub struct GlTyped {
 }
 
 impl GlTyped {
+    #[inline]
+    pub unsafe fn load_with<F>(f: F) -> Self
+    where
+        F: FnMut(&'static str) -> *const std::os::raw::c_void,
+    {
+        GlTyped {
+            gl: gl::Gl::load_with(f),
+        }
+    }
+
     #[inline]
     pub unsafe fn create_shader<K>(&self, kind: K) -> Option<ShaderName>
     where
@@ -43,11 +56,28 @@ impl GlTyped {
         pname: P,
         pvalue: &mut V,
     ) {
-        self.gl.GetShaderiv(
-            name.as_u32(),
-            pname.into() as u32,
-            pvalue.as_mut(),
-        );
+        self.gl
+            .GetShaderiv(name.as_u32(), pname.into() as u32, pvalue.as_mut());
+    }
+
+    #[inline]
+    pub unsafe fn shader_source<
+        's,
+        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32>,
+    >(
+        &self,
+        shader: &mut ShaderName,
+        sources: &A,
+    ) {
+        let pointers = sources.map(|s| s.as_ptr() as *const i8);
+        let lengths = sources.map(|s| s.len() as i32);
+        assert_eq!(pointers.len(), lengths.len());
+        self.gl.ShaderSource(
+            shader.as_u32(),
+            pointers.len() as i32,
+            pointers.as_ptr(),
+            lengths.as_ptr(),
+        )
     }
 
     #[inline]
@@ -71,28 +101,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn compile_time_shader_fun() {
+    fn create_a_shader() {
         unsafe {
             let gl: GlTyped = std::mem::zeroed();
             let mut vs: ShaderName = gl.create_shader(VERTEX_SHADER).unwrap();
+            let src = String::from("#version 420\n");
+            gl.shader_source(&mut vs, &[src.as_bytes()]);
             gl.compile_shader(&mut vs);
             let mut status: enums::RawShaderCompileStatus = std::mem::uninitialized();
             gl.get_shaderiv(&vs, COMPILE_STATUS, &mut status);
             if status != enums::ShaderCompileStatus::Compiled.into() {
                 panic!("Boom");
             }
-        }
-    }
-
-    #[test]
-    fn unknown_shader_type() {
-        use std::mem;
-        use symbols::{Uncompiled, Unknown};
-
-        unsafe {
-            let gl: GlTyped = std::mem::zeroed();
-            let s: Shader<Unknown, Uncompiled> = gl.create_shader(VERTEX_SHADER).unwrap();
-            assert_eq!(mem::size_of_val(&s), 4);
         }
     }
 }
