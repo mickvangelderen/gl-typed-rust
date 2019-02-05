@@ -16,7 +16,14 @@ zero-cost constraint.
 I think it is impossible to prevent all OpenGL errors from occurring (like glium
 promises) under the zero-cost constraint.
 
-## Nuances
+## Design
+
+Designing a good API is hard. You have to balance ergonomics, flexibility and
+performance. You're trying to guess what would be useful to potential consumers
+of your library and abstract over potentially multiple, possibly yet unwritten
+implementations.
+
+### Tracking state
 
 We don't try to prove that OpenGL is in the right state. Doing so for any
 non-trivial program will incur some overhead, violating the zero-cost
@@ -38,3 +45,71 @@ that doesn't exist in OpenGL.
 Another strategy is to simply query the status in `compile_shader`. Doing so
 violates the zero-cost constraint because it does more than a regular
 `glCompileShader` call. However, when would you ever want to
+
+### Object relations
+
+Do you see the problem with this example?
+
+```rust
+// Assume create_context creates an OpenGL context.
+let gl1 = create_context();
+let gl2 = create_context();
+let n: ShaderName = gl1.create_shader(VERTEX_SHADER);
+let mut s = Default::default();
+gl2.get_shaderiv(&n, COMPILE_STATUS, &mut s);
+```
+
+We cannot prove an object name is valid without somehow storing the context it
+was created from. This can be done at compile-time by creating a different type
+for every context. 
+
+```rust
+let gl1 = create_context!(Gl1);
+let gl2 = create_context!(Gl2);
+let n: ShaderName<Gl1> = gl1.create_shader(VERTEX_SHADER);
+let mut s = Default::default();
+gl2.get_shaderiv(&n, COMPILE_STATUS, &mut s); // Compile error: Expected &ShaderName<Gl2>, got &ShaderName<Gl1>.
+```
+
+This doesn't work when we don't have an upper limit on the number of contexts we
+might need. To ensure we dont' use an object name from a different context, we
+must store something that uniquely identifies the context (like a reference),
+and use it directly or check for equality with the used context.
+
+```rust
+struct ShaderName {
+    gl: Rc<Gl>,
+    name: NonZeroU32,
+}
+```
+
+Obviously, this comes with a cost. This doesn't really matter much since it is
+likely you'll only store a few shader names, if any. However, the same
+relationship holds for all object names, like buffers, programs. The relation
+also exists between programs and uniform locations.
+
+It seems pretty silly right? What can we do? Well, we can try to limit the
+possibility of making such errors by keeping related objects close together.
+
+```rust
+struct Program {
+    name: ProgramName,
+    // ...
+    time_loc: UniformLocation<f32>,
+    ambient_loc: UniformLocation<f32>,
+}
+```
+
+With this setup it is still possible to do stupid things.
+
+```rust
+// Assume p1 and p2 are programs.
+gl.uniform_1f(&p1, &p2.some_loc_not_from_p1, 0.5f);
+```
+
+In the end, if you write stupid code, it is going to do stupid things. We just
+want to make it hard to do stupid things. Making it impossible to do stupid
+things comes at a cost, which can be argued is small, but these small things add
+up in a large application. I would rather have users of a library decide how
+much protection they want. They should make the trade-off between flexibility,
+correctness, speed, maintainability, etc.
