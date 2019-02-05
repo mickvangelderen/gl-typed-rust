@@ -1,26 +1,26 @@
 use crate::enums;
 use crate::symbols;
 
-pub trait FromUnchecked<T>: From<T> {
-    unsafe fn from_unchecked(v: T) -> Self;
+pub trait UncheckedFrom<T>: From<T> {
+    unsafe fn unchecked_from(v: T) -> Self;
 }
 
-pub trait IntoUnchecked<T>: Into<T> {
-    unsafe fn into_unchecked(self) -> T;
+pub trait UncheckedInto<T>: Into<T> {
+    unsafe fn unchecked_into(self) -> T;
 }
 
-impl<T> FromUnchecked<T> for T {
-    unsafe fn from_unchecked(v: Self) -> Self {
+impl<T> UncheckedFrom<T> for T {
+    unsafe fn unchecked_from(v: Self) -> Self {
         v
     }
 }
 
-impl<F, T> IntoUnchecked<F> for T
+impl<F, T> UncheckedInto<F> for T
 where
-    F: FromUnchecked<T>,
+    F: UncheckedFrom<T>,
 {
-    unsafe fn into_unchecked(self) -> F {
-        FromUnchecked::from_unchecked(self)
+    unsafe fn unchecked_into(self) -> F {
+        UncheckedFrom::unchecked_from(self)
     }
 }
 
@@ -33,4 +33,3 @@ unsafe impl GetShaderivValue for enums::RawShaderCompileStatus {
 }
 
 // TODO(mickvangelderen): Implement remaining GetShaderivValue types.
-

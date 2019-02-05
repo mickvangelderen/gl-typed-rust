@@ -3,7 +3,7 @@
 //! through the symbols.
 
 use crate::gl;
-use crate::traits::FromUnchecked;
+use crate::traits::UncheckedFrom;
 
 macro_rules! impl_from_transmute {
     ($f:path, $t:path) => {
@@ -76,9 +76,9 @@ macro_rules! impl_enums_u32 {
                 }
             }
 
-            impl FromUnchecked<$r> for $e {
+            impl UncheckedFrom<$r> for $e {
                 #[inline]
-                unsafe fn from_unchecked(raw: $r) -> Self {
+                unsafe fn unchecked_from(raw: $r) -> Self {
                     std::mem::transmute(raw)
                 }
             }
