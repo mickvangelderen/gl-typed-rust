@@ -95,24 +95,3 @@ impl GlTyped {
         );
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn create_a_shader() {
-        unsafe {
-            let gl: GlTyped = std::mem::zeroed();
-            let mut vs: ShaderName = gl.create_shader(VERTEX_SHADER).unwrap();
-            let src = String::from("#version 420\n");
-            gl.shader_source(&mut vs, &[src.as_bytes()]);
-            gl.compile_shader(&mut vs);
-            let mut status: enums::RawShaderCompileStatus = std::mem::uninitialized();
-            gl.get_shaderiv(&vs, COMPILE_STATUS, &mut status);
-            if status != enums::ShaderCompileStatus::Compiled.into() {
-                panic!("Boom");
-            }
-        }
-    }
-}
