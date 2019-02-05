@@ -3,7 +3,6 @@
 //! through the symbols.
 
 use crate::gl;
-use crate::traits::UncheckedFrom;
 
 macro_rules! impl_from_transmute {
     ($f:path, $t:path) => {
@@ -54,6 +53,17 @@ macro_rules! impl_enums_u32 {
                 )*
             }
 
+            impl $e {
+                /// # Warning
+                /// The given value must have a corresponding value, UB
+                /// otherwise. Consider using [$e::from] or compare the value in
+                /// the raw domain: `raw == $r::from($e::<SomeVariant>)`.
+                #[inline]
+                pub unsafe fn from_unchecked(raw: $r) -> Self {
+                    std::mem::transmute(raw)
+                }
+            }
+
             impl From<$e> for $r {
                 #[inline]
                 fn from(val: $e) -> Self {
@@ -73,13 +83,6 @@ macro_rules! impl_enums_u32 {
                         )*
                         v => panic!("No known variant corresponds to {}.", v),
                     }
-                }
-            }
-
-            impl UncheckedFrom<$r> for $e {
-                #[inline]
-                unsafe fn unchecked_from(raw: $r) -> Self {
-                    std::mem::transmute(raw)
                 }
             }
 
