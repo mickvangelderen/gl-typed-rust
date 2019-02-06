@@ -131,18 +131,57 @@ macro_rules! impl_array {
 
                 #[inline]
                 fn map<F: FnMut(&Self::Item) -> U>(&self, mut f: F) -> Self::ArrayOut {
-                    use std::mem::{uninitialized, ManuallyDrop};
+                    use std::mem;
+                    use std::ptr;
 
                     unsafe {
-                        // We don't want to drop a partially initialized array in case of a
-                        // panic, so we wrap it in a ManuallyDrop.
-                        let mut array: ManuallyDrop<Self::ArrayOut> = ManuallyDrop::new(uninitialized());
-
-                        for i in 0..array.len() {
-                            array[i] = f(&self[i])
+                        struct Initializer<A: Array> {
+                            index: usize,
+                            array: mem::ManuallyDrop<A>,
                         }
 
-                        ManuallyDrop::into_inner(array)
+                        impl<A: Array> Initializer<A> {
+                            #[inline]
+                            pub fn push(&mut self, item: A::Item) {
+                                assert!(self.index < self.array.len());
+                                (self.array.as_mut_slice())[self.index] = item;
+                                self.index += 1;
+                            }
+
+                            #[inline]
+                            pub fn finish(self) -> A {
+                                assert_eq!(self.index, self.array.len());
+                                unsafe {
+                                    let mut initializer = mem::ManuallyDrop::new(self);
+                                    let array = mem::replace(&mut initializer.array, mem::uninitialized());
+                                    mem::ManuallyDrop::into_inner(array)
+                                }
+                            }
+                        }
+
+                        impl<A: Array> Drop for Initializer<A> {
+                            #[inline]
+                            fn drop(&mut self) {
+                                // Drop all values initialized so far.
+                                unsafe {
+                                    let s = self.array.as_mut_slice();
+                                    for i in 0..self.index {
+                                        ptr::drop_in_place(&mut s[i])
+                                    }
+                                }
+                            }
+                        }
+
+                        let mut init = Initializer::<Self::ArrayOut> {
+                            index: 0,
+                            array: mem::uninitialized(),
+                        };
+
+                        for item in self {
+                            init.push(f(item))
+                        }
+
+                        Initializer::finish(init)
                     }
                 }
             }
