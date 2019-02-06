@@ -57,7 +57,22 @@ pub unsafe trait GetShaderivParam: Into<enums::GetShaderivParam> {
     type Value: Transmute<i32>;
 }
 
-// TODO(mickvangelderen): Implement remaining GetShaderivValue types.
 unsafe impl GetShaderivParam for symbols::CompileStatus {
     type Value = enums::RawShaderCompileStatus;
+}
+
+unsafe impl GetShaderivParam for symbols::InfoLogLength {
+    type Value = i32;
+}
+
+pub unsafe trait GetProgramivParam: Into<enums::GetProgramivParam> {
+    type Value: Transmute<i32>;
+}
+
+unsafe impl GetProgramivParam for symbols::LinkStatus {
+    type Value = enums::RawProgramLinkStatus;
+}
+
+unsafe impl GetProgramivParam for symbols::InfoLogLength {
+    type Value = i32;
 }

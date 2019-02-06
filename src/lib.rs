@@ -92,4 +92,56 @@ impl GlTyped {
             buffer.as_mut_ptr() as *mut i8,
         );
     }
+
+    #[inline]
+    pub unsafe fn create_program(&self) -> Option<ProgramName> {
+        ProgramName::from_raw(self.gl.CreateProgram())
+    }
+
+    #[inline]
+    pub unsafe fn delete_program(&self, name: ProgramName) {
+        self.gl.DeleteProgram(name.into_raw());
+    }
+
+    #[inline]
+    pub unsafe fn use_program(&self, program: &ProgramName) {
+        self.gl.UseProgram(program.as_u32());
+    }
+
+    #[inline]
+    pub unsafe fn attach_shader(&self, program: &mut ProgramName, shader: &ShaderName) {
+        self.gl.AttachShader(program.as_u32(), shader.as_u32());
+    }
+
+    #[inline]
+    pub unsafe fn link_program(&self, program: &mut ProgramName) {
+        self.gl.LinkProgram(program.as_u32());
+    }
+
+    #[inline]
+    pub unsafe fn get_programiv<P>(&self, name: &ProgramName, pname: P, pvalue: &mut P::Value)
+    where
+        P: traits::GetProgramivParam,
+    {
+        self.gl.GetProgramiv(
+            name.as_u32(),
+            pname.into() as u32,
+            traits::Transmute::as_mut(pvalue),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn get_program_info_log(
+        &self,
+        name: &ProgramName,
+        length: &mut i32,
+        buffer: &mut [u8],
+    ) {
+        self.gl.GetProgramInfoLog(
+            name.as_u32(),
+            buffer.len() as i32,
+            length,
+            buffer.as_mut_ptr() as *mut i8,
+        );
+    }
 }

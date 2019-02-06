@@ -45,4 +45,5 @@ macro_rules! impl_names {
 impl_names!(
     /// The name of a shader, without the kind.
     ShaderName,
+    ProgramName,
 );
