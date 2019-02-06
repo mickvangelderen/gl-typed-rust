@@ -5,6 +5,12 @@ edition = "2018"
 name = "gl-typed"
 version = "0.1.0"
 
+[profile.dev]
+opt-level = 3
+
+[profile.test]
+opt-level = 3
+
 [features]
 default = []
 
