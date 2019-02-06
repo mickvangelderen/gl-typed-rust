@@ -113,3 +113,90 @@ things comes at a cost, which can be argued is small, but these small things add
 up in a large application. I would rather have users of a library decide how
 much protection they want. They should make the trade-off between flexibility,
 correctness, speed, maintainability, etc.
+
+### Abstracting over static and dynamic arrays
+
+Should use the `array-generics` and `arrayvec` crates but it is hard to use them
+well if you don't know what you are doing. Therefore I implemented similar
+functionality myself. The implementations are not very solid but seem to work.
+At least I have an idea of the difficulties now. As a bonus I took a look at the
+assembly to see if it is worth doing at all.
+
+```rust
+impl GlTyped {
+    // ...
+
+    pub unsafe fn asm_shader_source<'a>(&self, name: &mut ShaderName, sources: &[&'a [u8]; 4]) {
+        self.shader_source(name, sources);
+    }
+
+    pub unsafe fn asm_shader_source_slice<'a>(&self, name: &mut ShaderName, sources: &[&'a [u8]]) {
+        self.shader_source(name, sources);
+    }
+}
+```
+
+Then I installed some utilities to make it easy to view the asm and count the lines of code.
+
+```sh
+install cargo-asm
+install tokei
+```
+
+```sh
+cargo asm gl_typed::GlTyped::asm_shader_source > array.s
+cargo asm gl_typed::GlTyped::asm_shader_source_slice > slice.s
+tokei -f *.s
+--------------------------------------------------------------------------------
+ Language             Files        Lines         Code     Comments       Blanks
+--------------------------------------------------------------------------------
+ Assembly                 2          278          278            0            0
+--------------------------------------------------------------------------------
+ array.s                              30           30            0            0
+ slice.s                             248          248            0            0
+--------------------------------------------------------------------------------
+ Total                    2          278          278            0            0
+--------------------------------------------------------------------------------
+```
+
+Here is the assembly for the `[&[u8]; 4]` version:
+
+```asm
+gl_typed::GlTyped::asm_shader_source:
+ push    rbp
+ mov     rbp, rsp
+ and     rsp, -32
+ sub     rsp, 96
+ mov     r8, rdi
+ mov     edi, dword, ptr, [rsi]
+ movsd   xmm0, qword, ptr, [rdx, +, 16]
+ movsd   xmm1, qword, ptr, [rdx]
+ movlhps xmm1, xmm0
+ movsd   xmm0, qword, ptr, [rdx, +, 48]
+ movsd   xmm2, qword, ptr, [rdx, +, 32]
+ movlhps xmm2, xmm0
+ movaps  xmmword, ptr, [rsp, +, 48], xmm2
+ movaps  xmmword, ptr, [rsp, +, 32], xmm1
+ mov     ecx, dword, ptr, [rdx, +, 8]
+ mov     esi, dword, ptr, [rdx, +, 24]
+ mov     eax, dword, ptr, [rdx, +, 40]
+ mov     edx, dword, ptr, [rdx, +, 56]
+ mov     dword, ptr, [rsp, +, 16], ecx
+ mov     dword, ptr, [rsp, +, 20], esi
+ mov     dword, ptr, [rsp, +, 24], eax
+ mov     dword, ptr, [rsp, +, 28], edx
+ lea     rdx, [rsp, +, 32]
+ lea     rcx, [rsp, +, 16]
+ mov     esi, 4
+ call    qword, ptr, [r8, +, 7712]
+ mov     rsp, rbp
+ pop     rbp
+ ret
+```
+
+Even with all the code to deal with types that might drop, functions that might
+panic, and assertions all over the place the code can compile down to a
+relatively small number of instructions. I'm not proficient in asm but it looks
+like the byte slices are effectively split pointers and lengths. The loop is
+unrolled, there seems to be some simd instructions and there are no branches at
+all.
