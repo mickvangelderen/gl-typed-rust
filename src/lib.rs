@@ -63,7 +63,7 @@ impl GlTyped {
     #[inline]
     pub unsafe fn shader_source<
         's,
-        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32>,
+        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32> + ?Sized,
     >(
         &self,
         shader: &mut ShaderName,
