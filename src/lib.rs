@@ -47,17 +47,15 @@ impl GlTyped {
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv<
-        P: Into<enums::GetShaderivParam>,
-        V: traits::GetShaderivValue<Param = P>,
-    >(
-        &self,
-        name: &ShaderName,
-        pname: P,
-        pvalue: &mut V,
-    ) {
-        self.gl
-            .GetShaderiv(name.as_u32(), pname.into() as u32, pvalue.as_mut());
+    pub unsafe fn get_shaderiv<P>(&self, name: &ShaderName, pname: P, pvalue: &mut P::Value)
+    where
+        P: traits::GetShaderivParam,
+    {
+        self.gl.GetShaderiv(
+            name.as_u32(),
+            pname.into() as u32,
+            traits::Transmute::as_mut(pvalue),
+        );
     }
 
     #[inline]

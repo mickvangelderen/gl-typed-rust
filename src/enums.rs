@@ -3,35 +3,7 @@
 //! through the symbols.
 
 use crate::gl;
-
-macro_rules! impl_from_transmute {
-    ($f:path, $t:path) => {
-        impl From<$f> for $t {
-            fn from(value: $f) -> Self {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
-    };
-}
-
-macro_rules! impl_transparent_fns {
-    ($outer:ident, $inner:ident) => {
-        impl AsRef<$inner> for $outer {
-            fn as_ref(&self) -> &$inner {
-                unsafe { &*(self as *const Self as *const $inner) }
-            }
-        }
-
-        impl AsMut<$inner> for $outer {
-            fn as_mut(&mut self) -> &mut $inner {
-                unsafe { &mut *(self as *mut Self as *mut $inner) }
-            }
-        }
-
-        impl_from_transmute!($inner, $outer);
-        impl_from_transmute!($outer, $inner);
-    }
-}
+use crate::traits;
 
 macro_rules! impl_enums_u32 {
     ($($(#[$rm:meta])* $r:ident $(#[$em:meta])* $e:ident { $($v:ident = $g:path,)* })*) => {
@@ -41,8 +13,8 @@ macro_rules! impl_enums_u32 {
             #[repr(transparent)]
             pub struct $r(u32);
 
-            impl_transparent_fns!($r, u32);
-            impl_transparent_fns!($r, i32);
+            unsafe impl traits::TransmuteMarker<u32> for $r {}
+            unsafe impl traits::TransmuteMarker<i32> for $r {}
 
             $(#[$em])*
             #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -121,7 +93,7 @@ impl_enums_u32! {
     }
 
     RawGetShaderivParam
-    /// Allowed pname arguments to `glGetShaderiv`.
+    /// Allowed values for the pname arguments of `glGetShaderiv`.
     GetShaderivParam {
         ShaderType = gl::SHADER_TYPE,
         DeleteStatus = gl::DELETE_STATUS,
