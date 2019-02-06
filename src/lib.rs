@@ -81,7 +81,7 @@ impl GlTyped {
     }
 
     #[inline]
-    pub unsafe fn get_shader_info_log<K, S>(
+    pub unsafe fn get_shader_info_log(
         &self,
         name: &ShaderName,
         length: &mut i32,
