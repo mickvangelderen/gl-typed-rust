@@ -44,6 +44,29 @@ macro_rules! impl_names {
 
 impl_names!(
     /// The name of a shader, without the kind.
-    ShaderName,
+    BufferName,
+    FramebufferName,
     ProgramName,
+    ShaderName,
+    TextureName,
 );
+
+pub struct DefaultFramebufferName;
+
+pub trait Framebuffer {
+    fn as_u32(&self) -> u32;
+}
+
+impl Framebuffer for FramebufferName {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        FramebufferName::as_u32(self)
+    }
+}
+
+impl Framebuffer for DefaultFramebufferName {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        0
+    }
+}
