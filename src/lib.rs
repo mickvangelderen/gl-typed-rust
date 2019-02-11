@@ -13,6 +13,9 @@ pub use names::*;
 pub mod constants;
 pub use constants::*;
 
+use std::ffi::CStr;
+use std::os::raw::*;
+
 pub struct GlTyped {
     gl: gl::Gl,
 }
@@ -26,6 +29,20 @@ impl GlTyped {
         GlTyped {
             gl: gl::Gl::load_with(f),
         }
+    }
+
+    #[inline]
+    pub unsafe fn get_string<P>(&self, name: P) -> &'static str
+    where
+        P: Into<enums::GetStringParam>,
+    {
+        // NOTE(ZERO): We have to count the string length at some point. Do
+        // it here for ergonomics.
+        // NOTE(SAFETY): Specification says the returned string must be a UTF8
+        // encoded, null-terminated static string.
+        std::str::from_utf8_unchecked(
+            CStr::from_ptr(self.gl.GetString(name.into() as u32) as *const c_char).to_bytes(),
+        )
     }
 
     #[inline]

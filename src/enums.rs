@@ -139,4 +139,14 @@ impl_enums_u32! {
         TransformFeedbackVaryings = gl::TRANSFORM_FEEDBACK_VARYINGS,
         ValidateStatus = gl::VALIDATE_STATUS,
     }
+
+    // FIXME: Probably never used.
+    RawGetStringParam
+    /// Allowed values for the pname argument of `glGetString`.
+    GetStringParam {
+        Renderer = gl::RENDERER,
+        Vendor = gl::VENDOR,
+        Version = gl::VERSION,
+        ShadingLanguageVersion = gl::SHADING_LANGUAGE_VERSION,
+    }
 }

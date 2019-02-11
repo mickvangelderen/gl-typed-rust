@@ -52,8 +52,10 @@ impl_symbols!(
     Linked,
     ProgramBinaryRetrievableHint,
     ProgramSeparable,
+    Renderer,
     ShaderSourceLength,
     ShaderType,
+    ShadingLanguageVersion,
     TessControl,
     TessControlOutputVertices,
     TessEvaluation,
@@ -67,5 +69,7 @@ impl_symbols!(
     Uncompiled,
     Unlinked,
     ValidateStatus,
+    Vendor,
+    Version,
     Vertex,
 );
