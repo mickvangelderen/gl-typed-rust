@@ -1,5 +1,7 @@
 pub mod gl;
 
+pub mod num;
+
 pub mod array;
 pub use array::*;
 
@@ -9,6 +11,9 @@ pub mod traits;
 
 pub mod names;
 pub use names::*;
+
+pub mod locations;
+pub use locations::*;
 
 #[rustfmt::skip]
 pub mod constants;
@@ -161,5 +166,29 @@ impl Gl {
             length,
             buffer.as_mut_ptr() as *mut i8,
         );
+    }
+
+    #[inline]
+    pub unsafe fn get_attrib_location(
+        &self,
+        program_name: &ProgramName,
+        attrib_name: &CStr,
+    ) -> Option<AttributeLocation> {
+        AttributeLocation::from_raw(
+            self.gl
+                .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr()),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn get_uniform_location<T>(
+        &self,
+        program_name: &ProgramName,
+        uniform_name: &CStr,
+    ) -> Option<UniformLocation<T>> {
+        UniformLocation::from_raw(
+            self.gl
+                .GetUniformLocation(program_name.as_u32(), uniform_name.as_ptr()),
+        )
     }
 }
