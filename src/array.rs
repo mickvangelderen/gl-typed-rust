@@ -1,6 +1,8 @@
 pub trait Array {
     type Item;
 
+    fn is_empty(&self) -> bool;
+
     fn len(&self) -> usize;
 
     fn as_slice(&self) -> &[Self::Item];
@@ -20,6 +22,11 @@ pub trait ArrayMap<ItemOut>: Array {
 
 impl<T> Array for [T] {
     type Item = T;
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     #[inline]
     fn len(&self) -> usize {
@@ -58,6 +65,11 @@ impl<T, U> ArrayMap<U> for [T] {
 
 impl<T> Array for Vec<T>  {
     type Item = T;
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     #[inline]
     fn len(&self) -> usize {
@@ -99,6 +111,11 @@ macro_rules! impl_array {
         $(
             impl<T> Array for [T; $N] {
                 type Item = T;
+
+                #[inline]
+                fn is_empty(&self) -> bool {
+                    self.len() == 0
+                }
 
                 #[inline]
                 fn len(&self) -> usize {
