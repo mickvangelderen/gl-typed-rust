@@ -10,6 +10,7 @@ pub mod traits;
 pub mod names;
 pub use names::*;
 
+#[rustfmt::skip]
 pub mod constants;
 pub use constants::*;
 

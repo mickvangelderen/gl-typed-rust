@@ -7,8 +7,7 @@ pub const ACTIVE_ATTRIBUTES: ActiveAttributes = ActiveAttributes;
 pub const ACTIVE_ATTRIBUTE_MAX_LENGTH: ActiveAttributeMaxLength = ActiveAttributeMaxLength;
 pub const ACTIVE_UNIFORMS: ActiveUniforms = ActiveUniforms;
 pub const ACTIVE_UNIFORM_BLOCKS: ActiveUniformBlocks = ActiveUniformBlocks;
-pub const ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH: ActiveUniformBlockMaxNameLength =
-    ActiveUniformBlockMaxNameLength;
+pub const ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH: ActiveUniformBlockMaxNameLength = ActiveUniformBlockMaxNameLength;
 pub const ACTIVE_UNIFORM_MAX_LENGTH: ActiveUniformMaxLength = ActiveUniformMaxLength;
 pub const ATTACHED_SHADERS: AttachedShaders = AttachedShaders;
 pub const COMPILE_STATUS: CompileStatus = CompileStatus;
@@ -24,8 +23,7 @@ pub const GEOMETRY_SHADER_INVOCATIONS: GeometryShaderInvocations = GeometryShade
 pub const GEOMETRY_VERTICES_OUT: GeometryVerticesOut = GeometryVerticesOut;
 pub const INFO_LOG_LENGTH: InfoLogLength = InfoLogLength;
 pub const LINK_STATUS: LinkStatus = LinkStatus;
-pub const PROGRAM_BINARY_RETRIEVABLE_HINT: ProgramBinaryRetrievableHint =
-    ProgramBinaryRetrievableHint;
+pub const PROGRAM_BINARY_RETRIEVABLE_HINT: ProgramBinaryRetrievableHint = ProgramBinaryRetrievableHint;
 pub const PROGRAM_SEPARABLE: ProgramSeparable = ProgramSeparable;
 pub const RENDERER: Renderer = Renderer;
 pub const SHADER_SOURCE_LENGTH: ShaderSourceLength = ShaderSourceLength;
@@ -39,8 +37,7 @@ pub const TESS_GEN_POINT_MODE: TessGenPointMode = TessGenPointMode;
 pub const TESS_GEN_VERTEX_ORDER: TessGenVertexOrder = TessGenVertexOrder;
 pub const TRANSFORM_FEEDBACK_BUFFER_MODE: TransformFeedbackBufferMode = TransformFeedbackBufferMode;
 pub const TRANSFORM_FEEDBACK_VARYINGS: TransformFeedbackVaryings = TransformFeedbackVaryings;
-pub const TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH: TransformFeedbackVaryingMaxLength =
-    TransformFeedbackVaryingMaxLength;
+pub const TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH: TransformFeedbackVaryingMaxLength = TransformFeedbackVaryingMaxLength;
 pub const TRUE: True = True;
 pub const VALIDATE_STATUS: ValidateStatus = ValidateStatus;
 pub const VENDOR: Vendor = Vendor;

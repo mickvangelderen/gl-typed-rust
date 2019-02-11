@@ -63,7 +63,7 @@ impl<T, U> ArrayMap<U> for [T] {
     }
 }
 
-impl<T> Array for Vec<T>  {
+impl<T> Array for Vec<T> {
     type Item = T;
 
     #[inline]

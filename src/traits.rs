@@ -26,7 +26,6 @@ pub unsafe fn transmute<A, B>(a: A) -> B {
     b
 }
 
-
 impl<M, T> Transmute<T> for M
 where
     M: TransmuteMarker<T> + Sized,
