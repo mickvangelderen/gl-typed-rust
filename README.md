@@ -117,10 +117,11 @@ correctness, speed, maintainability, etc.
 ### Abstracting over static and dynamic arrays
 
 Should use the `array-generics` and `arrayvec` crates but it is hard to use them
-well if you don't know what you are doing. Therefore I implemented similar
-functionality myself. The implementations are not very solid but seem to work.
-At least I have an idea of the difficulties now. As a bonus I took a look at the
-assembly to see if it is worth doing at all.
+well if you don't know what you are doing. Therefore I wrote [traits and
+implementations](https://github.com/mickvangelderen/gl-typed-rust/blob/1e440ec4f643abca5e5ecd14d8af1665871a04f6/src/array.rs)
+to abstract over statically and dynamically sized arrays. It works well but
+might not be the best solution. As a bonus I took a look at the assembly to see
+if it is worth doing at all.
 
 ```rust
 impl GlTyped {
@@ -139,8 +140,8 @@ impl GlTyped {
 Then I installed some utilities to make it easy to view the asm and count the lines of code.
 
 ```sh
-install cargo-asm
-install tokei
+cargo install cargo-asm
+cargo install tokei
 ```
 
 ```sh
