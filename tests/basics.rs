@@ -1,10 +1,9 @@
-use gl_typed::enums::*;
 use gl_typed::*;
 
 pub struct Basics {
     pub events_loop: glutin::EventsLoop,
     pub gl_window: glutin::GlWindow,
-    pub gl: gl_typed::GlTyped,
+    pub gl: gl_typed::Gl,
 }
 
 impl Basics {
@@ -27,7 +26,7 @@ impl Basics {
         }
 
         let gl = unsafe {
-            gl_typed::GlTyped::load_with(|symbol| {
+            gl_typed::Gl::load_with(|symbol| {
                 glutin::GlContext::get_proc_address(&gl_window, symbol) as *const std::ffi::c_void
             })
         };
@@ -40,7 +39,7 @@ impl Basics {
     }
 }
 
-unsafe fn get_shader_info_log(gl: &GlTyped, name: &ShaderName) -> String {
+unsafe fn get_shader_info_log(gl: &Gl, name: &ShaderName) -> String {
     let buffer = {
         let capacity = {
             let mut capacity: i32 = std::mem::uninitialized();
