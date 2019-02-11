@@ -17,17 +17,17 @@ pub use constants::*;
 use std::ffi::CStr;
 use std::os::raw::*;
 
-pub struct GlTyped {
+pub struct Gl {
     gl: gl::Gl,
 }
 
-impl GlTyped {
+impl Gl {
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
     where
         F: FnMut(&'static str) -> *const std::os::raw::c_void,
     {
-        GlTyped {
+        Gl {
             gl: gl::Gl::load_with(f),
         }
     }
