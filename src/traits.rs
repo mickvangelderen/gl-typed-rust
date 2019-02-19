@@ -26,7 +26,10 @@ impl<T> FromExt<T> for T {
     }
 }
 
-impl<Old, New> IntoExt<New> for Old where New: FromExt<Old> {
+impl<Old, New> IntoExt<New> for Old
+where
+    New: FromExt<Old>,
+{
     #[inline]
     fn into(self) -> New {
         FromExt::from(self)

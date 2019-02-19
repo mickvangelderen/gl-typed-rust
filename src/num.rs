@@ -3,8 +3,8 @@
 // https://github.com/rust-lang/rust/issues/49137#issuecomment-408202688. For
 // now we remap the sentinel value to 0 so we can use NonZeroU32.
 
-use std::num::NonZeroU32;
 use std::fmt;
+use std::num::NonZeroU32;
 
 // Taken from https://doc.rust-lang.org/beta/src/core/num/mod.rs.html#12
 macro_rules! impl_nonzero_fmt {

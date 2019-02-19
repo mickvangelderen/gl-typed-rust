@@ -29,7 +29,12 @@ fn main() {
                 );
             }
 
-            let s = e.ident.to_camel_case().replace("1d", "1D").replace("2d", "2D").replace("3d", "3D");
+            let s = e
+                .ident
+                .to_camel_case()
+                .replace("1d", "1D")
+                .replace("2d", "2D")
+                .replace("3d", "3D");
             let c = e.ident.to_shouty_snake_case();
 
             write_symbol(&mut symbols, &s);
@@ -37,7 +42,11 @@ fn main() {
         }
 
         for ident in ["Uncompiled", "Compiled", "Unlinked", "Linked"].iter() {
-            let s = ident.to_camel_case().replace("1d", "1D").replace("2d", "2D").replace("3d", "3D");
+            let s = ident
+                .to_camel_case()
+                .replace("1d", "1D")
+                .replace("2d", "2D")
+                .replace("3d", "3D");
             let c = ident.to_shouty_snake_case();
 
             write_symbol(&mut symbols, &s);
@@ -55,8 +64,7 @@ pub struct {s};
 "##,
         s = s,
     )
-        .unwrap();
-
+    .unwrap();
 }
 
 fn write_constant(w: &mut File, s: &str, c: &str) {
@@ -67,6 +75,5 @@ fn write_constant(w: &mut File, s: &str, c: &str) {
         c = c,
         s = s,
     )
-        .unwrap();
+    .unwrap();
 }
-

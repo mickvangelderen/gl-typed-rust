@@ -1,28 +1,20 @@
-pub mod gl;
-
-pub mod num;
-
 pub mod array;
-pub use array::*;
-
-pub mod types;
-pub use types::*;
-
+pub mod constants;
+pub mod gl;
+pub mod locations;
+pub mod names;
+pub mod num;
 pub mod symbols;
 pub mod traits;
+pub mod types;
 
-pub mod names;
-pub use names::*;
-
-pub mod locations;
-pub use locations::*;
-
-#[rustfmt::skip]
-pub mod constants;
+pub use array::*;
 pub use constants::*;
-
+pub use locations::*;
+pub use names::*;
 use std::ffi::CStr;
 use std::os::raw::*;
+pub use types::*;
 
 pub struct Gl {
     gl: gl::Gl,
