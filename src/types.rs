@@ -94,12 +94,12 @@ impl_enums_u32! {
     RawShaderKind
     /// The kind of a shader.
     ShaderKind {
-        Compute = gl::COMPUTE_SHADER,
-        Vertex = gl::VERTEX_SHADER,
-        TessControl = gl::TESS_CONTROL_SHADER,
-        TessEvaluation = gl::TESS_EVALUATION_SHADER,
-        Geometry = gl::GEOMETRY_SHADER,
-        Fragment = gl::FRAGMENT_SHADER,
+        ComputeShader = gl::COMPUTE_SHADER,
+        VertexShader = gl::VERTEX_SHADER,
+        TessControlShader = gl::TESS_CONTROL_SHADER,
+        TessEvaluationShader = gl::TESS_EVALUATION_SHADER,
+        GeometryShader = gl::GEOMETRY_SHADER,
+        FragmentShader = gl::FRAGMENT_SHADER,
     }
 
     RawShaderCompileStatus
