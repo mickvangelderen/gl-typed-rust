@@ -209,9 +209,10 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_texture<T>(&self, target: T, name: &TextureName)
+    pub unsafe fn bind_texture<T, N>(&self, target: T, name: &N)
     where
         T: Into<TextureTarget>,
+        N: MaybeUnbindTextureName,
     {
         self.gl.BindTexture(target.into() as u32, name.as_u32());
     }

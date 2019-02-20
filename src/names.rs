@@ -71,3 +71,23 @@ impl MaybeDefaultFramebufferName for DefaultFramebufferName {
         0
     }
 }
+
+pub struct Unbind;
+
+pub trait MaybeUnbindTextureName {
+    fn as_u32(&self) -> u32;
+}
+
+impl MaybeUnbindTextureName for TextureName {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        TextureName::as_u32(self)
+    }
+}
+
+impl MaybeUnbindTextureName for Unbind {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        0
+    }
+}
