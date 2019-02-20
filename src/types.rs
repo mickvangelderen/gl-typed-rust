@@ -272,6 +272,7 @@ impl_enums! {
     TexParameteriParam {
         DepthStencilTextureMode = gl::DEPTH_STENCIL_TEXTURE_MODE,
         TextureBaseLevel = gl::TEXTURE_BASE_LEVEL,
+        TextureMaxLevel = gl::TEXTURE_MAX_LEVEL,
         TextureMagFilter = gl::TEXTURE_MAG_FILTER,
         TextureMinFilter = gl::TEXTURE_MIN_FILTER,
         TextureWrapS = gl::TEXTURE_WRAP_S,

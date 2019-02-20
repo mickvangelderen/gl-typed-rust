@@ -44,6 +44,11 @@ unsafe impl TexParameteriParam for symbols::TextureBaseLevel {
     type Value = i32;
 }
 
+unsafe impl TexParameteriParam for symbols::TextureMaxLevel {
+    type Target = types::TextureTarget;
+    type Value = i32;
+}
+
 unsafe impl TexParameteriParam for symbols::TextureMagFilter {
     type Target = types::TextureTarget;
     type Value = types::TextureMagFilter;
