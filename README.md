@@ -201,3 +201,35 @@ relatively small number of instructions. I'm not proficient in asm but it looks
 like the byte slices are effectively split pointers and lengths. The loop is
 unrolled, there seems to be some simd instructions and there are no branches at
 all.
+
+### Do I need a transmute trait?
+
+`S: Transmute<T>` guarantees that `S` and `T` are of the same size and have the
+same valid bit patterns.
+
+Since the reverse must also be true, `T: Transmute<S>` should be implemented
+when `S: Transmute<T>`.
+
+We can have TransmuteFrom and TransmuteInto traits to allow one-directional
+transmutes (for sub types). `Transmute<T>` should then imply `TransmuteFrom<T>`
+and `TransmuteInto<T>`. When `S: TransmuteFrom<T>`, all `T` as valid `S`. Thus
+we can cast `&T` to `&S` but not `&mut T` to `&mut S`! If we cast `&mut T` to
+`&mut S` we can write any S to it, which may not be a valid T. We can however,
+with the imaginary `&wo` write only mutable reference, cast `&wo S` to `&wo T`
+since writing a `T` to an `S` is fine.
+
+| every `S` is a valid `T` | every `T` is a valid `S` | `&S as &T` | `&mut S as &mut T` | `&wo S as &wo T` |
+| --- | --- | --- | --- | --- |
+| no | yes | no | no | yes |
+| yes | no | yes | no | no |
+| yes | yes | yes | yes | yes |
+
+Probably for good reason but unfortunately, `AsMut<T>` is not implemented for
+all `T`. For example `i32` does not implement `AsMut<i32>`. That means that we
+can't have `Transmute<T>: AsMut<T>` and use the standard trait since we can't
+implement `AsMut` for `i32` ourselves. We would have to provide a wrapper type.
+
+For now the `From`, `Into`, `AsRef` and `AsMut` functions are prefixed with
+`transmute_`. Even though it's unfortunate we have to provide implementations
+for the standard traits and then again for transmute, it works.
+

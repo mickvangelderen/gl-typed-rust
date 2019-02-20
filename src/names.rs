@@ -49,22 +49,23 @@ impl_names!(
     ProgramName,
     ShaderName,
     TextureName,
+    VertexArrayName,
 );
 
 pub struct DefaultFramebufferName;
 
-pub trait Framebuffer {
+pub trait MaybeDefaultFramebufferName {
     fn as_u32(&self) -> u32;
 }
 
-impl Framebuffer for FramebufferName {
+impl MaybeDefaultFramebufferName for FramebufferName {
     #[inline]
     fn as_u32(&self) -> u32 {
         FramebufferName::as_u32(self)
     }
 }
 
-impl Framebuffer for DefaultFramebufferName {
+impl MaybeDefaultFramebufferName for DefaultFramebufferName {
     #[inline]
     fn as_u32(&self) -> u32 {
         0

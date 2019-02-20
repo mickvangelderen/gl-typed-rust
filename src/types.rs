@@ -2,75 +2,98 @@
 //! have overlapping values. For most enums compile-time variants are provided
 //! through the symbols.
 
+use crate::convert::Transmute;
 use crate::gl;
-use crate::traits;
+use std::convert::TryFrom;
 
-// TODO: Some of the raw types probably never will be used. Figure out if we
-// want to expose a raw variant for all enums blindly or only specific ones.
+// TODO: Some of the unchecked types probably never will be used. Figure out if we
+// want to expose a unchecked variant for all enums blindly or only specific ones.
 
-macro_rules! impl_enums_u32 {
-    ($($(#[$rm:meta])* $r:ident $(#[$em:meta])* $e:ident { $($v:ident = $g:path,)* })*) => {
+macro_rules! impl_enums {
+    ($($(#[$rm:meta])* struct $r:ident($b:ident); $(#[$em:meta])* $e:ident { $($v:ident = $g:path,)* })*) => {
         $(
             $(#[$rm])*
             #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct $r(u32);
+            pub struct $r($b);
 
-            unsafe impl traits::TransmuteMarker<u32> for $r {}
-            unsafe impl traits::TransmuteMarker<i32> for $r {}
-
-            $(#[$em])*
-            #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-            #[repr(u32)]
-            pub enum $e {
-                $(
-                    $v = $g,
-                )*
-            }
-
-            impl $e {
-                /// # Warning
-                /// The given value must have a corresponding value, UB
-                /// otherwise. Consider using [$e::from] or compare the value in
-                /// the raw domain: `raw == $r::from($e::<SomeVariant>)`.
+            unsafe impl Transmute<$b> for $r {
                 #[inline]
-                pub unsafe fn from_unchecked(raw: $r) -> Self {
-                    std::mem::transmute(raw)
+                fn transmute_from(val: $b) -> Self {
+                    $r(val)
                 }
-            }
 
-            impl traits::FromExt<$e> for i32 {
                 #[inline]
-                fn from(val: $e) -> i32 {
-                    val as u32 as i32
+                fn transmute_into(self) -> $b {
+                    self.0
                 }
-            }
 
-            impl traits::FromExt<$e> for u32 {
                 #[inline]
-                fn from(val: $e) -> u32 {
-                    val as u32
+                fn transmute_as_ref(&self) -> &$b {
+                    &self.0
+                }
+
+                #[inline]
+                fn transmute_as_mut(&mut self) -> &mut $b {
+                    &mut self.0
                 }
             }
 
             impl From<$e> for $r {
                 #[inline]
                 fn from(val: $e) -> Self {
-                    $r(val as u32)
+                    $r(val as $b)
                 }
             }
 
-            impl From<$r> for $e {
-                /// # Panics
-                /// Panics when the passed value does not correspond to any of
-                /// the known variants.
+            $(
+                impl From<crate::symbols::$v> for $r {
+                    #[inline]
+                    fn from(_: crate::symbols::$v) -> Self {
+                        $r($g as $b)
+                    }
+                }
+
+                impl TryFrom<$r> for crate::symbols::$v {
+                    type Error = $r;
+
+                    #[inline]
+                    fn try_from(val: $r) -> Result<Self, Self::Error> {
+                        if val == crate::symbols::$v.into() {
+                            Ok(crate::symbols::$v)
+                        } else {
+                            Err(val)
+                        }
+                    }
+                }
+            )*
+
+            $(#[$em])*
+            #[derive(Debug, Clone, Copy, Eq, PartialEq)]
+            #[repr($b)]
+            pub enum $e {
+                $(
+                    $v = $g as $b,
+                )*
+            }
+
+            impl From<$e> for $b {
                 #[inline]
-                fn from(raw: $r) -> Self {
-                    match raw.0 {
+                fn from(val: $e) -> Self {
+                    val as $b
+                }
+            }
+
+            impl TryFrom<$r> for $e {
+                type Error = $r;
+
+                #[inline]
+                fn try_from(val: $r) -> Result<Self, Self::Error> {
+                    match val {
                         $(
-                            $g => $e::$v,
+                            x if x.0 == $g as $b => Ok($e::$v),
                         )*
-                        v => panic!("No known variant corresponds to {}.", v),
+                            other => Err(other)
                     }
                 }
             }
@@ -82,16 +105,26 @@ macro_rules! impl_enums_u32 {
                         $e::$v
                     }
                 }
+
+                impl TryFrom<$e> for crate::symbols::$v {
+                    type Error = $e;
+
+                    #[inline]
+                    fn try_from(val: $e) -> Result<Self, Self::Error> {
+                        if val == crate::symbols::$v.into() {
+                            Ok(crate::symbols::$v)
+                        } else {
+                            Err(val)
+                        }
+                    }
+                }
             )*
         )*
     }
 }
 
-const TRUE: u32 = gl::TRUE as u32;
-const FALSE: u32 = gl::FALSE as u32;
-
-impl_enums_u32! {
-    RawShaderKind
+impl_enums! {
+    struct UncheckedShaderKind(u32);
     /// The kind of a shader.
     ShaderKind {
         ComputeShader = gl::COMPUTE_SHADER,
@@ -102,21 +135,21 @@ impl_enums_u32! {
         FragmentShader = gl::FRAGMENT_SHADER,
     }
 
-    RawShaderCompileStatus
+    struct UncheckedShaderCompileStatus(i32);
     /// The compile status of a shader.
     ShaderCompileStatus {
-        Uncompiled = FALSE,
-        Compiled = TRUE,
+        Uncompiled = gl::FALSE,
+        Compiled = gl::TRUE,
     }
 
-    RawProgramLinkStatus
+    struct UncheckedProgramLinkStatus(i32);
     /// The compile status of a program.
     ProgramLinkStatus {
-        Unlinked = FALSE,
-        Linked = TRUE,
+        Unlinked = gl::FALSE,
+        Linked = gl::TRUE,
     }
 
-    RawGetShaderivParam
+    struct UncheckedGetShaderivParam(u32);
     /// Allowed values for the pname arguments of `glGetShaderiv`.
     GetShaderivParam {
         ShaderType = gl::SHADER_TYPE,
@@ -126,7 +159,7 @@ impl_enums_u32! {
         ShaderSourceLength = gl::SHADER_SOURCE_LENGTH,
     }
 
-    RawGetProgramivParam
+    struct UncheckedGetProgramivParam(u32);
     /// Allowed values for the pname arguments of `glGetProgramiv`.
     GetProgramivParam {
         ActiveAtomicCounterBuffers = gl::ACTIVE_ATOMIC_COUNTER_BUFFERS,
@@ -157,7 +190,7 @@ impl_enums_u32! {
         ValidateStatus = gl::VALIDATE_STATUS,
     }
 
-    RawGetStringParam
+    struct UncheckedGetStringParam(u32);
     /// Allowed values for the pname argument of `glGetString`.
     GetStringParam {
         Renderer = gl::RENDERER,
@@ -166,7 +199,7 @@ impl_enums_u32! {
         ShadingLanguageVersion = gl::SHADING_LANGUAGE_VERSION,
     }
 
-    RawTexImage2DTarget
+    struct UncheckedTexImage2DTarget(u32);
     /// Allowed values for the target argument of `glTexImage2D`.
     TexImage2DTarget {
         ProxyTexture1DArray = gl::PROXY_TEXTURE_1D_ARRAY,
@@ -184,7 +217,7 @@ impl_enums_u32! {
         TextureRectangle = gl::TEXTURE_RECTANGLE,
     }
 
-    RawTextureTarget
+    struct UncheckedTextureTarget(u32);
     TextureTarget {
         Texture1D = gl::TEXTURE_1D,
         Texture2D = gl::TEXTURE_2D,
@@ -199,7 +232,7 @@ impl_enums_u32! {
         Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
     }
 
-    RawTextureTargetGE2D
+    struct UncheckedTextureTargetGE2D(u32);
     TextureTargetGE2D {
         // Texture1D = gl::TEXTURE_1D,
         Texture2D = gl::TEXTURE_2D,
@@ -214,7 +247,7 @@ impl_enums_u32! {
         Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
     }
 
-    RawTextureTargetGE3D
+    struct UncheckedTextureTargetGE3D(u32);
     TextureTargetGE3D {
         // Texture1D = gl::TEXTURE_1D,
         // Texture2D = gl::TEXTURE_2D,
@@ -229,13 +262,13 @@ impl_enums_u32! {
         // Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
     }
 
-    RawDepthStencilTextureMode
+    struct UncheckedDepthStencilTextureMode(i32);
     DepthStencilTextureMode {
         DepthComponent = gl::DEPTH_COMPONENT,
         StencilIndex = gl::STENCIL_INDEX,
     }
 
-    RawTexParameteriParam
+    struct UncheckedTexParameteriParam(i32);
     TexParameteriParam {
         DepthStencilTextureMode = gl::DEPTH_STENCIL_TEXTURE_MODE,
         TextureBaseLevel = gl::TEXTURE_BASE_LEVEL,
@@ -246,13 +279,13 @@ impl_enums_u32! {
         TextureWrapR = gl::TEXTURE_WRAP_R,
     }
 
-    RawTextureMagFilter
+    struct UncheckedTextureMagFilter(i32);
     TextureMagFilter {
         Nearest = gl::NEAREST,
         Linear = gl::LINEAR,
     }
 
-    RawTextureMinFilter
+    struct UncheckedTextureMinFilter(i32);
     TextureMinFilter {
         Nearest = gl::NEAREST,
         Linear = gl::LINEAR,
@@ -262,13 +295,50 @@ impl_enums_u32! {
         LinearMipmapLinear = gl::LINEAR_MIPMAP_LINEAR,
     }
 
-    RawTextureWrap
+    struct UncheckedTextureWrap(i32);
     TextureWrap {
         ClampToEdge = gl::CLAMP_TO_EDGE,
         Repeat = gl::REPEAT,
         ClampToBorder = gl::CLAMP_TO_BORDER,
         MirroredRepeat = gl::MIRRORED_REPEAT,
         MirrorClampToEdge = gl::MIRROR_CLAMP_TO_EDGE,
+    }
+
+    struct UncheckedFramebufferTarget(u32);
+    FramebufferTarget {
+        DrawFramebuffer = gl::DRAW_FRAMEBUFFER,
+        ReadFramebuffer = gl::READ_FRAMEBUFFER,
+        Framebuffer = gl::FRAMEBUFFER,
+    }
+
+    struct UncheckedFramebufferStatus(u32);
+    FramebufferStatus {
+        FramebufferUndefined = gl::FRAMEBUFFER_UNDEFINED,
+        FramebufferIncompleteAttachment = gl::FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+        FramebufferIncompleteMissingAttachment = gl::FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT,
+        FramebufferIncompleteDrawBuffer = gl::FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER,
+        FramebufferIncompleteReadBuffer = gl::FRAMEBUFFER_INCOMPLETE_READ_BUFFER,
+        FramebufferUnsupported = gl::FRAMEBUFFER_UNSUPPORTED,
+        FramebufferIncompleteMultisample = gl::FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
+        FramebufferIncompleteLayerTargets = gl::FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS,
+    }
+
+    struct UncheckedBufferTarget(u32);
+    BufferTarget {
+        ArrayBuffer = gl::ARRAY_BUFFER,
+        AtomicCounterBuffer = gl::ATOMIC_COUNTER_BUFFER,
+        CopyReadBuffer = gl::COPY_READ_BUFFER,
+        CopyWriteBuffer = gl::COPY_WRITE_BUFFER,
+        DispatchIndirectBuffer = gl::DISPATCH_INDIRECT_BUFFER,
+        DrawIndirectBuffer = gl::DRAW_INDIRECT_BUFFER,
+        ElementArrayBuffer = gl::ELEMENT_ARRAY_BUFFER,
+        PixelPackBuffer = gl::PIXEL_PACK_BUFFER,
+        PixelUnpackBuffer = gl::PIXEL_UNPACK_BUFFER,
+        QueryBuffer = gl::QUERY_BUFFER,
+        ShaderStorageBuffer = gl::SHADER_STORAGE_BUFFER,
+        TextureBuffer = gl::TEXTURE_BUFFER,
+        TransformFeedbackBuffer = gl::TRANSFORM_FEEDBACK_BUFFER,
+        UniformBuffer = gl::UNIFORM_BUFFER,
     }
 }
 
@@ -286,43 +356,6 @@ impl From<TextureTargetGE3D> for TextureTarget {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(transparent)]
-pub struct MaxCombinedTextureImageUnits(u32);
-
-impl MaxCombinedTextureImageUnits {
-    fn as_u32(&self) -> u32 {
-        self.0
-    }
-}
-
-unsafe impl traits::TransmuteMarker<u32> for MaxCombinedTextureImageUnits {}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-#[repr(transparent)]
-pub struct TextureUnit(u32);
-
-impl TextureUnit {
-    #[inline]
-    pub fn new(unit: u32, max: MaxCombinedTextureImageUnits) -> Option<Self> {
-        if unit < max.as_u32() {
-            Some(TextureUnit(gl::TEXTURE0 + unit))
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    pub const unsafe fn new_unchecked(unit: u32) -> Self {
-        TextureUnit(gl::TEXTURE0 + unit)
-    }
-
-    #[inline]
-    pub fn as_u32(&self) -> u32 {
-        self.0
-    }
-}
-
 macro_rules! impl_struct_from_symbol {
     ($t:ident { $($v:ident = $g:path,)* }) => {
         $(
@@ -334,6 +367,41 @@ macro_rules! impl_struct_from_symbol {
             }
         )*
     };
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
+#[repr(transparent)]
+pub struct MaxCombinedTextureImageUnits(u32);
+
+impl MaxCombinedTextureImageUnits {
+    fn as_u32(&self) -> u32 {
+        self.0
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct TextureUnit(u32);
+
+impl TextureUnit {
+    #[inline]
+    pub fn new(index: u32, max: MaxCombinedTextureImageUnits) -> Option<Self> {
+        if index < max.as_u32() {
+            Some(TextureUnit(gl::TEXTURE0 + index))
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub const unsafe fn new_unchecked(index: u32) -> Self {
+        TextureUnit(gl::TEXTURE0 + index)
+    }
+
+    #[inline]
+    pub fn as_u32(&self) -> u32 {
+        self.0
+    }
 }
 
 impl_struct_from_symbol! (TextureUnit {
@@ -353,4 +421,60 @@ impl_struct_from_symbol! (TextureUnit {
     Texture13 = gl::TEXTURE13,
     Texture14 = gl::TEXTURE14,
     Texture15 = gl::TEXTURE15,
+});
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
+#[repr(transparent)]
+pub struct MaxColorAttachments(u32);
+
+impl MaxColorAttachments {
+    fn as_u32(&self) -> u32 {
+        self.0
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct FramebufferAttachment(u32);
+
+impl FramebufferAttachment {
+    #[inline]
+    pub fn new(index: u32, max: MaxColorAttachments) -> Option<Self> {
+        unsafe {
+            if index < max.as_u32() {
+                Some(FramebufferAttachment::new_unchecked(index))
+            } else {
+                None
+            }
+        }
+    }
+
+    #[inline]
+    pub const unsafe fn new_unchecked(index: u32) -> Self {
+        FramebufferAttachment(gl::COLOR_ATTACHMENT0 + index)
+    }
+
+    #[inline]
+    pub fn as_u32(&self) -> u32 {
+        self.0
+    }
+}
+
+impl_struct_from_symbol! (FramebufferAttachment {
+    ColorAttachment0 = gl::COLOR_ATTACHMENT0,
+    ColorAttachment1 = gl::COLOR_ATTACHMENT1,
+    ColorAttachment2 = gl::COLOR_ATTACHMENT2,
+    ColorAttachment3 = gl::COLOR_ATTACHMENT3,
+    ColorAttachment4 = gl::COLOR_ATTACHMENT4,
+    ColorAttachment5 = gl::COLOR_ATTACHMENT5,
+    ColorAttachment6 = gl::COLOR_ATTACHMENT6,
+    ColorAttachment7 = gl::COLOR_ATTACHMENT7,
+    ColorAttachment8 = gl::COLOR_ATTACHMENT8,
+    ColorAttachment9 = gl::COLOR_ATTACHMENT9,
+    ColorAttachment10 = gl::COLOR_ATTACHMENT10,
+    ColorAttachment11 = gl::COLOR_ATTACHMENT11,
+    ColorAttachment12 = gl::COLOR_ATTACHMENT12,
+    ColorAttachment13 = gl::COLOR_ATTACHMENT13,
+    ColorAttachment14 = gl::COLOR_ATTACHMENT14,
+    ColorAttachment15 = gl::COLOR_ATTACHMENT15,
 });

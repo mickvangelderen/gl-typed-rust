@@ -1,15 +1,20 @@
+#![feature(try_from)]
+
 pub mod array;
 pub mod constants;
+pub mod convert;
 pub mod gl;
 pub mod locations;
 pub mod names;
 pub mod num;
+pub mod string;
 pub mod symbols;
 pub mod traits;
 pub mod types;
 
 pub use array::*;
 pub use constants::*;
+pub use convert::*;
 pub use locations::*;
 pub use names::*;
 use std::ffi::CStr;
@@ -24,7 +29,7 @@ impl Gl {
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
     where
-        F: FnMut(&'static str) -> *const std::os::raw::c_void,
+        F: FnMut(&'static str) -> *const c_void,
     {
         Gl {
             gl: gl::Gl::load_with(f),
@@ -66,15 +71,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv<P>(&self, name: &ShaderName, pname: P, pvalue: &mut P::Value)
+    pub unsafe fn get_shaderiv<P>(&self, name: &ShaderName, param: P, value: &mut P::Value)
     where
         P: traits::GetShaderivParam,
     {
-        self.gl.GetShaderiv(
-            name.as_u32(),
-            pname.into() as u32,
-            traits::Transmute::as_mut(pvalue),
-        );
+        self.gl
+            .GetShaderiv(name.as_u32(), param.into() as u32, value.transmute_as_mut())
     }
 
     #[inline]
@@ -140,15 +142,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_programiv<P>(&self, name: &ProgramName, pname: P, pvalue: &mut P::Value)
+    pub unsafe fn get_programiv<P>(&self, name: &ProgramName, param: P, value: &mut P::Value)
     where
         P: traits::GetProgramivParam,
     {
-        self.gl.GetProgramiv(
-            name.as_u32(),
-            pname.into() as u32,
-            traits::Transmute::as_mut(pvalue),
-        );
+        self.gl
+            .GetProgramiv(name.as_u32(), param.into() as u32, value.transmute_as_mut());
     }
 
     #[inline]
@@ -221,18 +220,18 @@ impl Gl {
     // TexParameteriParam already specifies P::Target to be Into<TextureTarget>
     // etc.
     #[inline]
-    pub unsafe fn tex_parameter_i<P, T, V>(&self, target: T, pname: P, value: V)
+    pub unsafe fn tex_parameter_i<P, T, V>(&self, target: T, param: P, value: V)
     where
         P: traits::TexParameteriParam,
         P::Target: Into<TextureTarget>,
-        P::Value: traits::IntoExt<i32>,
+        P::Value: Into<i32>,
         T: Into<P::Target>,
         V: Into<P::Value>,
     {
         self.gl.TexParameteri(
             target.into().into() as u32,
-            pname.into() as u32,
-            traits::IntoExt::into(value.into()),
+            param.into() as u32,
+            Into::into(value.into()),
         )
     }
 
@@ -244,142 +243,126 @@ impl Gl {
         self.gl.GenerateMipmap(target.into() as u32);
     }
 
-    // #[inline]
-    // pub unsafe fn tex_image_2d(
-    //     &self,
-    //     target: TextureTarget,
-    //     mipmap_level: i32,
-    //     internal_format: i32,
-    //     width: i32,
-    //     height: i32,
-    //     format: u32,
-    //     component_format: u32,
-    //     data: *const ::std::os::raw::c_void,
-    // ) {
-    //     self.gl.TexImage2D(
-    //         target as u32,
-    //         mipmap_level,
-    //         internal_format,
-    //         width,
-    //         height,
-    //         0, // border, must be zero
-    //         format,
-    //         component_format,
-    //         data,
-    //     );
-    // }
+    #[inline]
+    pub unsafe fn tex_image_2d<T>(
+        &self,
+        target: T,
+        mipmap_level: i32,
+        internal_format: i32,
+        width: i32,
+        height: i32,
+        format: u32,
+        component_format: u32,
+        data: *const c_void,
+    ) where
+        T: Into<TextureTarget>,
+    {
+        self.gl.TexImage2D(
+            target.into() as u32,
+            mipmap_level,
+            internal_format,
+            width,
+            height,
+            0, // border, must be zero
+            format,
+            component_format,
+            data,
+        );
+    }
 
-    // // Buffer names.
+    // Buffer names.
 
-    // #[inline]
-    // pub unsafe fn gen_buffers(&self, names: &mut [Option<BufferName>]) {
-    //     self.gl
-    //         .GenBuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
-    // }
+    #[inline]
+    pub unsafe fn gen_buffers(&self, names: &mut [Option<BufferName>]) {
+        self.gl
+            .GenBuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn delete_buffers<A>(&self, names: &mut [Option<BufferName>]) {
-    //     self.gl
-    //         .DeleteBuffers(names.len() as i32, names.as_ptr() as *const u32);
-    // }
+    #[inline]
+    pub unsafe fn delete_buffers<A>(&self, names: &mut [Option<BufferName>]) {
+        self.gl
+            .DeleteBuffers(names.len() as i32, names.as_ptr() as *const u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn bind_buffer(&self, target: BufferTarget, name: &BufferName) {
-    //     self.gl.BindBuffer(target as u32, name.as_u32());
-    // }
+    #[inline]
+    pub unsafe fn bind_buffer<T>(&self, target: T, name: &BufferName)
+    where
+        T: Into<BufferTarget>,
+    {
+        self.gl.BindBuffer(target.into() as u32, name.as_u32());
+    }
 
-    // // Vertex array names.
+    // Vertex array names.
 
-    // #[inline]
-    // pub unsafe fn gen_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
-    //     self.gl
-    //         .GenVertexArrays(names.len() as i32, names.as_mut_ptr() as *mut u32);
-    // }
+    #[inline]
+    pub unsafe fn gen_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
+        self.gl
+            .GenVertexArrays(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn delete_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
-    //     self.gl
-    //         .DeleteVertexArrays(names.len() as i32, names.as_ptr() as *const u32);
-    // }
+    #[inline]
+    pub unsafe fn delete_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
+        self.gl
+            .DeleteVertexArrays(names.len() as i32, names.as_ptr() as *const u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn gen_vertex_arrays_move<A: Array<Option<VertexArrayName>>>() -> A {
-    //     let mut names: A = ::std::mem::uninitialized();
-    //     gen_vertex_arrays(names.as_mut_slice());
-    //     names
-    // }
-
-    // #[inline]
-    // pub unsafe fn delete_vertex_arrays_move<A: Array<Option<VertexArrayName>>>(mut names: A) {
-    //     delete_vertex_arrays(names.as_mut_slice());
-    //     ::std::mem::forget(names);
-    // }
-
-    // #[inline]
-    // pub unsafe fn bind_vertex_array(&self, name: &VertexArrayName) {
-    //     self.gl.BindVertexArray(name.as_u32());
-    // }
+    #[inline]
+    pub unsafe fn bind_vertex_array(&self, name: &VertexArrayName) {
+        self.gl.BindVertexArray(name.as_u32());
+    }
 
     // // Framebuffer names.
 
-    // #[inline]
-    // pub unsafe fn gen_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
-    //     self.gl
-    //         .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
-    // }
+    #[inline]
+    pub unsafe fn gen_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
+        self.gl
+            .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn delete_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
-    //     self.gl
-    //         .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
-    // }
+    #[inline]
+    pub unsafe fn delete_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
+        self.gl
+            .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
 
-    // #[inline]
-    // pub unsafe fn gen_framebuffers_move<A: Array<Option<FramebufferName>>>() -> A {
-    //     let mut names: A = ::std::mem::uninitialized();
-    //     gen_framebuffers(names.as_mut_slice());
-    //     names
-    // }
+    #[inline]
+    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: &N)
+    where
+        T: Into<FramebufferTarget>,
+        N: MaybeDefaultFramebufferName,
+    {
+        self.gl.BindFramebuffer(target.into() as u32, name.as_u32());
+    }
 
-    // #[inline]
-    // pub unsafe fn delete_framebuffers_move<A: Array<Option<FramebufferName>>>(mut names: A) {
-    //     delete_framebuffers(names.as_mut_slice());
-    //     ::std::mem::forget(names);
-    // }
+    #[inline]
+    pub unsafe fn check_framebuffer_status<T>(&self, target: T) -> UncheckedFramebufferStatus
+    where
+        T: Into<FramebufferTarget>,
+    {
+        UncheckedFramebufferStatus::transmute_from(self.gl.CheckFramebufferStatus(target.into() as u32))
+    }
 
-    // #[inline]
-    // pub unsafe fn bind_framebuffer<T>(target: FramebufferTarget, name: &T)
-    // where
-    //     T: MaybeDefaultFramebufferName,
-    // {
-    //     self.gl.BindFramebuffer(target.as_u32(), name.as_u32());
-    // }
-
-    // #[inline]
-    // pub unsafe fn check_framebuffer_status(
-    //     &self,
-    //     target: FramebufferTarget,
-    // ) -> Option<FramebufferStatus> {
-    //     FramebufferStatus::from_raw(self.gl.CheckFramebufferStatus(target.as_u32()))
-    // }
-
-    // #[inline]
-    // pub unsafe fn framebuffer_texture_2d(
-    //     &self,
-    //     framebuffer_target: FramebufferTarget,
-    //     framebuffer_attachment: FramebufferAttachment,
-    //     texture_target: TextureTarget,
-    //     texture_name: &TextureName,
-    //     mipmap_level: i32,
-    // ) {
-    //     self.gl.FramebufferTexture2D(
-    //         framebuffer_target.as_u32(),
-    //         framebuffer_attachment.as_u32(),
-    //         texture_target.as_u32(),
-    //         texture_name.as_u32(),
-    //         mipmap_level,
-    //     );
-    // }
+    #[inline]
+    pub unsafe fn framebuffer_texture_2d<FT, FA, TT>(
+        &self,
+        framebuffer_target: FT,
+        framebuffer_attachment: FA,
+        texture_target: TT,
+        texture_name: &TextureName,
+        mipmap_level: i32,
+    ) where
+        FT: Into<FramebufferTarget>,
+        FA: Into<FramebufferAttachment>,
+        TT: Into<TextureTarget>,
+    {
+        self.gl.FramebufferTexture2D(
+            framebuffer_target.into() as u32,
+            framebuffer_attachment.into().as_u32(),
+            texture_target.into() as u32,
+            texture_name.as_u32(),
+            mipmap_level,
+        );
+    }
 
     // // Uniform setters.
 
