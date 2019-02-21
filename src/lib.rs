@@ -52,6 +52,16 @@ impl Gl {
 
     // Drawing.
     #[inline]
+    pub unsafe fn enable<C>(&self, cap: C) where C: Into<Capability> {
+        self.gl.Enable(cap.into() as u32);
+    }
+
+    #[inline]
+    pub unsafe fn disable<C>(&self, cap: C) where C: Into<Capability> {
+        self.gl.Disable(cap.into() as u32);
+    }
+
+    #[inline]
     pub unsafe fn viewport(&self, x: i32, y: i32, width: i32, height: i32) {
         self.gl.Viewport(x, y, width, height);
     }
@@ -73,6 +83,20 @@ impl Gl {
     {
         self.gl
             .DrawArrays(mode.into() as u32, first as i32, count as i32);
+    }
+
+    #[inline]
+    pub unsafe fn draw_elements<M, T>(&self, mode: M, count: usize, ty: T, offset: usize)
+    where
+        M: Into<DrawMode>,
+        T: Into<DrawElementsType>,
+    {
+        self.gl.DrawElements(
+            mode.into() as u32,
+            count as i32,
+            ty.into() as u32,
+            offset as *const c_void,
+        );
     }
 
     // Shaders.
@@ -378,9 +402,10 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_buffer<T>(&self, target: T, name: &BufferName)
+    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: &N)
     where
         T: Into<BufferTarget>,
+        N: MaybeUnbindBufferName,
     {
         self.gl.BindBuffer(target.into() as u32, name.as_u32());
     }
@@ -414,7 +439,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_vertex_array(&self, name: &VertexArrayName) {
+    pub unsafe fn bind_vertex_array<N>(&self, name: &N) where N: MaybeUnbindVertexArrayName {
         self.gl.BindVertexArray(name.as_u32());
     }
 

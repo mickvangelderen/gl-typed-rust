@@ -91,3 +91,39 @@ impl MaybeUnbindTextureName for Unbind {
         0
     }
 }
+
+pub trait MaybeUnbindBufferName {
+    fn as_u32(&self) -> u32;
+}
+
+impl MaybeUnbindBufferName for BufferName {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        BufferName::as_u32(self)
+    }
+}
+
+impl MaybeUnbindBufferName for Unbind {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        0
+    }
+}
+
+pub trait MaybeUnbindVertexArrayName {
+    fn as_u32(&self) -> u32;
+}
+
+impl MaybeUnbindVertexArrayName for VertexArrayName {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        VertexArrayName::as_u32(self)
+    }
+}
+
+impl MaybeUnbindVertexArrayName for Unbind {
+    #[inline]
+    fn as_u32(&self) -> u32 {
+        0
+    }
+}

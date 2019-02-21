@@ -522,6 +522,44 @@ impl_enums! {
         UnsignedInt1010102 = gl::UNSIGNED_INT_10_10_10_2,
         UnsignedInt2101010Rev = gl::UNSIGNED_INT_2_10_10_10_REV,
     }
+
+    struct UncheckedDrawElementsType(u32);
+    DrawElementsType {
+        UnsignedByte = gl::UNSIGNED_BYTE,
+        UnsignedShort = gl::UNSIGNED_SHORT,
+        UnsignedInt = gl::UNSIGNED_INT,
+    }
+
+    struct UncheckedCapability(u32);
+    Capability {
+        Blend = gl::BLEND,
+        ColorLogicOp = gl::COLOR_LOGIC_OP,
+        CullFace = gl::CULL_FACE,
+        DebugOutput = gl::DEBUG_OUTPUT,
+        DebugOutputSynchronous = gl::DEBUG_OUTPUT_SYNCHRONOUS,
+        DepthClamp = gl::DEPTH_CLAMP,
+        DepthTest = gl::DEPTH_TEST,
+        Dither = gl::DITHER,
+        FramebufferSrgb = gl::FRAMEBUFFER_SRGB,
+        LineSmooth = gl::LINE_SMOOTH,
+        Multisample = gl::MULTISAMPLE,
+        PolygonOffsetFill = gl::POLYGON_OFFSET_FILL,
+        PolygonOffsetLine = gl::POLYGON_OFFSET_LINE,
+        PolygonOffsetPoint = gl::POLYGON_OFFSET_POINT,
+        PolygonSmooth = gl::POLYGON_SMOOTH,
+        PrimitiveRestart = gl::PRIMITIVE_RESTART,
+        PrimitiveRestartFixedIndex = gl::PRIMITIVE_RESTART_FIXED_INDEX,
+        RasterizerDiscard = gl::RASTERIZER_DISCARD,
+        SampleAlphaToCoverage = gl::SAMPLE_ALPHA_TO_COVERAGE,
+        SampleAlphaToOne = gl::SAMPLE_ALPHA_TO_ONE,
+        SampleCoverage = gl::SAMPLE_COVERAGE,
+        SampleShading = gl::SAMPLE_SHADING,
+        SampleMask = gl::SAMPLE_MASK,
+        ScissorTest = gl::SCISSOR_TEST,
+        StencilTest = gl::STENCIL_TEST,
+        TextureCubeMapSeamless = gl::TEXTURE_CUBE_MAP_SEAMLESS,
+        ProgramPointSize = gl::PROGRAM_POINT_SIZE,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {
