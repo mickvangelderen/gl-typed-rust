@@ -178,6 +178,29 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn vertex_attrib_pointer<T, N>(
+        &self,
+        loc: &AttributeLocation,
+        size: usize,
+        ty: T,
+        normalized: N,
+        stride: usize,
+        offset: usize,
+    ) where
+        T: Into<VertexAttribPointerType>,
+    N: Into<Bool>,
+    {
+        self.gl.VertexAttribPointer(
+            loc.as_u32(),
+            size as i32,
+            ty.into() as u32,
+            normalized.into() as u8,
+            stride as i32,
+            offset as *const c_void,
+        );
+    }
+
+    #[inline]
     pub unsafe fn get_uniform_location<T>(
         &self,
         program_name: &ProgramName,
@@ -187,6 +210,22 @@ impl Gl {
             self.gl
                 .GetUniformLocation(program_name.as_u32(), uniform_name.as_ptr()),
         )
+    }
+
+    #[inline]
+    pub unsafe fn enable_vertex_attrib_array(
+        &self,
+        loc: &AttributeLocation,
+    ) {
+        self.gl.EnableVertexAttribArray(loc.as_u32());
+    }
+
+    #[inline]
+    pub unsafe fn disable_vertex_attrib_array(
+        &self,
+        loc: &AttributeLocation,
+    ) {
+        self.gl.DisableVertexAttribArray(loc.as_u32());
     }
 
     // Textures.

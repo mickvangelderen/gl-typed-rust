@@ -354,6 +354,29 @@ impl_enums! {
         DynamicRead = gl::DYNAMIC_READ,
         DynamicCopy = gl::DYNAMIC_COPY,
     }
+
+    struct UncheckedVertexAttribPointerType(u32);
+    VertexAttribPointerType {
+        Byte = gl::BYTE,
+        UnsignedByte = gl::UNSIGNED_BYTE,
+        Short = gl::SHORT,
+        UnsignedShort = gl::UNSIGNED_SHORT,
+        Int = gl::INT,
+        UnsignedInt = gl::UNSIGNED_INT,
+        HalfFloat = gl::HALF_FLOAT,
+        Float = gl::FLOAT,
+        Double = gl::DOUBLE,
+        Fixed = gl::FIXED,
+        Int2101010Rev = gl::INT_2_10_10_10_REV,
+        UnsignedInt2101010Rev = gl::UNSIGNED_INT_2_10_10_10_REV,
+        UnsignedInt10f11f11fRev = gl::UNSIGNED_INT_10F_11F_11F_REV,
+    }
+
+    struct UncheckedBool(u8);
+    Bool {
+        True = gl::TRUE,
+        False = gl::FALSE,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {
