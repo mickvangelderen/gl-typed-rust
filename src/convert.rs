@@ -33,7 +33,7 @@ mod tests {
     #[repr(transparent)]
     struct UncheckedStatus(u32);
 
-    impl Transmute<u32> for UncheckedStatus {
+    unsafe impl Transmute<u32> for UncheckedStatus {
         #[inline]
         fn transmute_from(val: u32) -> Self {
             UncheckedStatus(val)
