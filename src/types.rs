@@ -341,6 +341,19 @@ impl_enums! {
         TransformFeedbackBuffer = gl::TRANSFORM_FEEDBACK_BUFFER,
         UniformBuffer = gl::UNIFORM_BUFFER,
     }
+
+    struct UncheckedBufferUsage(u32);
+    BufferUsage {
+        StreamDraw = gl::STREAM_DRAW,
+        StreamRead = gl::STREAM_READ,
+        StreamCopy = gl::STREAM_COPY,
+        StaticDraw = gl::STATIC_DRAW,
+        StaticRead = gl::STATIC_READ,
+        StaticCopy = gl::STATIC_COPY,
+        DynamicDraw = gl::DYNAMIC_DRAW,
+        DynamicRead = gl::DYNAMIC_READ,
+        DynamicCopy = gl::DYNAMIC_COPY,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {

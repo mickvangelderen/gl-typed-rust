@@ -293,6 +293,20 @@ impl Gl {
         self.gl.BindBuffer(target.into() as u32, name.as_u32());
     }
 
+    #[inline]
+    pub unsafe fn buffer_data<T, D, U>(&self, target: T, data: &[D], usage: U)
+    where
+        T: Into<BufferTarget>,
+        U: Into<BufferUsage>,
+    {
+        self.gl.BufferData(
+            target.into() as u32,
+            std::mem::size_of_val(data) as isize,
+            data.as_ptr() as *const c_void,
+            usage.into() as u32,
+        );
+    }
+
     // Vertex array names.
 
     #[inline]
