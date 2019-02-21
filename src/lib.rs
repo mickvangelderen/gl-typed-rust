@@ -312,7 +312,7 @@ impl Gl {
         self.gl.BindVertexArray(name.as_u32());
     }
 
-    // // Framebuffer names.
+    // Framebuffer names.
 
     #[inline]
     pub unsafe fn gen_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
@@ -340,7 +340,9 @@ impl Gl {
     where
         T: Into<FramebufferTarget>,
     {
-        UncheckedFramebufferStatus::transmute_from(self.gl.CheckFramebufferStatus(target.into() as u32))
+        UncheckedFramebufferStatus::transmute_from(
+            self.gl.CheckFramebufferStatus(target.into() as u32),
+        )
     }
 
     #[inline]
