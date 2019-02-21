@@ -50,6 +50,31 @@ impl Gl {
         )
     }
 
+    // Drawing.
+    #[inline]
+    pub unsafe fn viewport(&self, x: i32, y: i32, width: i32, height: i32) {
+        self.gl.Viewport(x, y, width, height);
+    }
+
+    #[inline]
+    pub unsafe fn clear_color(&self, r: f32, g: f32, b: f32, a: f32) {
+        self.gl.ClearColor(r, g, b, a);
+    }
+
+    #[inline]
+    pub unsafe fn clear(&self, flags: ClearFlags) {
+        self.gl.Clear(flags.bits());
+    }
+
+    #[inline]
+    pub unsafe fn draw_arrays<M>(&self, mode: M, first: usize, count: usize)
+    where
+        M: Into<DrawMode>,
+    {
+        self.gl
+            .DrawArrays(mode.into() as u32, first as i32, count as i32);
+    }
+
     // Shaders.
 
     #[inline]
@@ -80,23 +105,13 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn shader_source<
-        's,
-        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32> + ?Sized,
-    >(
-        &self,
-        shader: &mut ShaderName,
-        sources: &A,
-    ) {
-        let pointers = sources.map(|s| s.as_ptr() as *const c_char);
-        let lengths = sources.map(|s| s.len() as i32);
-        assert_eq!(pointers.len(), lengths.len());
-        self.gl.ShaderSource(
-            shader.as_u32(),
-            pointers.len() as i32,
-            pointers.as_ptr(),
-            lengths.as_ptr(),
-        )
+    pub unsafe fn get_shaderiv_move<P>(&self, name: &ShaderName, param: P) -> P::Value
+    where
+        P: traits::GetShaderivParam,
+    {
+        let mut value: P::Value = ::std::mem::uninitialized();
+        self.get_shaderiv(name, param, &mut value);
+        value
     }
 
     #[inline]
@@ -112,6 +127,46 @@ impl Gl {
             length,
             buffer.as_mut_ptr() as *mut i8,
         );
+    }
+
+    /// Returns Vec<u8> because the user should decide whether or not to trust
+    /// that OpenGL writes valid UTF-8 into the buffer.
+    #[inline]
+    pub unsafe fn get_shader_info_log_move(&self, name: &ShaderName) -> Vec<u8> {
+        let mut buffer = {
+            let capacity = self.get_shaderiv_move(name, INFO_LOG_LENGTH);
+            assert!(capacity >= 0);
+            Vec::with_capacity(capacity as usize)
+        };
+        let mut length = ::std::mem::uninitialized();
+        self.get_shader_info_log(
+            name,
+            &mut length,
+            ::std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
+        );
+        assert!(length >= 0 && length <= buffer.capacity() as i32);
+        buffer.set_len(length as usize);
+        buffer
+    }
+
+    #[inline]
+    pub unsafe fn shader_source<
+        's,
+        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32> + ?Sized,
+    >(
+        &self,
+        name: &mut ShaderName,
+        sources: &A,
+    ) {
+        let pointers = sources.map(|s| s.as_ptr() as *const c_char);
+        let lengths = sources.map(|s| s.len() as i32);
+        assert_eq!(pointers.len(), lengths.len());
+        self.gl.ShaderSource(
+            name.as_u32(),
+            pointers.len() as i32,
+            pointers.as_ptr(),
+            lengths.as_ptr(),
+        )
     }
 
     // Programs.
@@ -171,10 +226,11 @@ impl Gl {
         program_name: &ProgramName,
         attrib_name: &CStr,
     ) -> Option<AttributeLocation> {
-        AttributeLocation::from_raw(
-            self.gl
-                .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr()),
-        )
+        let l = self
+            .gl
+            .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr());
+        println!("p {:?} n {:?} l {:?}", program_name, attrib_name, &l);
+        AttributeLocation::from_raw(l)
     }
 
     #[inline]
@@ -188,7 +244,7 @@ impl Gl {
         offset: usize,
     ) where
         T: Into<VertexAttribPointerType>,
-    N: Into<Bool>,
+        N: Into<Bool>,
     {
         self.gl.VertexAttribPointer(
             loc.as_u32(),
@@ -213,18 +269,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn enable_vertex_attrib_array(
-        &self,
-        loc: &AttributeLocation,
-    ) {
+    pub unsafe fn enable_vertex_attrib_array(&self, loc: &AttributeLocation) {
         self.gl.EnableVertexAttribArray(loc.as_u32());
     }
 
     #[inline]
-    pub unsafe fn disable_vertex_attrib_array(
-        &self,
-        loc: &AttributeLocation,
-    ) {
+    pub unsafe fn disable_vertex_attrib_array(&self, loc: &AttributeLocation) {
         self.gl.DisableVertexAttribArray(loc.as_u32());
     }
 
@@ -284,28 +334,31 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn tex_image_2d<T>(
+    pub unsafe fn tex_image_2d<T, IF, F, CF>(
         &self,
         target: T,
         mipmap_level: i32,
-        internal_format: i32,
+        internal_format: IF,
         width: i32,
         height: i32,
-        format: u32,
-        component_format: u32,
+        format: F,
+        component_format: CF,
         data: *const c_void,
     ) where
         T: Into<TextureTarget>,
+        IF: Into<InternalFormat>,
+        F: Into<Format>,
+        CF: Into<ComponentFormat>,
     {
         self.gl.TexImage2D(
             target.into() as u32,
             mipmap_level,
-            internal_format,
+            internal_format.into() as i32,
             width,
             height,
             0, // border, must be zero
-            format,
-            component_format,
+            format.into() as u32,
+            component_format.into() as u32,
             data,
         );
     }

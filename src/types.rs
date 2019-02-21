@@ -314,6 +314,7 @@ impl_enums! {
 
     struct UncheckedFramebufferStatus(u32);
     FramebufferStatus {
+        FramebufferComplete = gl::FRAMEBUFFER_COMPLETE,
         FramebufferUndefined = gl::FRAMEBUFFER_UNDEFINED,
         FramebufferIncompleteAttachment = gl::FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
         FramebufferIncompleteMissingAttachment = gl::FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT,
@@ -376,6 +377,150 @@ impl_enums! {
     Bool {
         True = gl::TRUE,
         False = gl::FALSE,
+    }
+
+    struct UncheckedDrawMode(u32);
+    DrawMode {
+        Points = gl::POINTS,
+        LineStrip = gl::LINE_STRIP,
+        LineLoop = gl::LINE_LOOP,
+        Lines = gl::LINES,
+        LineStripAdjacency = gl::LINE_STRIP_ADJACENCY,
+        LinesAdjacency = gl::LINES_ADJACENCY,
+        TriangleStrip = gl::TRIANGLE_STRIP,
+        TriangleFan = gl::TRIANGLE_FAN,
+        Triangles = gl::TRIANGLES,
+        TriangleStripAdjacency = gl::TRIANGLE_STRIP_ADJACENCY,
+        TrianglesAdjacency = gl::TRIANGLES_ADJACENCY,
+        Patches = gl::PATCHES,
+    }
+
+    struct UncheckedInternalFormat(i32);
+    InternalFormat {
+        DepthComponent = gl::DEPTH_COMPONENT,
+        DepthStencil = gl::DEPTH_STENCIL,
+        Red = gl::RED,
+        Rg = gl::RG,
+        Rgb = gl::RGB,
+        Rgba = gl::RGBA,
+        R8 = gl::R8,
+        R8Snorm = gl::R8_SNORM,
+        R16 = gl::R16,
+        R16Snorm = gl::R16_SNORM,
+        Rg8 = gl::RG8,
+        Rg8Snorm = gl::RG8_SNORM,
+        Rg16 = gl::RG16,
+        Rg16Snorm = gl::RG16_SNORM,
+        R3G3B2 = gl::R3_G3_B2,
+        Rgb4 = gl::RGB4,
+        Rgb5 = gl::RGB5,
+        Rgb8 = gl::RGB8,
+        Rgb8Snorm = gl::RGB8_SNORM,
+        Rgb10 = gl::RGB10,
+        Rgb12 = gl::RGB12,
+        Rgb16Snorm = gl::RGB16_SNORM,
+        Rgba2 = gl::RGBA2,
+        Rgba4 = gl::RGBA4,
+        Rgb5A1 = gl::RGB5_A1,
+        Rgba8 = gl::RGBA8,
+        Rgba8Snorm = gl::RGBA8_SNORM,
+        Rgb10A2 = gl::RGB10_A2,
+        Rgb10A2ui = gl::RGB10_A2UI,
+        Rgba12 = gl::RGBA12,
+        Rgba16 = gl::RGBA16,
+        Srgb8 = gl::SRGB8,
+        Srgb8Alpha8 = gl::SRGB8_ALPHA8,
+        R16f = gl::R16F,
+        Rg16f = gl::RG16F,
+        Rgb16f = gl::RGB16F,
+        Rgba16f = gl::RGBA16F,
+        R32f = gl::R32F,
+        Rg32f = gl::RG32F,
+        Rgb32f = gl::RGB32F,
+        Rgba32f = gl::RGBA32F,
+        R11fG11fB10f = gl::R11F_G11F_B10F,
+        Rgb9E5 = gl::RGB9_E5,
+        R8i = gl::R8I,
+        R8ui = gl::R8UI,
+        R16i = gl::R16I,
+        R16ui = gl::R16UI,
+        R32i = gl::R32I,
+        R32ui = gl::R32UI,
+        Rg8i = gl::RG8I,
+        Rg8ui = gl::RG8UI,
+        Rg16i = gl::RG16I,
+        Rg16ui = gl::RG16UI,
+        Rg32i = gl::RG32I,
+        Rg32ui = gl::RG32UI,
+        Rgb8i = gl::RGB8I,
+        Rgb8ui = gl::RGB8UI,
+        Rgb16i = gl::RGB16I,
+        Rgb16ui = gl::RGB16UI,
+        Rgb32i = gl::RGB32I,
+        Rgb32ui = gl::RGB32UI,
+        Rgba8i = gl::RGBA8I,
+        Rgba8ui = gl::RGBA8UI,
+        Rgba16i = gl::RGBA16I,
+        Rgba16ui = gl::RGBA16UI,
+        Rgba32i = gl::RGBA32I,
+        Rgba32ui = gl::RGBA32UI,
+        CompressedRed = gl::COMPRESSED_RED,
+        CompressedRg = gl::COMPRESSED_RG,
+        CompressedRgb = gl::COMPRESSED_RGB,
+        CompressedRgba = gl::COMPRESSED_RGBA,
+        CompressedSrgb = gl::COMPRESSED_SRGB,
+        CompressedSrgbAlpha = gl::COMPRESSED_SRGB_ALPHA,
+        CompressedRedRgtc1 = gl::COMPRESSED_RED_RGTC1,
+        CompressedSignedRedRgtc1 = gl::COMPRESSED_SIGNED_RED_RGTC1,
+        CompressedRgRgtc2 = gl::COMPRESSED_RG_RGTC2,
+        CompressedSignedRgRgtc2 = gl::COMPRESSED_SIGNED_RG_RGTC2,
+        CompressedRgbaBptcUnorm = gl::COMPRESSED_RGBA_BPTC_UNORM,
+        CompressedSrgbAlphaBptcUnorm = gl::COMPRESSED_SRGB_ALPHA_BPTC_UNORM,
+        CompressedRgbBptcSignedFloat = gl::COMPRESSED_RGB_BPTC_SIGNED_FLOAT,
+        CompressedRgbBptcUnsignedFloat = gl::COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT,
+    }
+
+    struct UncheckedFormat(i32);
+    Format {
+        Red = gl::RED,
+        Rg = gl::RG,
+        Rgb = gl::RGB,
+        Bgr = gl::BGR,
+        Rgba = gl::RGBA,
+        Bgra = gl::BGRA,
+        RedInteger = gl::RED_INTEGER,
+        RgInteger = gl::RG_INTEGER,
+        RgbInteger = gl::RGB_INTEGER,
+        BgrInteger = gl::BGR_INTEGER,
+        RgbaInteger = gl::RGBA_INTEGER,
+        BgraInteger = gl::BGRA_INTEGER,
+        StencilIndex = gl::STENCIL_INDEX,
+        DepthComponent = gl::DEPTH_COMPONENT,
+        DepthStencil = gl::DEPTH_STENCIL,
+    }
+
+    struct UncheckedComponentFormat(i32);
+    ComponentFormat {
+        UnsignedByte = gl::UNSIGNED_BYTE,
+        Byte = gl::BYTE,
+        UnsignedShort = gl::UNSIGNED_SHORT,
+        Short = gl::SHORT,
+        UnsignedInt = gl::UNSIGNED_INT,
+        Int = gl::INT,
+        HalfFloat = gl::HALF_FLOAT,
+        Float = gl::FLOAT,
+        UnsignedByte332 = gl::UNSIGNED_BYTE_3_3_2,
+        UnsignedByte233Rev = gl::UNSIGNED_BYTE_2_3_3_REV,
+        UnsignedShort565 = gl::UNSIGNED_SHORT_5_6_5,
+        UnsignedShort565Rev = gl::UNSIGNED_SHORT_5_6_5_REV,
+        UnsignedShort4444 = gl::UNSIGNED_SHORT_4_4_4_4,
+        UnsignedShort4444Rev = gl::UNSIGNED_SHORT_4_4_4_4_REV,
+        UnsignedShort5551 = gl::UNSIGNED_SHORT_5_5_5_1,
+        UnsignedShort1555Rev = gl::UNSIGNED_SHORT_1_5_5_5_REV,
+        UnsignedInt8888 = gl::UNSIGNED_INT_8_8_8_8,
+        UnsignedInt8888Rev = gl::UNSIGNED_INT_8_8_8_8_REV,
+        UnsignedInt1010102 = gl::UNSIGNED_INT_10_10_10_2,
+        UnsignedInt2101010Rev = gl::UNSIGNED_INT_2_10_10_10_REV,
     }
 }
 
@@ -515,3 +660,12 @@ impl_struct_from_symbol! (FramebufferAttachment {
     ColorAttachment14 = gl::COLOR_ATTACHMENT14,
     ColorAttachment15 = gl::COLOR_ATTACHMENT15,
 });
+
+// FIXME: Bit flags and symbols don't play nice together.
+bitflags::bitflags! {
+    pub struct ClearFlags : u32 {
+        const COLOR_BUFFER_BIT = gl::COLOR_BUFFER_BIT;
+        const DEPTH_BUFFER_BIT = gl::DEPTH_BUFFER_BIT;
+        const STENCIL_BUFFER_BIT = gl::STENCIL_BUFFER_BIT;
+    }
+}
