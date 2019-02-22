@@ -560,6 +560,18 @@ impl_enums! {
         TextureCubeMapSeamless = gl::TEXTURE_CUBE_MAP_SEAMLESS,
         ProgramPointSize = gl::PROGRAM_POINT_SIZE,
     }
+
+    struct UncheckedPolygonModeFace(u32);
+    PolygonModeFace {
+        FrontAndBack = gl::FRONT_AND_BACK,
+    }
+
+    struct UncheckedPolygonMode(u32);
+    PolygonMode {
+        Point = gl::POINT,
+        Line = gl::LINE,
+        Fill = gl::FILL,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {

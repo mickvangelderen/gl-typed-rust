@@ -52,13 +52,28 @@ impl Gl {
 
     // Drawing.
     #[inline]
-    pub unsafe fn enable<C>(&self, cap: C) where C: Into<Capability> {
+    pub unsafe fn enable<C>(&self, cap: C)
+    where
+        C: Into<Capability>,
+    {
         self.gl.Enable(cap.into() as u32);
     }
 
     #[inline]
-    pub unsafe fn disable<C>(&self, cap: C) where C: Into<Capability> {
+    pub unsafe fn disable<C>(&self, cap: C)
+    where
+        C: Into<Capability>,
+    {
         self.gl.Disable(cap.into() as u32);
+    }
+
+    #[inline]
+    pub unsafe fn polygon_mode<F, M>(&self, face: F, mode: M)
+    where
+        F: Into<PolygonModeFace>,
+        M: Into<PolygonMode>,
+    {
+        self.gl.PolygonMode(face.into() as u32, mode.into() as u32);
     }
 
     #[inline]
@@ -439,7 +454,10 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_vertex_array<N>(&self, name: &N) where N: MaybeUnbindVertexArrayName {
+    pub unsafe fn bind_vertex_array<N>(&self, name: &N)
+    where
+        N: MaybeUnbindVertexArrayName,
+    {
         self.gl.BindVertexArray(name.as_u32());
     }
 
