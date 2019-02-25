@@ -572,6 +572,12 @@ impl_enums! {
         Line = gl::LINE,
         Fill = gl::FILL,
     }
+
+    struct UncheckedMajorAxis(u8);
+    MajorAxis {
+        Column = gl::FALSE,
+        Row = gl::TRUE,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {

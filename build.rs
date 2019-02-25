@@ -41,7 +41,7 @@ fn main() {
             write_constant(&mut constants, &s, &c);
         }
 
-        for ident in ["Uncompiled", "Compiled", "Unlinked", "Linked"].iter() {
+        for ident in ["Uncompiled", "Compiled", "Unlinked", "Linked", "Row", "Column"].iter() {
             let s = ident
                 .to_camel_case()
                 .replace("1d", "1D")

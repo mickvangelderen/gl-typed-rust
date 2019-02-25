@@ -265,11 +265,10 @@ impl Gl {
         program_name: &ProgramName,
         attrib_name: &CStr,
     ) -> Option<AttributeLocation> {
-        let l = self
-            .gl
-            .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr());
-        println!("p {:?} n {:?} l {:?}", program_name, attrib_name, &l);
-        AttributeLocation::from_raw(l)
+        AttributeLocation::from_raw(
+            self.gl
+                .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr()),
+        )
     }
 
     #[inline]
@@ -591,15 +590,35 @@ impl Gl {
     //     );
     // }
 
-    // #[inline]
-    // pub unsafe fn uniform_matrix4fv(&self, uniform_location: &UniformLocation<[[f32; 16]]>, major_axis: MajorAxis, value: &[[f32; 16]]) {
-    //     self.gl.UniformMatrix4fv(
-    //         uniform_location.as_i32(),
-    //         value.len() as i32,
-    //         major_axis as u8,
-    //         value.as_ptr() as *const f32,
-    //     );
-    // }
+    #[inline]
+    pub unsafe fn uniform_matrix4f(
+        &self,
+        uniform_location: &UniformLocation<[[f32; 4]; 4]>,
+        major_axis: MajorAxis,
+        value: &[[f32; 4]; 4],
+    ) {
+        self.gl.UniformMatrix4fv(
+            uniform_location.as_i32(),
+            1,
+            major_axis as u8,
+            value.as_ptr() as *const f32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn uniform_matrix4fv(
+        &self,
+        uniform_location: &UniformLocation<[[f32; 4]; 4]>,
+        major_axis: MajorAxis,
+        values: &[[[f32; 4]; 4]],
+    ) {
+        self.gl.UniformMatrix4fv(
+            uniform_location.as_i32(),
+            values.len() as i32,
+            major_axis as u8,
+            values.as_ptr() as *const f32,
+        );
+    }
 
     // macro_rules! impl_uniform_matrix {
     //     ($(($n:ident, $M:ident, $Flat:ty)),+ $(,)*) => {
