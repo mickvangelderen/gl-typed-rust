@@ -77,6 +77,14 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn cull_face<F>(&self, face: F)
+    where
+        F: Into<CullFace>,
+    {
+        self.gl.CullFace(face.into() as u32);
+    }
+
+    #[inline]
     pub unsafe fn viewport(&self, x: i32, y: i32, width: i32, height: i32) {
         self.gl.Viewport(x, y, width, height);
     }

@@ -478,49 +478,67 @@ impl_enums! {
         CompressedSrgbAlphaBptcUnorm = gl::COMPRESSED_SRGB_ALPHA_BPTC_UNORM,
         CompressedRgbBptcSignedFloat = gl::COMPRESSED_RGB_BPTC_SIGNED_FLOAT,
         CompressedRgbBptcUnsignedFloat = gl::COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT,
+        DepthComponent16 = gl::DEPTH_COMPONENT16,
+        DepthComponent24 = gl::DEPTH_COMPONENT24,
+        DepthComponent32 = gl::DEPTH_COMPONENT32,
+        DepthComponent32f = gl::DEPTH_COMPONENT32F,
+        Depth24Stencil8 = gl::DEPTH24_STENCIL8,
+        Depth32fStencil8 = gl::DEPTH32F_STENCIL8,
+        StencilIndex1 = gl::STENCIL_INDEX1,
+        StencilIndex4 = gl::STENCIL_INDEX4,
+        StencilIndex8 = gl::STENCIL_INDEX8,
+        StencilIndex16 = gl::STENCIL_INDEX16,
     }
 
     struct UncheckedFormat(i32);
     Format {
-        Red = gl::RED,
-        Rg = gl::RG,
-        Rgb = gl::RGB,
         Bgr = gl::BGR,
-        Rgba = gl::RGBA,
-        Bgra = gl::BGRA,
-        RedInteger = gl::RED_INTEGER,
-        RgInteger = gl::RG_INTEGER,
-        RgbInteger = gl::RGB_INTEGER,
         BgrInteger = gl::BGR_INTEGER,
-        RgbaInteger = gl::RGBA_INTEGER,
+        Bgra = gl::BGRA,
         BgraInteger = gl::BGRA_INTEGER,
-        StencilIndex = gl::STENCIL_INDEX,
+        Blue = gl::BLUE,
+        BlueInteger = gl::BLUE_INTEGER,
         DepthComponent = gl::DEPTH_COMPONENT,
         DepthStencil = gl::DEPTH_STENCIL,
+        Green = gl::GREEN,
+        GreenInteger = gl::GREEN_INTEGER,
+        Red = gl::RED,
+        RedInteger = gl::RED_INTEGER,
+        Rg = gl::RG,
+        RgInteger = gl::RG_INTEGER,
+        Rgb = gl::RGB,
+        RgbInteger = gl::RGB_INTEGER,
+        Rgba = gl::RGBA,
+        RgbaInteger = gl::RGBA_INTEGER,
+        StencilIndex = gl::STENCIL_INDEX,
     }
 
     struct UncheckedComponentFormat(i32);
     ComponentFormat {
-        UnsignedByte = gl::UNSIGNED_BYTE,
         Byte = gl::BYTE,
-        UnsignedShort = gl::UNSIGNED_SHORT,
-        Short = gl::SHORT,
-        UnsignedInt = gl::UNSIGNED_INT,
-        Int = gl::INT,
-        HalfFloat = gl::HALF_FLOAT,
         Float = gl::FLOAT,
-        UnsignedByte332 = gl::UNSIGNED_BYTE_3_3_2,
+        Float32UnsignedInt248Rev = gl::FLOAT_32_UNSIGNED_INT_24_8_REV,
+        HalfFloat = gl::HALF_FLOAT,
+        Int = gl::INT,
+        Short = gl::SHORT,
+        UnsignedByte = gl::UNSIGNED_BYTE,
         UnsignedByte233Rev = gl::UNSIGNED_BYTE_2_3_3_REV,
-        UnsignedShort565 = gl::UNSIGNED_SHORT_5_6_5,
-        UnsignedShort565Rev = gl::UNSIGNED_SHORT_5_6_5_REV,
+        UnsignedByte332 = gl::UNSIGNED_BYTE_3_3_2,
+        UnsignedInt = gl::UNSIGNED_INT,
+        UnsignedInt1010102 = gl::UNSIGNED_INT_10_10_10_2,
+        UnsignedInt10f11f11fRev = gl::UNSIGNED_INT_10F_11F_11F_REV,
+        UnsignedInt2101010Rev = gl::UNSIGNED_INT_2_10_10_10_REV,
+        UnsignedInt248 = gl::UNSIGNED_INT_24_8,
+        UnsignedInt5999Rev = gl::UNSIGNED_INT_5_9_9_9_REV,
+        UnsignedInt8888 = gl::UNSIGNED_INT_8_8_8_8,
+        UnsignedInt8888Rev = gl::UNSIGNED_INT_8_8_8_8_REV,
+        UnsignedShort = gl::UNSIGNED_SHORT,
+        UnsignedShort1555Rev = gl::UNSIGNED_SHORT_1_5_5_5_REV,
         UnsignedShort4444 = gl::UNSIGNED_SHORT_4_4_4_4,
         UnsignedShort4444Rev = gl::UNSIGNED_SHORT_4_4_4_4_REV,
         UnsignedShort5551 = gl::UNSIGNED_SHORT_5_5_5_1,
-        UnsignedShort1555Rev = gl::UNSIGNED_SHORT_1_5_5_5_REV,
-        UnsignedInt8888 = gl::UNSIGNED_INT_8_8_8_8,
-        UnsignedInt8888Rev = gl::UNSIGNED_INT_8_8_8_8_REV,
-        UnsignedInt1010102 = gl::UNSIGNED_INT_10_10_10_2,
-        UnsignedInt2101010Rev = gl::UNSIGNED_INT_2_10_10_10_REV,
+        UnsignedShort565 = gl::UNSIGNED_SHORT_5_6_5,
+        UnsignedShort565Rev = gl::UNSIGNED_SHORT_5_6_5_REV,
     }
 
     struct UncheckedDrawElementsType(u32);
@@ -571,6 +589,13 @@ impl_enums! {
         Point = gl::POINT,
         Line = gl::LINE,
         Fill = gl::FILL,
+    }
+
+    struct UncheckedCullFace(u32);
+    CullFace {
+        Front = gl::FRONT,
+        Back = gl::BACK,
+        FrontAndBack = gl::FRONT_AND_BACK,
     }
 
     struct UncheckedMajorAxis(u8);
@@ -699,6 +724,7 @@ impl FramebufferAttachment {
 }
 
 impl_struct_from_symbol! (FramebufferAttachment {
+    DepthStencilAttachment = gl::DEPTH_STENCIL_ATTACHMENT,
     ColorAttachment0 = gl::COLOR_ATTACHMENT0,
     ColorAttachment1 = gl::COLOR_ATTACHMENT1,
     ColorAttachment2 = gl::COLOR_ATTACHMENT2,
