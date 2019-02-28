@@ -337,8 +337,11 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn active_texture(&self, unit: TextureUnit) {
-        self.gl.ActiveTexture(unit.as_u32());
+    pub unsafe fn active_texture<U>(&self, unit: U)
+    where
+        U: Into<TextureUnit>,
+    {
+        self.gl.ActiveTexture(unit.into().as_u32());
     }
 
     #[inline]
@@ -444,6 +447,35 @@ impl Gl {
         );
     }
 
+    /// Complement our inability to specify a slice of a certain size without
+    /// wanting to write anything.
+    #[inline]
+    pub unsafe fn buffer_reserve<T, U>(&self, target: T, capacity: usize, usage: U)
+    where
+        T: Into<BufferTarget>,
+        U: Into<BufferUsage>,
+    {
+        self.gl.BufferData(
+            target.into() as u32,
+            capacity as isize,
+            std::ptr::null(),
+            usage.into() as u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn buffer_sub_data<T, D>(&self, target: T, offset: usize, data: &[D])
+    where
+        T: Into<BufferTarget>,
+    {
+        self.gl.BufferSubData(
+            target.into() as u32,
+            offset as isize,
+            std::mem::size_of_val(data) as isize,
+            data.as_ptr() as *const c_void,
+        );
+    }
+
     // Vertex array names.
 
     #[inline]
@@ -523,10 +555,10 @@ impl Gl {
 
     // // Uniform setters.
 
-    // #[inline]
-    // pub unsafe fn uniform_1i(&self, uniform_location: &UniformLocation<i32>, value: i32) {
-    //     self.gl.Uniform1i(uniform_location.as_i32(), value);
-    // }
+    #[inline]
+    pub unsafe fn uniform_1i(&self, uniform_location: &UniformLocation<i32>, value: i32) {
+        self.gl.Uniform1i(uniform_location.as_i32(), value);
+    }
 
     // #[inline]
     // pub unsafe fn uniform_2i<T: AsRef<[i32; 2]>>(
