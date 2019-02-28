@@ -1,5 +1,3 @@
-#![feature(try_from)]
-
 pub mod array;
 pub mod constants;
 pub mod convert;
