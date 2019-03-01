@@ -593,10 +593,10 @@ impl Gl {
     //     );
     // }
 
-    // #[inline]
-    // pub unsafe fn uniform_1f(&self, uniform_location: &UniformLocation<f32>, value: f32) {
-    //     self.gl.Uniform1f(uniform_location.as_i32(), value);
-    // }
+    #[inline]
+    pub unsafe fn uniform_1f(&self, uniform_location: &UniformLocation<f32>, value: f32) {
+        self.gl.Uniform1f(uniform_location.as_i32(), value);
+    }
 
     // #[inline]
     // pub unsafe fn uniform_2f(&self, uniform_location: &UniformLocation<[f32; 2]>, value: [f32; 2]) {
