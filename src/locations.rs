@@ -93,20 +93,13 @@ impl OptionUniformLocation {
     }
 
     #[inline]
-    pub fn into_i32(self) -> i32 {
-        self.0
+    pub fn into_option(self) -> Option<UniformLocation> {
+        UniformLocation::new(self.0)
     }
 
     #[inline]
     fn is_some(&self) -> bool {
-        Option::<UniformLocation>::from(*self).is_some()
-    }
-}
-
-impl From<OptionUniformLocation> for Option<UniformLocation> {
-    #[inline]
-    fn from(val: OptionUniformLocation) -> Self {
-        UniformLocation::new(val.into_i32())
+        self.into_option().is_some()
     }
 }
 
@@ -149,7 +142,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
                     // 1. we ensure that all Option<TextureName> are Some(TextureName), and
                     // 2. all Some(TextureName) are valid TextureName.
                     unsafe {
-                        if self.iter().all(|val| $T::new(val.into_i32()).is_some()) {
+                        if self.iter().all($OT::is_some) {
                             Ok(self.unwrap_all_unchecked())
                         } else {
                             Err(self)
@@ -186,7 +179,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
                     // 1. we ensure that all Option<T> are Some(T), and
                     // 2. all Some(T) are valid T.
                     unsafe {
-                        if self.iter().all(|val| $T::new(val.into_i32()).is_some()) {
+                        if self.iter().all($OT::is_some) {
                             Some(self.unwrap_all_ref_unchecked())
                         } else {
                             None
@@ -208,7 +201,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
                     // 2. all Some(T) are valid T, and
                     // 3. vice versa.
                     unsafe {
-                        if self.iter().all(|val| $T::new(val.into_i32()).is_some()) {
+                        if self.iter().all($OT::is_some) {
                             Some(self.unwrap_all_mut_unchecked())
                         } else {
                             None
@@ -252,7 +245,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
             #[inline]
             fn unwrap_all(self) -> Result<Self::Unwrapped, Self> {
                 unsafe {
-                    if self.iter().all(|val| $T::new(val.into_i32()).is_some()) {
+                    if self.iter().all($OT::is_some) {
                         Ok(self.unwrap_all_unchecked())
                     } else {
                         Err(self)
@@ -283,7 +276,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
             #[inline]
             fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped> {
                 unsafe {
-                    if self.iter().all(|val| $T::new(val.into_i32()).is_some()) {
+                    if self.iter().all($OT::is_some) {
                         Some(self.unwrap_all_ref_unchecked())
                     } else {
                         None
