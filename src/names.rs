@@ -1,129 +1,262 @@
-macro_rules! impl_names {
-    ($($(#[$m:meta])* $Name:ident,)*) => {
+use crate::convert::*;
+
+macro_rules! impl_zero_copy_wrap_unwrap_all {
+    ($T: ident) => {
+        impl_zero_copy_wrap_unwrap_all!($T,
+             1,  2,  3,  4,  5,  6,  7,  8,
+             9, 10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19, 20, 21, 22, 23, 24,
+            25, 26, 27, 28, 29, 30, 31, 32,
+        );
+    };
+
+    ($T: ident, $($N: expr,)*) => {
         $(
-            $(#[$m])*
-            #[derive(Debug)]
+            impl WrapAll for [$T; $N] {
+                type Wrapped = [Option<$T>; $N];
+
+                #[inline]
+                fn wrap_all(self) -> Self::Wrapped {
+                    // Safe because:
+                    // 1. all T are valid Option<T>.
+                    unsafe {
+                        std::mem::transmute(self)
+                    }
+                }
+            }
+
+            impl UnwrapAll for [Option<$T>; $N] {
+                type Unwrapped = [$T; $N];
+
+                #[inline]
+                unsafe fn unwrap_all_unchecked(self) -> Self::Unwrapped {
+                    std::mem::transmute(self)
+                }
+
+                #[inline]
+                fn unwrap_all(self) -> Result<Self::Unwrapped, Self> {
+                    // Safe because:
+                    // 1. we ensure that all Option<TextureName> are Some(TextureName), and
+                    // 2. all Some(TextureName) are valid TextureName.
+                    unsafe {
+                        if self.iter().all(Option::is_some) {
+                            Ok(self.unwrap_all_unchecked())
+                        } else {
+                            Err(self)
+                        }
+                    }
+                }
+            }
+
+            impl WrapAllRef for [$T; $N] {
+                type Wrapped = [Option<$T>; $N];
+
+                #[inline]
+                fn wrap_all_ref(&self) -> &Self::Wrapped {
+                    // Safe because:
+                    // 1. all T are valid Option<T>, and
+                    // 2. we cannot write to a T as if it were an Option<T> through an immutable reference.
+                    unsafe {
+                        &*(self.as_ptr() as *const Self::Wrapped)
+                    }
+                }
+            }
+
+            impl UnwrapAllRef for [Option<$T>; $N] {
+                type Unwrapped = [$T; $N];
+
+                #[inline]
+                unsafe fn unwrap_all_ref_unchecked(&self) -> &Self::Unwrapped {
+                    &*(self.as_ptr() as *const Self::Unwrapped)
+                }
+
+                #[inline]
+                fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped> {
+                    // Safe because:
+                    // 1. we ensure that all Option<T> are Some(T), and
+                    // 2. all Some(T) are valid T.
+                    unsafe {
+                        if self.iter().all(Option::is_some) {
+                            Some(self.unwrap_all_ref_unchecked())
+                        } else {
+                            None
+                        }
+                    }
+                }
+            }
+
+            impl UnwrapAllMut for [Option<$T>; $N] {
+                #[inline]
+                unsafe fn unwrap_all_mut_unchecked(&mut self) -> &mut Self::Unwrapped {
+                    &mut *(self.as_mut_ptr() as *mut Self::Unwrapped)
+                }
+
+                #[inline]
+                fn unwrap_all_mut(&mut self) -> Option<&mut Self::Unwrapped> {
+                    // Safe because:
+                    // 1. we ensure that all Option<T> are Some(T), and
+                    // 2. all Some(T) are valid T, and
+                    // 3. vice versa.
+                    unsafe {
+                        if self.iter().all(Option::is_some) {
+                            Some(self.unwrap_all_mut_unchecked())
+                        } else {
+                            None
+                        }
+                    }
+                }
+            }
+        )*
+
+        impl WrapAll for Vec<$T> {
+            type Wrapped = Vec<Option<$T>>;
+
+            #[inline]
+            fn wrap_all(mut self) -> Self::Wrapped {
+                unsafe {
+                    let wrapped = Vec::from_raw_parts(
+                        self.as_mut_ptr() as *mut Option<$T>,
+                        self.len(),
+                        self.capacity()
+                    );
+                    std::mem::forget(self);
+                    wrapped
+                }
+            }
+        }
+
+        impl UnwrapAll for Vec<Option<$T>> {
+            type Unwrapped = Vec<$T>;
+
+            #[inline]
+            unsafe fn unwrap_all_unchecked(mut self) -> Self::Unwrapped {
+                let wrapped = Vec::from_raw_parts(
+                    self.as_mut_ptr() as *mut $T,
+                    self.len(),
+                    self.capacity()
+                );
+                std::mem::forget(self);
+                wrapped
+            }
+
+            #[inline]
+            fn unwrap_all(self) -> Result<Self::Unwrapped, Self> {
+                unsafe {
+                    if self.iter().all(Option::is_some) {
+                        Ok(self.unwrap_all_unchecked())
+                    } else {
+                        Err(self)
+                    }
+                }
+            }
+        }
+
+        impl WrapAllRef for [$T] {
+            type Wrapped = [Option<$T>];
+
+            #[inline]
+            fn wrap_all_ref(&self) -> &Self::Wrapped {
+                unsafe {
+                    std::slice::from_raw_parts(self.as_ptr() as *const Option<$T>, self.len())
+                }
+            }
+        }
+
+        impl UnwrapAllRef for [Option<$T>] {
+            type Unwrapped = [$T];
+
+            #[inline]
+            unsafe fn unwrap_all_ref_unchecked(&self) -> &Self::Unwrapped {
+                std::slice::from_raw_parts(self.as_ptr() as *const $T, self.len())
+            }
+
+            #[inline]
+            fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped> {
+                unsafe {
+                    if self.iter().all(Option::is_some) {
+                        Some(self.unwrap_all_ref_unchecked())
+                    } else {
+                        None
+                    }
+                }
+            }
+        }
+
+        impl UnwrapAllMut for [Option<$T>] {
+            #[inline]
+            unsafe fn unwrap_all_mut_unchecked(&mut self) -> &mut Self::Unwrapped {
+                std::slice::from_raw_parts_mut(self.as_mut_ptr() as *mut $T, self.len())
+            }
+
+            #[inline]
+            fn unwrap_all_mut(&mut self) -> Option<&mut Self::Unwrapped> {
+                unsafe {
+                    if self.iter().all(Option::is_some) {
+                        Some(self.unwrap_all_mut_unchecked())
+                    } else {
+                        None
+                    }
+                }
+            }
+        }
+    };
+}
+
+macro_rules! impl_names {
+    ($(($Name: ident, $OptionName: ident),)*) => {
+        $(
+            /// No guarantees are made about the validity of the object this
+            /// name represents.
+            #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct $Name(::std::num::NonZeroU32);
+            pub struct $Name(pub ::std::num::NonZeroU32);
 
             impl $Name {
-                /// Does not verify whether name is actually a valid name.
                 #[inline]
-                pub unsafe fn from_raw(name: u32) -> Option<Self> {
+                pub fn new(name: u32) -> Option<Self> {
                     std::num::NonZeroU32::new(name).map($Name)
                 }
 
-                /// Does not verify whether name is actually a non-zero nor whether
-                /// it is a valid name.
                 #[inline]
-                pub const unsafe fn from_raw_unchecked(name: u32) -> Self {
+                pub const unsafe fn new_unchecked(name: u32) -> Self {
                     $Name(std::num::NonZeroU32::new_unchecked(name))
                 }
 
-                /// Converts the name into its raw representation without dropping.
                 #[inline]
-                pub unsafe fn into_raw(self) -> u32 {
-                    std::mem::ManuallyDrop::new(self).as_u32()
-                }
-
-                #[inline]
-                pub fn as_u32(&self) -> u32 {
+                pub fn into_u32(self) -> u32 {
                     self.0.get()
                 }
             }
 
-            impl Drop for $Name {
-                #[cold]
-                fn drop(&mut self) {
-                    // TODO(mickvangelderen): Warn on drop/Abort on drop.
+            pub trait $OptionName {
+                fn into_u32(self) -> u32;
+            }
+
+            impl $OptionName for $Name {
+                #[inline]
+                fn into_u32(self) -> u32 {
+                    $Name::into_u32(self)
                 }
             }
+
+            impl $OptionName for Option<$Name> {
+                #[inline]
+                fn into_u32(self) -> u32 {
+                    self.map($Name::into_u32).unwrap_or_default()
+                }
+            }
+
+            impl_zero_copy_wrap_unwrap_all!($Name);
         )*
     };
 }
 
 impl_names!(
-    /// The name of a shader, without the kind.
-    BufferName,
-    FramebufferName,
-    ProgramName,
-    ShaderName,
-    TextureName,
-    VertexArrayName,
+    (BufferName, OptionBufferName),
+    (FramebufferName, OptionFramebufferName),
+    (ProgramName, OptionProgramName),
+    (ShaderName, OptionShaderName),
+    (TextureName, OptionTextureName),
+    (VertexArrayName, OptionVertexArrayName),
 );
 
-pub struct DefaultFramebufferName;
-
-pub trait MaybeDefaultFramebufferName {
-    fn as_u32(&self) -> u32;
-}
-
-impl MaybeDefaultFramebufferName for FramebufferName {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        FramebufferName::as_u32(self)
-    }
-}
-
-impl MaybeDefaultFramebufferName for DefaultFramebufferName {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        0
-    }
-}
-
-pub struct Unbind;
-
-pub trait MaybeUnbindTextureName {
-    fn as_u32(&self) -> u32;
-}
-
-impl MaybeUnbindTextureName for TextureName {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        TextureName::as_u32(self)
-    }
-}
-
-impl MaybeUnbindTextureName for Unbind {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        0
-    }
-}
-
-pub trait MaybeUnbindBufferName {
-    fn as_u32(&self) -> u32;
-}
-
-impl MaybeUnbindBufferName for BufferName {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        BufferName::as_u32(self)
-    }
-}
-
-impl MaybeUnbindBufferName for Unbind {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        0
-    }
-}
-
-pub trait MaybeUnbindVertexArrayName {
-    fn as_u32(&self) -> u32;
-}
-
-impl MaybeUnbindVertexArrayName for VertexArrayName {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        VertexArrayName::as_u32(self)
-    }
-}
-
-impl MaybeUnbindVertexArrayName for Unbind {
-    #[inline]
-    fn as_u32(&self) -> u32 {
-        0
-    }
-}

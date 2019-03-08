@@ -23,6 +23,7 @@ pub struct Gl {
     gl: gl::Gl,
 }
 
+
 impl Gl {
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
@@ -127,30 +128,30 @@ impl Gl {
     where
         K: Into<ShaderKind>,
     {
-        ShaderName::from_raw(self.gl.CreateShader(kind.into() as u32))
+        ShaderName::new(self.gl.CreateShader(kind.into() as u32))
     }
 
     #[inline]
     pub unsafe fn delete_shader(&self, name: ShaderName) {
-        self.gl.DeleteShader(name.into_raw());
+        self.gl.DeleteShader(name.into_u32());
     }
 
     #[inline]
-    pub unsafe fn compile_shader(&self, name: &mut ShaderName) {
-        self.gl.CompileShader(name.as_u32());
+    pub unsafe fn compile_shader(&self, name: ShaderName) {
+        self.gl.CompileShader(name.into_u32());
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv<P>(&self, name: &ShaderName, param: P, value: &mut P::Value)
+    pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, param: P, value: &mut P::Value)
     where
         P: traits::GetShaderivParam,
     {
         self.gl
-            .GetShaderiv(name.as_u32(), param.into() as u32, value.transmute_as_mut())
+            .GetShaderiv(name.into_u32(), param.into() as u32, value.transmute_as_mut())
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv_move<P>(&self, name: &ShaderName, param: P) -> P::Value
+    pub unsafe fn get_shaderiv_move<P>(&self, name: ShaderName, param: P) -> P::Value
     where
         P: traits::GetShaderivParam,
     {
@@ -162,12 +163,12 @@ impl Gl {
     #[inline]
     pub unsafe fn get_shader_info_log(
         &self,
-        name: &ShaderName,
+        name: ShaderName,
         length: &mut i32,
         buffer: &mut [u8],
     ) {
         self.gl.GetShaderInfoLog(
-            name.as_u32(),
+            name.into_u32(),
             buffer.len() as i32,
             length,
             buffer.as_mut_ptr() as *mut i8,
@@ -177,7 +178,7 @@ impl Gl {
     /// Returns Vec<u8> because the user should decide whether or not to trust
     /// that OpenGL writes valid UTF-8 into the buffer.
     #[inline]
-    pub unsafe fn get_shader_info_log_move(&self, name: &ShaderName) -> Vec<u8> {
+    pub unsafe fn get_shader_info_log_move(&self, name: ShaderName) -> Vec<u8> {
         let mut buffer = {
             let capacity = self.get_shaderiv_move(name, INFO_LOG_LENGTH);
             assert!(capacity >= 0);
@@ -187,7 +188,7 @@ impl Gl {
         self.get_shader_info_log(
             name,
             &mut length,
-            ::std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
+            std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
         );
         assert!(length >= 0 && length <= buffer.capacity() as i32);
         buffer.set_len(length as usize);
@@ -200,14 +201,14 @@ impl Gl {
         A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32> + ?Sized,
     >(
         &self,
-        name: &mut ShaderName,
+        name: ShaderName,
         sources: &A,
     ) {
         let pointers = sources.map(|s| s.as_ptr() as *const c_char);
         let lengths = sources.map(|s| s.len() as i32);
         assert_eq!(pointers.len(), lengths.len());
         self.gl.ShaderSource(
-            name.as_u32(),
+            name.into_u32(),
             pointers.len() as i32,
             pointers.as_ptr(),
             lengths.as_ptr(),
@@ -218,47 +219,47 @@ impl Gl {
 
     #[inline]
     pub unsafe fn create_program(&self) -> Option<ProgramName> {
-        ProgramName::from_raw(self.gl.CreateProgram())
+        ProgramName::new(self.gl.CreateProgram())
     }
 
     #[inline]
     pub unsafe fn delete_program(&self, name: ProgramName) {
-        self.gl.DeleteProgram(name.into_raw());
+        self.gl.DeleteProgram(name.into_u32());
     }
 
     #[inline]
-    pub unsafe fn use_program(&self, program: &ProgramName) {
-        self.gl.UseProgram(program.as_u32());
+    pub unsafe fn use_program(&self, program: ProgramName) {
+        self.gl.UseProgram(program.into_u32());
     }
 
     #[inline]
-    pub unsafe fn attach_shader(&self, program: &mut ProgramName, shader: &ShaderName) {
-        self.gl.AttachShader(program.as_u32(), shader.as_u32());
+    pub unsafe fn attach_shader(&self, program: ProgramName, shader: ShaderName) {
+        self.gl.AttachShader(program.into_u32(), shader.into_u32());
     }
 
     #[inline]
-    pub unsafe fn link_program(&self, program: &mut ProgramName) {
-        self.gl.LinkProgram(program.as_u32());
+    pub unsafe fn link_program(&self, program: ProgramName) {
+        self.gl.LinkProgram(program.into_u32());
     }
 
     #[inline]
-    pub unsafe fn get_programiv<P>(&self, name: &ProgramName, param: P, value: &mut P::Value)
+    pub unsafe fn get_programiv<P>(&self, name: ProgramName, param: P, value: &mut P::Value)
     where
         P: traits::GetProgramivParam,
     {
         self.gl
-            .GetProgramiv(name.as_u32(), param.into() as u32, value.transmute_as_mut());
+            .GetProgramiv(name.into_u32(), param.into() as u32, value.transmute_as_mut());
     }
 
     #[inline]
     pub unsafe fn get_program_info_log(
         &self,
-        name: &ProgramName,
+        name: ProgramName,
         length: &mut i32,
         buffer: &mut [u8],
     ) {
         self.gl.GetProgramInfoLog(
-            name.as_u32(),
+            name.into_u32(),
             buffer.len() as i32,
             length,
             buffer.as_mut_ptr() as *mut i8,
@@ -268,19 +269,19 @@ impl Gl {
     #[inline]
     pub unsafe fn get_attrib_location(
         &self,
-        program_name: &ProgramName,
+        program_name: ProgramName,
         attrib_name: &CStr,
     ) -> Option<AttributeLocation> {
-        AttributeLocation::from_raw(
+        AttributeLocation::new(
             self.gl
-                .GetAttribLocation(program_name.as_u32(), attrib_name.as_ptr()),
+                .GetAttribLocation(program_name.into_u32(), attrib_name.as_ptr()),
         )
     }
 
     #[inline]
     pub unsafe fn vertex_attrib_pointer<T, N>(
         &self,
-        loc: &AttributeLocation,
+        loc: AttributeLocation,
         size: usize,
         ty: T,
         normalized: N,
@@ -291,7 +292,7 @@ impl Gl {
         N: Into<Bool>,
     {
         self.gl.VertexAttribPointer(
-            loc.as_u32(),
+            loc.into_u32(),
             size as i32,
             ty.into() as u32,
             normalized.into() as u8,
@@ -301,25 +302,25 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_uniform_location<T>(
+    pub unsafe fn get_uniform_location(
         &self,
-        program_name: &ProgramName,
+        program_name: ProgramName,
         uniform_name: &CStr,
-    ) -> Option<UniformLocation<T>> {
-        UniformLocation::from_raw(
+    ) -> OptionUniformLocation {
+        OptionUniformLocation::new(
             self.gl
-                .GetUniformLocation(program_name.as_u32(), uniform_name.as_ptr()),
+                .GetUniformLocation(program_name.into_u32(), uniform_name.as_ptr()),
         )
     }
 
     #[inline]
-    pub unsafe fn enable_vertex_attrib_array(&self, loc: &AttributeLocation) {
-        self.gl.EnableVertexAttribArray(loc.as_u32());
+    pub unsafe fn enable_vertex_attrib_array(&self, loc: AttributeLocation) {
+        self.gl.EnableVertexAttribArray(loc.into_u32());
     }
 
     #[inline]
-    pub unsafe fn disable_vertex_attrib_array(&self, loc: &AttributeLocation) {
-        self.gl.DisableVertexAttribArray(loc.as_u32());
+    pub unsafe fn disable_vertex_attrib_array(&self, loc: AttributeLocation) {
+        self.gl.DisableVertexAttribArray(loc.into_u32());
     }
 
     // Textures.
@@ -345,12 +346,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_texture<T, N>(&self, target: T, name: &N)
+    pub unsafe fn bind_texture<T, N>(&self, target: T, name: N)
     where
         T: Into<TextureTarget>,
-        N: MaybeUnbindTextureName,
+        N: OptionTextureName,
     {
-        self.gl.BindTexture(target.into() as u32, name.as_u32());
+        self.gl.BindTexture(target.into() as u32, name.into_u32());
     }
 
     // FIXME: Figure out why we need the additional type bounds even though
@@ -425,12 +426,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: &N)
+    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: N)
     where
         T: Into<BufferTarget>,
-        N: MaybeUnbindBufferName,
+        N: OptionBufferName,
     {
-        self.gl.BindBuffer(target.into() as u32, name.as_u32());
+        self.gl.BindBuffer(target.into() as u32, name.into_u32());
     }
 
     #[inline]
@@ -491,11 +492,11 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_vertex_array<N>(&self, name: &N)
+    pub unsafe fn bind_vertex_array<N>(&self, name: N)
     where
-        N: MaybeUnbindVertexArrayName,
+        N: OptionVertexArrayName,
     {
-        self.gl.BindVertexArray(name.as_u32());
+        self.gl.BindVertexArray(name.into_u32());
     }
 
     // Framebuffer names.
@@ -513,12 +514,12 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: &N)
+    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: N)
     where
         T: Into<FramebufferTarget>,
-        N: MaybeDefaultFramebufferName,
+        N: OptionFramebufferName,
     {
-        self.gl.BindFramebuffer(target.into() as u32, name.as_u32());
+        self.gl.BindFramebuffer(target.into() as u32, name.into_u32());
     }
 
     #[inline]
@@ -537,7 +538,7 @@ impl Gl {
         framebuffer_target: FT,
         framebuffer_attachment: FA,
         texture_target: TT,
-        texture_name: &TextureName,
+        texture_name: TextureName,
         mipmap_level: i32,
     ) where
         FT: Into<FramebufferTarget>,
@@ -548,7 +549,7 @@ impl Gl {
             framebuffer_target.into() as u32,
             framebuffer_attachment.into().as_u32(),
             texture_target.into() as u32,
-            texture_name.as_u32(),
+            texture_name.into_u32(),
             mipmap_level,
         );
     }
@@ -556,13 +557,13 @@ impl Gl {
     // // Uniform setters.
 
     #[inline]
-    pub unsafe fn uniform_1i(&self, uniform_location: &UniformLocation<i32>, value: i32) {
-        self.gl.Uniform1i(uniform_location.as_i32(), value);
+    pub unsafe fn uniform_1i(&self, uniform_location: UniformLocation, value: i32) {
+        self.gl.Uniform1i(uniform_location.into_i32(), value);
     }
 
     // #[inline]
     // pub unsafe fn uniform_2i<T: AsRef<[i32; 2]>>(
-    //     uniform_location: &UniformLocation<[i32; 2]>,
+    //     uniform_location: UniformLocation<[i32; 2]>,
     //     value: T,
     // ) {
     //     let value = value.as_ref();
@@ -571,7 +572,7 @@ impl Gl {
 
     // #[inline]
     // pub unsafe fn uniform_3i<T: AsRef<[i32; 3]>>(
-    //     uniform_location: &UniformLocation<[i32; 3]>,
+    //     uniform_location: UniformLocation<[i32; 3]>,
     //     value: T,
     // ) {
     //     let value = value.as_ref();
@@ -580,7 +581,7 @@ impl Gl {
 
     // #[inline]
     // pub unsafe fn uniform_4i<T: AsRef<[i32; 4]>>(
-    //     uniform_location: &UniformLocation<[i32; 4]>,
+    //     uniform_location: UniformLocation<[i32; 4]>,
     //     value: T,
     // ) {
     //     let value = value.as_ref();
@@ -594,22 +595,22 @@ impl Gl {
     // }
 
     #[inline]
-    pub unsafe fn uniform_1f(&self, uniform_location: &UniformLocation<f32>, value: f32) {
-        self.gl.Uniform1f(uniform_location.as_i32(), value);
+    pub unsafe fn uniform_1f(&self, uniform_location: UniformLocation, value: f32) {
+        self.gl.Uniform1f(uniform_location.into_i32(), value);
     }
 
     // #[inline]
-    // pub unsafe fn uniform_2f(&self, uniform_location: &UniformLocation<[f32; 2]>, value: [f32; 2]) {
+    // pub unsafe fn uniform_2f(&self, uniform_location: UniformLocation<[f32; 2]>, value: [f32; 2]) {
     //     self.gl.Uniform2f(uniform_location.as_i32(), value[0], value[1]);
     // }
 
     // #[inline]
-    // pub unsafe fn uniform_3f(&self, uniform_location: &UniformLocation<[f32; 3]>, value: [f32; 3]) {
+    // pub unsafe fn uniform_3f(&self, uniform_location: UniformLocation<[f32; 3]>, value: [f32; 3]) {
     //     self.gl.Uniform3f(uniform_location.as_i32(), value[0], value[1], value[2]);
     // }
 
     // #[inline]
-    // pub unsafe fn uniform_4f(&self, uniform_location: &UniformLocation<[f32; 4]>, value: [f32; 4]) {
+    // pub unsafe fn uniform_4f(&self, uniform_location: UniformLocation<[f32; 4]>, value: [f32; 4]) {
     //     self.gl.Uniform4f(
     //         uniform_location.as_i32(),
     //         value[0],
@@ -620,7 +621,7 @@ impl Gl {
     // }
 
     // #[inline]
-    // pub unsafe fn uniform_1fv(&self, uniform_location: &UniformLocation<*const f32>, value: &[f32]) {
+    // pub unsafe fn uniform_1fv(&self, uniform_location: UniformLocation<*const f32>, value: &[f32]) {
     //     self.gl.Uniform1fv(
     //         uniform_location.as_i32(),
     //         value.len() as i32,
@@ -631,12 +632,12 @@ impl Gl {
     #[inline]
     pub unsafe fn uniform_matrix4f(
         &self,
-        uniform_location: &UniformLocation<[[f32; 4]; 4]>,
+        uniform_location: UniformLocation,
         major_axis: MajorAxis,
         value: &[[f32; 4]; 4],
     ) {
         self.gl.UniformMatrix4fv(
-            uniform_location.as_i32(),
+            uniform_location.into_i32(),
             1,
             major_axis as u8,
             value.as_ptr() as *const f32,
@@ -646,12 +647,12 @@ impl Gl {
     #[inline]
     pub unsafe fn uniform_matrix4fv(
         &self,
-        uniform_location: &UniformLocation<[[f32; 4]; 4]>,
+        uniform_location: UniformLocation,
         major_axis: MajorAxis,
         values: &[[[f32; 4]; 4]],
     ) {
         self.gl.UniformMatrix4fv(
-            uniform_location.as_i32(),
+            uniform_location.into_i32(),
             values.len() as i32,
             major_axis as u8,
             values.as_ptr() as *const f32,
@@ -661,7 +662,7 @@ impl Gl {
     // macro_rules! impl_uniform_matrix {
     //     ($(($n:ident, $M:ident, $Flat:ty)),+ $(,)*) => {
     //         $(
-    //             pub unsafe fn $n<M: $M>(loc: &UniformLocation<$Flat>, val: &M) {
+    //             pub unsafe fn $n<M: $M>(loc: UniformLocation<$Flat>, val: &M) {
     //                 self.gl.UniformMatrix4fv(
     //                     loc.as_i32(),
     //                     1,

@@ -1,3 +1,37 @@
+pub trait WrapAll: Sized {
+    type Wrapped: UnwrapAll;
+
+    fn wrap_all(self) -> Self::Wrapped;
+}
+
+pub trait UnwrapAll: Sized {
+    type Unwrapped: WrapAll;
+
+    unsafe fn unwrap_all_unchecked(self) -> Self::Unwrapped;
+
+    fn unwrap_all(self) -> Result<Self::Unwrapped, Self>;
+}
+
+pub trait WrapAllRef {
+    type Wrapped: UnwrapAllRef + ?Sized;
+
+    fn wrap_all_ref(&self) -> &Self::Wrapped;
+}
+
+pub trait UnwrapAllRef {
+    type Unwrapped: WrapAllRef + ?Sized;
+
+    unsafe fn unwrap_all_ref_unchecked(&self) -> &Self::Unwrapped;
+
+    fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped>;
+}
+
+pub trait UnwrapAllMut: UnwrapAllRef {
+    unsafe fn unwrap_all_mut_unchecked(&mut self) -> &mut Self::Unwrapped;
+
+    fn unwrap_all_mut(&mut self) -> Option<&mut Self::Unwrapped>;
+}
+
 /// Unsafe because from and into musn't do anything. Must guarantee that Self
 /// values can be written to through a *mut T pointer.
 pub unsafe trait Transmute<T>: Sized {
