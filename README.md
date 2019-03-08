@@ -13,8 +13,14 @@ Safety is not on the list because I don't trust myself enough to make that
 judgement. It may be possible to make the API safe without violating the
 zero-cost constraint.
 
-I think it is impossible to prevent all OpenGL errors from occurring (like glium
-promises) under the zero-cost constraint.
+It is literally **impossible** to prevent all OpenGL errors from occurring (like
+glium promises) under the zero-cost constraint. If you want to have any
+flexibility in your code (and you do) you must do what glium does: store the
+owner of objects and synchronize access. I myself thought "oh nice I can use
+lifetimes and borrowing concepts to ensure this and that" but objects with
+lifetimes don't compose well and we can't create self referential structs
+without unsafe code. Check out the design section if you're interested in the
+details.
 
 ## Design
 
