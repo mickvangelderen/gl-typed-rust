@@ -43,7 +43,7 @@ impl NonMinusOneI32 {
 
     /// Returns the value as a primitive type.
     #[inline]
-    pub fn get(&self) -> i32 {
+    pub fn get(self) -> i32 {
         (self.0.get() as i32).wrapping_sub(1)
     }
 }

@@ -637,7 +637,7 @@ macro_rules! impl_struct_from_symbol {
 pub struct MaxCombinedTextureImageUnits(u32);
 
 impl MaxCombinedTextureImageUnits {
-    fn as_u32(&self) -> u32 {
+    fn into_u32(self) -> u32 {
         self.0
     }
 }
@@ -649,7 +649,7 @@ pub struct TextureUnit(u32);
 impl TextureUnit {
     #[inline]
     pub fn new(index: u32, max: MaxCombinedTextureImageUnits) -> Option<Self> {
-        if index < max.as_u32() {
+        if index < max.into_u32() {
             Some(TextureUnit(gl::TEXTURE0 + index))
         } else {
             None
@@ -662,7 +662,7 @@ impl TextureUnit {
     }
 
     #[inline]
-    pub fn as_u32(&self) -> u32 {
+    pub fn into_u32(self) -> u32 {
         self.0
     }
 }
@@ -691,7 +691,7 @@ impl_struct_from_symbol! (TextureUnit {
 pub struct MaxColorAttachments(u32);
 
 impl MaxColorAttachments {
-    fn as_u32(&self) -> u32 {
+    fn into_u32(self) -> u32 {
         self.0
     }
 }
@@ -704,7 +704,7 @@ impl FramebufferAttachment {
     #[inline]
     pub fn new(index: u32, max: MaxColorAttachments) -> Option<Self> {
         unsafe {
-            if index < max.as_u32() {
+            if index < max.into_u32() {
                 Some(FramebufferAttachment::new_unchecked(index))
             } else {
                 None
@@ -718,7 +718,7 @@ impl FramebufferAttachment {
     }
 
     #[inline]
-    pub fn as_u32(&self) -> u32 {
+    pub fn into_u32(self) -> u32 {
         self.0
     }
 }

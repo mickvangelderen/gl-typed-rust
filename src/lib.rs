@@ -347,11 +347,11 @@ impl Gl {
     where
         U: Into<TextureUnit>,
     {
-        self.gl.ActiveTexture(unit.into().as_u32());
+        self.gl.ActiveTexture(unit.into().into_u32());
     }
 
     #[inline]
-    pub unsafe fn bind_texture<T, N>(&self, target: T, name: TextureName)
+    pub unsafe fn bind_texture<T>(&self, target: T, name: TextureName)
     where
         T: Into<TextureTarget>,
     {
@@ -535,7 +535,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: Option<FramebufferName>)
+    pub unsafe fn bind_framebuffer<T>(&self, target: T, name: Option<FramebufferName>)
     where
         T: Into<FramebufferTarget>,
     {
@@ -570,7 +570,7 @@ impl Gl {
     {
         self.gl.FramebufferTexture2D(
             framebuffer_target.into() as u32,
-            framebuffer_attachment.into().as_u32(),
+            framebuffer_attachment.into().into_u32(),
             texture_target.into() as u32,
             texture_name.into_u32(),
             mipmap_level,
