@@ -23,7 +23,6 @@ pub struct Gl {
     gl: gl::Gl,
 }
 
-
 impl Gl {
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
@@ -146,8 +145,11 @@ impl Gl {
     where
         P: traits::GetShaderivParam,
     {
-        self.gl
-            .GetShaderiv(name.into_u32(), param.into() as u32, value.transmute_as_mut())
+        self.gl.GetShaderiv(
+            name.into_u32(),
+            param.into() as u32,
+            value.transmute_as_mut(),
+        )
     }
 
     #[inline]
@@ -247,8 +249,11 @@ impl Gl {
     where
         P: traits::GetProgramivParam,
     {
-        self.gl
-            .GetProgramiv(name.into_u32(), param.into() as u32, value.transmute_as_mut());
+        self.gl.GetProgramiv(
+            name.into_u32(),
+            param.into() as u32,
+            value.transmute_as_mut(),
+        );
     }
 
     #[inline]
@@ -519,7 +524,8 @@ impl Gl {
         T: Into<FramebufferTarget>,
         N: OptionFramebufferName,
     {
-        self.gl.BindFramebuffer(target.into() as u32, name.into_u32());
+        self.gl
+            .BindFramebuffer(target.into() as u32, name.into_u32());
     }
 
     #[inline]

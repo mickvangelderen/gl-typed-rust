@@ -1,9 +1,9 @@
 //! The param traits are unsafe because their associated type Value will be cast
 //! to a pointer of some other type.
 
+use crate::convert::*;
 use crate::symbols;
 use crate::types;
-use crate::convert::*;
 
 pub unsafe trait GetShaderivParam: Into<types::GetShaderivParam> {
     type Value: Transmute<i32>;

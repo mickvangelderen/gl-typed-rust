@@ -259,4 +259,3 @@ impl_names!(
     (TextureName, OptionTextureName),
     (VertexArrayName, OptionVertexArrayName),
 );
-
