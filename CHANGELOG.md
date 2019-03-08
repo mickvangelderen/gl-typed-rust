@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2019-03-08
+
+This breaking update is pretty invasive because almost all calls now take
+parameters by value instead of reference. The best part in this release are the
+conversion traits `TryUnwrapAll` and friends.
+
 Tracking ownership of Name objects is better left to a higher abstraction layer.
 We can therefore make the types Copy and provide some zero-copy array
 conversions.
@@ -18,8 +25,30 @@ that the sentinel values become zero, and storing them in a NonZero* type.
 Unfortunately that does not allow us to transmute between the super and the
 subtype and thus prevent the zero-copy array conversions.
 
+Usually you don't want to bind or unbind dynamically, you know at compile-time
+which one you want so then it makes sense for them to be distinct methods.
+
+### Added
+ - Conversions between owned arrays and slices of `Option<T>` and `T` where they
+   are of the same size.
+ - Specialized types for locations wrapped in options: `OptionAttributeLocation`
+   and `OptionUniformLocation`. We no longer utilize NonZero* to get the memory
+   optimization. You can convert them into an actual option using `into_option`
+   where they will actually be used.
+ - Specialized unbind functions where it makes sense.
+
+### Changed
+ - Many types are now `Copy` and provide `into_*` function instead of `as_*`.
+ - Unbinding is no longer done through the bind functions but through a
+   specialized function.
+
+### Removed
+ - Type parameter on `UniformLocation`. The loss of ergonomics weighed heavier
+   than the additional type safety.
 
 ## [0.1.2] - 2019-03-01
+
+**WARNING**: The version was never updated in Cargo.toml.
 
 ### Added
  - `Gl::buffer_sub_data` along with `Gl::buffer_reserve` which allows you to
