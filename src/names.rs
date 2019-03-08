@@ -203,7 +203,7 @@ macro_rules! impl_zero_copy_wrap_unwrap_all {
 }
 
 macro_rules! impl_names {
-    ($(($Name: ident, $OptionName: ident),)*) => {
+    ($($Name: ident,)*) => {
         $(
             /// No guarantees are made about the validity of the object this
             /// name represents.
@@ -228,34 +228,21 @@ macro_rules! impl_names {
                 }
             }
 
-            pub trait $OptionName {
-                fn into_u32(self) -> u32;
-            }
-
-            impl $OptionName for $Name {
-                #[inline]
-                fn into_u32(self) -> u32 {
-                    $Name::into_u32(self)
-                }
-            }
-
-            impl $OptionName for Option<$Name> {
-                #[inline]
-                fn into_u32(self) -> u32 {
-                    self.map($Name::into_u32).unwrap_or_default()
-                }
-            }
-
             impl_zero_copy_wrap_unwrap_all!($Name);
         )*
     };
 }
 
 impl_names!(
-    (BufferName, OptionBufferName),
-    (FramebufferName, OptionFramebufferName),
-    (ProgramName, OptionProgramName),
-    (ShaderName, OptionShaderName),
-    (TextureName, OptionTextureName),
-    (VertexArrayName, OptionVertexArrayName),
+    BufferName,
+    FramebufferName,
+    ProgramName,
+    ShaderName,
+    TextureName,
+    VertexArrayName,
 );
+
+// Even though there is a distinction to be made between an
+// Option<FramebufferName> and the default framebuffer, I don't think it is
+// likely enough to create the types NonDefaultFramebufferName, FramebufferName
+// and the conversion between them for it. Maybe I'll change my mind.

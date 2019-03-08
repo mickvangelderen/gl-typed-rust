@@ -351,12 +351,19 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_texture<T, N>(&self, target: T, name: N)
+    pub unsafe fn bind_texture<T, N>(&self, target: T, name: TextureName)
     where
         T: Into<TextureTarget>,
-        N: OptionTextureName,
     {
         self.gl.BindTexture(target.into() as u32, name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn unbind_texture<T>(&self, target: T)
+    where
+        T: Into<TextureTarget>,
+    {
+        self.gl.BindTexture(target.into() as u32, 0);
     }
 
     // FIXME: Figure out why we need the additional type bounds even though
@@ -431,12 +438,19 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: N)
+    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: BufferName)
     where
         T: Into<BufferTarget>,
-        N: OptionBufferName,
     {
         self.gl.BindBuffer(target.into() as u32, name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn unbind_buffer<T>(&self, target: T)
+    where
+        T: Into<BufferTarget>,
+    {
+        self.gl.BindBuffer(target.into() as u32, 0);
     }
 
     #[inline]
@@ -497,11 +511,13 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_vertex_array<N>(&self, name: N)
-    where
-        N: OptionVertexArrayName,
-    {
+    pub unsafe fn bind_vertex_array(&self, name: VertexArrayName) {
         self.gl.BindVertexArray(name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn unbind_vertex_array(&self) {
+        self.gl.BindVertexArray(0);
     }
 
     // Framebuffer names.
@@ -519,13 +535,14 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: N)
+    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: Option<FramebufferName>)
     where
         T: Into<FramebufferTarget>,
-        N: OptionFramebufferName,
     {
-        self.gl
-            .BindFramebuffer(target.into() as u32, name.into_u32());
+        self.gl.BindFramebuffer(
+            target.into() as u32,
+            name.map(FramebufferName::into_u32).unwrap_or_default(),
+        )
     }
 
     #[inline]
