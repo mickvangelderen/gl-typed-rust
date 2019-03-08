@@ -438,7 +438,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_buffer<T, N>(&self, target: T, name: BufferName)
+    pub unsafe fn bind_buffer<T>(&self, target: T, name: BufferName)
     where
         T: Into<BufferTarget>,
     {
