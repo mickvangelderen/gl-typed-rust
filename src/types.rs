@@ -2,7 +2,6 @@
 //! have overlapping values. For most enums compile-time variants are provided
 //! through the symbols.
 
-use crate::convert::Transmute;
 use crate::gl;
 use std::convert::TryFrom;
 
@@ -17,27 +16,12 @@ macro_rules! impl_enums {
             #[repr(transparent)]
             pub struct $r($b);
 
-            unsafe impl Transmute<$b> for $r {
-                #[inline]
-                fn transmute_from(val: $b) -> Self {
-                    $r(val)
-                }
+            // Every $r is a valid $b and vice versa.
+            unsafe impl convute::marker::Transmute<$b> for $r {}
+            unsafe impl convute::marker::Transmute<$r> for $b {}
 
-                #[inline]
-                fn transmute_into(self) -> $b {
-                    self.0
-                }
-
-                #[inline]
-                fn transmute_as_ref(&self) -> &$b {
-                    &self.0
-                }
-
-                #[inline]
-                fn transmute_as_mut(&mut self) -> &mut $b {
-                    &mut self.0
-                }
-            }
+            // Every $e is a valid $b.
+            unsafe impl convute::marker::Transmute<$b> for $e {}
 
             impl From<$e> for $r {
                 #[inline]

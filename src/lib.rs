@@ -1,6 +1,5 @@
 pub mod array;
 pub mod constants;
-pub mod convert;
 pub mod gl;
 pub mod locations;
 pub mod names;
@@ -12,12 +11,13 @@ pub mod types;
 
 pub use array::*;
 pub use constants::*;
-pub use convert::*;
 pub use locations::*;
 pub use names::*;
 use std::ffi::CStr;
 use std::os::raw::*;
 pub use types::*;
+
+use convute::convert::*;
 
 pub struct Gl {
     gl: gl::Gl,
@@ -144,18 +144,19 @@ impl Gl {
     pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, param: P, value: &mut P::Value)
     where
         P: traits::GetShaderivParam,
+        P::Value: convute::marker::Transmute<i32>,
+        i32: convute::marker::Transmute<P::Value>,
     {
-        self.gl.GetShaderiv(
-            name.into_u32(),
-            param.into() as u32,
-            value.transmute_as_mut(),
-        )
+        self.gl
+            .GetShaderiv(name.into_u32(), param.into() as u32, value.transmute_mut())
     }
 
     #[inline]
     pub unsafe fn get_shaderiv_move<P>(&self, name: ShaderName, param: P) -> P::Value
     where
         P: traits::GetShaderivParam,
+        P::Value: convute::marker::Transmute<i32>,
+        i32: convute::marker::Transmute<P::Value>,
     {
         let mut value: P::Value = ::std::mem::uninitialized();
         self.get_shaderiv(name, param, &mut value);
@@ -248,12 +249,11 @@ impl Gl {
     pub unsafe fn get_programiv<P>(&self, name: ProgramName, param: P, value: &mut P::Value)
     where
         P: traits::GetProgramivParam,
+        P::Value: convute::marker::Transmute<i32>,
+        i32: convute::marker::Transmute<P::Value>,
     {
-        self.gl.GetProgramiv(
-            name.into_u32(),
-            param.into() as u32,
-            value.transmute_as_mut(),
-        );
+        self.gl
+            .GetProgramiv(name.into_u32(), param.into() as u32, value.transmute_mut());
     }
 
     #[inline]
@@ -550,9 +550,9 @@ impl Gl {
     where
         T: Into<FramebufferTarget>,
     {
-        UncheckedFramebufferStatus::transmute_from(
-            self.gl.CheckFramebufferStatus(target.into() as u32),
-        )
+        self.gl
+            .CheckFramebufferStatus(target.into() as u32)
+            .transmute()
     }
 
     #[inline]

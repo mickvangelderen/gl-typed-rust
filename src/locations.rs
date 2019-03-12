@@ -1,5 +1,3 @@
-use crate::convert::*;
-
 /// Guaranteed to be in range 0..i32::MAX.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -40,6 +38,14 @@ impl OptionAttributeLocation {
     #[inline]
     pub fn into_option(self) -> Option<AttributeLocation> {
         AttributeLocation::new(self.0)
+    }
+}
+
+unsafe impl convute::marker::Transmute<OptionAttributeLocation> for AttributeLocation {}
+unsafe impl convute::marker::TryTransmute<AttributeLocation> for OptionAttributeLocation {
+    #[inline]
+    fn can_transmute(&self) -> bool {
+        self.into_option().is_some()
     }
 }
 
@@ -86,207 +92,10 @@ impl OptionUniformLocation {
     }
 }
 
-macro_rules! impl_zero_copy_wrap_unwrap_all {
-    ($T: ident, $OT: ident) => {
-        impl_zero_copy_wrap_unwrap_all!($T, $OT,
-             1,  2,  3,  4,  5,  6,  7,  8,
-             9, 10, 11, 12, 13, 14, 15, 16,
-            17, 18, 19, 20, 21, 22, 23, 24,
-            25, 26, 27, 28, 29, 30, 31, 32,
-        );
-    };
-
-    ($T: ident, $OT: ident, $($N: expr,)*) => {
-        $(
-            impl WrapAll for [$T; $N] {
-                type Wrapped = [$OT; $N];
-
-                #[inline]
-                fn wrap_all(self) -> Self::Wrapped {
-                    // Safe because:
-                    // 1. all T are valid Option<T>.
-                    unsafe {
-                        std::mem::transmute(self)
-                    }
-                }
-            }
-
-            impl UnwrapAll for [$OT; $N] {
-                type Unwrapped = [$T; $N];
-
-                #[inline]
-                unsafe fn unwrap_all_unchecked(self) -> Self::Unwrapped {
-                    std::mem::transmute(self)
-                }
-
-                #[inline]
-                fn unwrap_all(self) -> Result<Self::Unwrapped, Self> {
-                    // Safe because:
-                    // 1. we ensure that all Option<TextureName> are Some(TextureName), and
-                    // 2. all Some(TextureName) are valid TextureName.
-                    unsafe {
-                        if self.iter().all(|val| val.into_option().is_some()) {
-                            Ok(self.unwrap_all_unchecked())
-                        } else {
-                            Err(self)
-                        }
-                    }
-                }
-            }
-
-            impl WrapAllRef for [$T; $N] {
-                type Wrapped = [$OT; $N];
-
-                #[inline]
-                fn wrap_all_ref(&self) -> &Self::Wrapped {
-                    // Safe because:
-                    // 1. all T are valid Option<T>, and
-                    // 2. we cannot write to a T as if it were an Option<T> through an immutable reference.
-                    unsafe {
-                        &*(self.as_ptr() as *const Self::Wrapped)
-                    }
-                }
-            }
-
-            impl UnwrapAllRef for [$OT; $N] {
-                type Unwrapped = [$T; $N];
-
-                #[inline]
-                unsafe fn unwrap_all_ref_unchecked(&self) -> &Self::Unwrapped {
-                    &*(self.as_ptr() as *const Self::Unwrapped)
-                }
-
-                #[inline]
-                fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped> {
-                    // Safe because:
-                    // 1. we ensure that all Option<T> are Some(T), and
-                    // 2. all Some(T) are valid T.
-                    unsafe {
-                        if self.iter().all(|val| val.into_option().is_some()) {
-                            Some(self.unwrap_all_ref_unchecked())
-                        } else {
-                            None
-                        }
-                    }
-                }
-            }
-
-            impl UnwrapAllMut for [$OT; $N] {
-                #[inline]
-                unsafe fn unwrap_all_mut_unchecked(&mut self) -> &mut Self::Unwrapped {
-                    &mut *(self.as_mut_ptr() as *mut Self::Unwrapped)
-                }
-
-                #[inline]
-                fn unwrap_all_mut(&mut self) -> Option<&mut Self::Unwrapped> {
-                    // Safe because:
-                    // 1. we ensure that all Option<T> are Some(T), and
-                    // 2. all Some(T) are valid T, and
-                    // 3. vice versa.
-                    unsafe {
-                        if self.iter().all(|val| val.into_option().is_some()) {
-                            Some(self.unwrap_all_mut_unchecked())
-                        } else {
-                            None
-                        }
-                    }
-                }
-            }
-        )*
-
-        impl WrapAll for Vec<$T> {
-            type Wrapped = Vec<$OT>;
-
-            #[inline]
-            fn wrap_all(mut self) -> Self::Wrapped {
-                unsafe {
-                    let wrapped = Vec::from_raw_parts(
-                        self.as_mut_ptr() as *mut $OT,
-                        self.len(),
-                        self.capacity()
-                    );
-                    std::mem::forget(self);
-                    wrapped
-                }
-            }
-        }
-
-        impl UnwrapAll for Vec<$OT> {
-            type Unwrapped = Vec<$T>;
-
-            #[inline]
-            unsafe fn unwrap_all_unchecked(mut self) -> Self::Unwrapped {
-                let wrapped = Vec::from_raw_parts(
-                    self.as_mut_ptr() as *mut $T,
-                    self.len(),
-                    self.capacity()
-                );
-                std::mem::forget(self);
-                wrapped
-            }
-
-            #[inline]
-            fn unwrap_all(self) -> Result<Self::Unwrapped, Self> {
-                unsafe {
-                    if self.iter().all(|val| val.into_option().is_some()) {
-                        Ok(self.unwrap_all_unchecked())
-                    } else {
-                        Err(self)
-                    }
-                }
-            }
-        }
-
-        impl WrapAllRef for [$T] {
-            type Wrapped = [$OT];
-
-            #[inline]
-            fn wrap_all_ref(&self) -> &Self::Wrapped {
-                unsafe {
-                    std::slice::from_raw_parts(self.as_ptr() as *const $OT, self.len())
-                }
-            }
-        }
-
-        impl UnwrapAllRef for [$OT] {
-            type Unwrapped = [$T];
-
-            #[inline]
-            unsafe fn unwrap_all_ref_unchecked(&self) -> &Self::Unwrapped {
-                std::slice::from_raw_parts(self.as_ptr() as *const $T, self.len())
-            }
-
-            #[inline]
-            fn unwrap_all_ref(&self) -> Option<&Self::Unwrapped> {
-                unsafe {
-                    if self.iter().all(|val| val.into_option().is_some()) {
-                        Some(self.unwrap_all_ref_unchecked())
-                    } else {
-                        None
-                    }
-                }
-            }
-        }
-
-        impl UnwrapAllMut for [$OT] {
-            #[inline]
-            unsafe fn unwrap_all_mut_unchecked(&mut self) -> &mut Self::Unwrapped {
-                std::slice::from_raw_parts_mut(self.as_mut_ptr() as *mut $T, self.len())
-            }
-
-            #[inline]
-            fn unwrap_all_mut(&mut self) -> Option<&mut Self::Unwrapped> {
-                unsafe {
-                    if self.iter().all(|val| val.into_option().is_some()) {
-                        Some(self.unwrap_all_mut_unchecked())
-                    } else {
-                        None
-                    }
-                }
-            }
-        }
-    };
+unsafe impl convute::marker::Transmute<OptionUniformLocation> for UniformLocation {}
+unsafe impl convute::marker::TryTransmute<UniformLocation> for OptionUniformLocation {
+    #[inline]
+    fn can_transmute(&self) -> bool {
+        self.into_option().is_some()
+    }
 }
-
-impl_zero_copy_wrap_unwrap_all!(AttributeLocation, OptionAttributeLocation);
-impl_zero_copy_wrap_unwrap_all!(UniformLocation, OptionUniformLocation);
