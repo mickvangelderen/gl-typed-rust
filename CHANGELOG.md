@@ -6,8 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...HEAD
+
+## [0.3.0] - 2019-03-12
+[0.2.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.2.0...0.3.0
+
+The conversion traits were moved into a stand-alone crate `convute`.
+
+### Changed
+ - The wrap and unwrap traits have been replaced with the more solid traits from
+   `convute`. The traits are re-exported in the `convert` and `marker` modules.
 
 ## [0.2.0] - 2019-03-08
+[0.2.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.1.2...0.2.0
 
 This breaking update is pretty invasive because almost all calls now take
 parameters by value instead of reference. The best part in this release are the
@@ -47,6 +58,7 @@ which one you want so then it makes sense for them to be distinct methods.
    than the additional type safety.
 
 ## [0.1.2] - 2019-03-01
+[0.1.2]: https://github.com/mickvangelderen/gl-typed-rust/compare/0.1.1...0.1.2
 
 **WARNING**: The version was never updated in Cargo.toml.
 
@@ -62,6 +74,7 @@ which one you want so then it makes sense for them to be distinct methods.
  - Use of try_from feature since it is stable since rustc 1.34.0.
 
 ## [0.1.1] - 2019-02-26
+[0.1.1]: https://github.com/mickvangelderen/gl-typed-rust/compare/0.1.0...0.1.1
 
 ### Added
  - `Capability` along with `Gl::enable` and `Gl::disable`.
@@ -79,10 +92,7 @@ which one you want so then it makes sense for them to be distinct methods.
 ### Removed
  - Accidentally left in debug message in `Gl::get_attrib_location`.
 
-## [0.1.0] - 2019-02-21
+## 0.1.0 - 2019-02-21
 
 Initial release.
 
-[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/mickvangelderen/gl-typed-rust/compare/0.1.1...0.1.2
-[0.1.1]: https://github.com/mickvangelderen/gl-typed-rust/compare/0.1.0...0.1.1
