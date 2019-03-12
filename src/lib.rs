@@ -13,11 +13,33 @@ pub use array::*;
 pub use constants::*;
 pub use locations::*;
 pub use names::*;
-use std::ffi::CStr;
-use std::os::raw::*;
 pub use types::*;
 
+pub mod convert {
+    pub use convute::convert::{
+        // This comment makes rustfmt do good.
+        Transmute,
+        TransmuteEach,
+        TransmuteEachMut,
+        TransmuteEachRef,
+        TransmuteMut,
+        TransmuteRef,
+        TryTransmute,
+        TryTransmuteEach,
+        TryTransmuteEachMut,
+        TryTransmuteEachRef,
+        TryTransmuteMut,
+        TryTransmuteRef,
+    };
+}
+
+pub mod marker {
+    pub use convute::marker::{Transmute, TryTransmute};
+}
+
 use convute::convert::*;
+use std::ffi::CStr;
+use std::os::raw::*;
 
 pub struct Gl {
     gl: gl::Gl,
