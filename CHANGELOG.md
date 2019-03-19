@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...HEAD
 
+### Changed
+ - `Gl::get_attrib_location` now returns `OptionAttributeLocation` instead of
+   `Option<AttributeLocation>`.
+
 ## [0.3.0] - 2019-03-12
 [0.2.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.2.0...0.3.0
 

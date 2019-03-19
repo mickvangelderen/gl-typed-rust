@@ -298,8 +298,8 @@ impl Gl {
         &self,
         program_name: ProgramName,
         attrib_name: &CStr,
-    ) -> Option<AttributeLocation> {
-        AttributeLocation::new(
+    ) -> OptionAttributeLocation {
+        OptionAttributeLocation::new(
             self.gl
                 .GetAttribLocation(program_name.into_u32(), attrib_name.as_ptr()),
         )
