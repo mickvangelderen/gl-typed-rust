@@ -10,6 +10,9 @@ fn main() {
     let gl_registry = Registry::new(Api::Gl, (4, 6), Profile::Core, Fallbacks::All, []);
     let out_dir = env::var("OUT_DIR").unwrap();
 
+    // Ignore all file changes except build.rs.
+    println!("cargo:rerun-if-changed=build.rs");
+
     {
         let mut bindings = File::create(&Path::new(&out_dir).join("bindings.rs")).unwrap();
         gl_registry
