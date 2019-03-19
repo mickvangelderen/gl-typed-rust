@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...HEAD
 
+### Added
+ - `is_some` and `is_none` to `Option{Attribute|Uniform}Location`.
+ - `From<Option{X}Location> for `Option<{X}Location>` where `X = Attribute|Uniform`.
+ - 'OptionAttributeLocation::NONE' and `OptionUniformLocation::NONE`.
+
 ### Changed
  - `Gl::get_attrib_location` now returns `OptionAttributeLocation` instead of
    `Option<AttributeLocation>`.

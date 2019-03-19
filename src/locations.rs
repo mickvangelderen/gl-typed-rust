@@ -4,9 +4,21 @@
 pub struct AttributeLocation(u32);
 
 impl AttributeLocation {
+    const NONE: i32 = -1;
+
+    #[inline]
+    fn is_some(val: i32) -> bool {
+        val >= 0
+    }
+
+    #[inline]
+    fn is_none(val: i32) -> bool {
+        !Self::is_some(val)
+    }
+
     #[inline]
     pub fn new(val: i32) -> Option<Self> {
-        if val >= 0 {
+        if Self::is_some(val) {
             Some(AttributeLocation(val as u32))
         } else {
             None
@@ -30,6 +42,18 @@ impl AttributeLocation {
 pub struct OptionAttributeLocation(pub i32);
 
 impl OptionAttributeLocation {
+    pub const NONE: Self = OptionAttributeLocation(AttributeLocation::NONE);
+
+    #[inline]
+    pub fn is_some(&self) -> bool {
+        AttributeLocation::is_some(self.0)
+    }
+
+    #[inline]
+    pub fn is_none(&self) -> bool {
+        AttributeLocation::is_none(self.0)
+    }
+
     #[inline]
     pub fn new(val: i32) -> Self {
         OptionAttributeLocation(val)
@@ -38,6 +62,13 @@ impl OptionAttributeLocation {
     #[inline]
     pub fn into_option(self) -> Option<AttributeLocation> {
         AttributeLocation::new(self.0)
+    }
+}
+
+impl From<OptionAttributeLocation> for Option<AttributeLocation> {
+    #[inline]
+    fn from(val: OptionAttributeLocation) -> Self {
+        val.into_option()
     }
 }
 
@@ -55,9 +86,21 @@ unsafe impl convute::marker::TryTransmute<AttributeLocation> for OptionAttribute
 pub struct UniformLocation(i32);
 
 impl UniformLocation {
+    const NONE: i32 = -1;
+
+    #[inline]
+    fn is_some(val: i32) -> bool {
+        val >= 0
+    }
+
+    #[inline]
+    fn is_none(val: i32) -> bool {
+        !Self::is_some(val)
+    }
+
     #[inline]
     pub fn new(val: i32) -> Option<Self> {
-        if val >= 0 {
+        if Self::is_some(val) {
             Some(UniformLocation(val))
         } else {
             None
@@ -81,6 +124,18 @@ impl UniformLocation {
 pub struct OptionUniformLocation(pub i32);
 
 impl OptionUniformLocation {
+    pub const NONE: Self = OptionUniformLocation(UniformLocation::NONE);
+
+    #[inline]
+    pub fn is_some(&self) -> bool {
+        UniformLocation::is_some(self.0)
+    }
+
+    #[inline]
+    pub fn is_none(&self) -> bool {
+        UniformLocation::is_none(self.0)
+    }
+
     #[inline]
     pub fn new(val: i32) -> Self {
         OptionUniformLocation(val)
@@ -89,6 +144,13 @@ impl OptionUniformLocation {
     #[inline]
     pub fn into_option(self) -> Option<UniformLocation> {
         UniformLocation::new(self.0)
+    }
+}
+
+impl From<OptionUniformLocation> for Option<UniformLocation> {
+    #[inline]
+    fn from(val: OptionUniformLocation) -> Self {
+        val.into_option()
     }
 }
 
