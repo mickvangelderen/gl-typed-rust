@@ -1,5 +1,6 @@
 pub mod array;
 pub mod constants;
+pub mod convert;
 pub mod gl;
 pub mod locations;
 pub mod names;
@@ -14,24 +15,6 @@ pub use constants::*;
 pub use locations::*;
 pub use names::*;
 pub use types::*;
-
-pub mod convert {
-    pub use convute::convert::{
-        // This comment makes rustfmt do good.
-        Transmute,
-        TransmuteEach,
-        TransmuteEachMut,
-        TransmuteEachRef,
-        TransmuteMut,
-        TransmuteRef,
-        TryTransmute,
-        TryTransmuteEach,
-        TryTransmuteEachMut,
-        TryTransmuteEachRef,
-        TryTransmuteMut,
-        TryTransmuteRef,
-    };
-}
 
 pub mod marker {
     pub use convute::marker::{Transmute, TryTransmute};

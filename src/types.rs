@@ -3,7 +3,7 @@
 //! through the symbols.
 
 use crate::gl;
-use std::convert::TryFrom;
+use crate::convert::*;
 
 // TODO: Some of the unchecked types probably never will be used. Figure out if we
 // want to expose a unchecked variant for all enums blindly or only specific ones.
