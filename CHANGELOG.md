@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...HEAD
 
+## [0.4.0] - 2019-04-03
+[0.4.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...0.4.0
+
 ### Added
  - `is_some` and `is_none` to `Option{Attribute|Uniform}Location`.
  - `From<Option{X}Location> for `Option<{X}Location>` where `X = Attribute|Uniform`.
@@ -16,9 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  - `Gl::get_attrib_location` now returns `OptionAttributeLocation` instead of
    `Option<AttributeLocation>`.
+ - Copied `std::convert::Try{From|Into}` into this crate until they're stable. I
+   thought they were but it turns out I cant actually use them with the current
+   stable rustc.
+
+### Removed
+ - Warnings about aliases being ignored in build.
 
 ## [0.3.0] - 2019-03-12
-[0.2.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.2.0...0.3.0
+[0.3.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.2.0...0.3.0
 
 The conversion traits were moved into a stand-alone crate `convute`.
 
