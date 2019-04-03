@@ -26,10 +26,10 @@ fn main() {
 
         for e in gl_registry.enums.iter() {
             if let Some(ref alias) = e.alias {
-                println!(
-                    "cargo:warning=Ignoring {} which is an alias for {}.",
-                    alias, &e.ident
-                );
+                // println!(
+                //     "cargo:warning=Ignoring {} which is an alias for {}.",
+                //     alias, &e.ident
+                // );
             }
 
             let s = e
