@@ -24,6 +24,34 @@ use convute::convert::*;
 use std::ffi::CStr;
 use std::os::raw::*;
 
+macro_rules! impl_uniform_setters {
+    ($fn1: ident, $glfn1: ident, $fn2: ident, $glfn2: ident, $fn3: ident, $glfn3: ident, $fn4: ident, $glfn4: ident, $ty: ty) => {
+        #[inline]
+        pub unsafe fn $fn1(&self, uniform_location: UniformLocation, value: $ty) {
+            self.gl.$glfn1(uniform_location.into_i32(), value);
+        }
+
+        #[inline]
+        pub unsafe fn $fn2(&self, uniform_location: UniformLocation, value: [$ty; 2]) {
+            let [v0, v1] = value;
+            self.gl.$glfn2(uniform_location.into_i32(), v0, v1);
+        }
+
+        #[inline]
+        pub unsafe fn $fn3(&self, uniform_location: UniformLocation, value: [$ty; 3]) {
+            let [v0, v1, v2] = value;
+            self.gl.$glfn3(uniform_location.into_i32(), v0, v1, v2);
+        }
+
+        #[inline]
+        pub unsafe fn $fn4(&self, uniform_location: UniformLocation, value: [$ty; 4]) {
+            let [v0, v1, v2, v3] = value;
+            self.gl
+                .$glfn4(uniform_location.into_i32(), v0, v1, v2, v3);
+        }
+    }
+}
+
 pub struct Gl {
     gl: gl::Gl,
 }
@@ -587,80 +615,31 @@ impl Gl {
         );
     }
 
-    // // Uniform setters.
+    // Uniform setters.
+
+    impl_uniform_setters!(uniform_1i, Uniform1i, uniform_2i, Uniform2i, uniform_3i, Uniform3i, uniform_4i, Uniform4i, i32);
+
+    impl_uniform_setters!(uniform_1ui, Uniform1ui, uniform_2ui, Uniform2ui, uniform_3ui, Uniform3ui, uniform_4ui, Uniform4ui, u32);
+
+    impl_uniform_setters!(uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f, f32);
 
     #[inline]
-    pub unsafe fn uniform_1i(&self, uniform_location: UniformLocation, value: i32) {
-        self.gl.Uniform1i(uniform_location.into_i32(), value);
+    pub unsafe fn uniform_1iv(&self, uniform_location: UniformLocation, value: &[i32]) {
+        self.gl.Uniform1iv(
+            uniform_location.into_i32(),
+            value.len() as i32,
+            value.as_ptr(),
+        );
     }
-
-    // #[inline]
-    // pub unsafe fn uniform_2i<T: AsRef<[i32; 2]>>(
-    //     uniform_location: UniformLocation<[i32; 2]>,
-    //     value: T,
-    // ) {
-    //     let value = value.as_ref();
-    //     self.gl.Uniform2i(uniform_location.as_i32(), value[0], value[1]);
-    // }
-
-    // #[inline]
-    // pub unsafe fn uniform_3i<T: AsRef<[i32; 3]>>(
-    //     uniform_location: UniformLocation<[i32; 3]>,
-    //     value: T,
-    // ) {
-    //     let value = value.as_ref();
-    //     self.gl.Uniform3i(uniform_location.as_i32(), value[0], value[1], value[2]);
-    // }
-
-    // #[inline]
-    // pub unsafe fn uniform_4i<T: AsRef<[i32; 4]>>(
-    //     uniform_location: UniformLocation<[i32; 4]>,
-    //     value: T,
-    // ) {
-    //     let value = value.as_ref();
-    //     self.gl.Uniform4i(
-    //         uniform_location.as_i32(),
-    //         value[0],
-    //         value[1],
-    //         value[2],
-    //         value[3],
-    //     );
-    // }
 
     #[inline]
-    pub unsafe fn uniform_1f(&self, uniform_location: UniformLocation, value: f32) {
-        self.gl.Uniform1f(uniform_location.into_i32(), value);
+    pub unsafe fn uniform_1fv(&self, uniform_location: UniformLocation, value: &[f32]) {
+        self.gl.Uniform1fv(
+            uniform_location.into_i32(),
+            value.len() as i32,
+            value.as_ptr(),
+        );
     }
-
-    // #[inline]
-    // pub unsafe fn uniform_2f(&self, uniform_location: UniformLocation<[f32; 2]>, value: [f32; 2]) {
-    //     self.gl.Uniform2f(uniform_location.as_i32(), value[0], value[1]);
-    // }
-
-    // #[inline]
-    // pub unsafe fn uniform_3f(&self, uniform_location: UniformLocation<[f32; 3]>, value: [f32; 3]) {
-    //     self.gl.Uniform3f(uniform_location.as_i32(), value[0], value[1], value[2]);
-    // }
-
-    // #[inline]
-    // pub unsafe fn uniform_4f(&self, uniform_location: UniformLocation<[f32; 4]>, value: [f32; 4]) {
-    //     self.gl.Uniform4f(
-    //         uniform_location.as_i32(),
-    //         value[0],
-    //         value[1],
-    //         value[2],
-    //         value[3],
-    //     );
-    // }
-
-    // #[inline]
-    // pub unsafe fn uniform_1fv(&self, uniform_location: UniformLocation<*const f32>, value: &[f32]) {
-    //     self.gl.Uniform1fv(
-    //         uniform_location.as_i32(),
-    //         value.len() as i32,
-    //         value.as_ptr(),
-    //     );
-    // }
 
     #[inline]
     pub unsafe fn uniform_matrix4f(
