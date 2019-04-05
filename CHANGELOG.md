@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.1...HEAD
+
+## [0.4.1] - 2019-04-05
+[0.4.1]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.0...0.4.1
+
+### Added
+ - `get_error`
+ - Multiple uniform setters `uniform_{1|2|3|4}{i|ui|f}`.
 
 ## [0.4.0] - 2019-04-03
 [0.4.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.3.0...0.4.0
