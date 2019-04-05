@@ -53,6 +53,11 @@ impl Gl {
         )
     }
 
+    #[inline]
+    pub unsafe fn get_error(&self) -> u32 {
+        self.gl.GetError()
+    }
+
     // Drawing.
     #[inline]
     pub unsafe fn enable<C>(&self, cap: C)
