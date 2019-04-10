@@ -136,6 +136,14 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {
+        self.gl.DrawBuffers(
+            framebuffer_attachments.len() as i32,
+            framebuffer_attachments.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
     pub unsafe fn draw_arrays<M>(&self, mode: M, first: usize, count: usize)
     where
         M: Into<DrawMode>,
@@ -617,11 +625,27 @@ impl Gl {
 
     // Uniform setters.
 
-    impl_uniform_setters!(uniform_1i, Uniform1i, uniform_2i, Uniform2i, uniform_3i, Uniform3i, uniform_4i, Uniform4i, i32);
+    impl_uniform_setters!(
+        uniform_1i, Uniform1i, uniform_2i, Uniform2i, uniform_3i, Uniform3i, uniform_4i, Uniform4i,
+        i32
+    );
 
-    impl_uniform_setters!(uniform_1ui, Uniform1ui, uniform_2ui, Uniform2ui, uniform_3ui, Uniform3ui, uniform_4ui, Uniform4ui, u32);
+    impl_uniform_setters!(
+        uniform_1ui,
+        Uniform1ui,
+        uniform_2ui,
+        Uniform2ui,
+        uniform_3ui,
+        Uniform3ui,
+        uniform_4ui,
+        Uniform4ui,
+        u32
+    );
 
-    impl_uniform_setters!(uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f, f32);
+    impl_uniform_setters!(
+        uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f,
+        f32
+    );
 
     #[inline]
     pub unsafe fn uniform_1iv(&self, uniform_location: UniformLocation, value: &[i32]) {
