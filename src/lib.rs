@@ -295,6 +295,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn unuse_program(&self) {
+        self.gl.UseProgram(0);
+    }
+
+    #[inline]
     pub unsafe fn attach_shader(&self, program: ProgramName, shader: ShaderName) {
         self.gl.AttachShader(program.into_u32(), shader.into_u32());
     }
