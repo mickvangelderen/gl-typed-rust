@@ -735,3 +735,12 @@ bitflags::bitflags! {
         const STENCIL_BUFFER_BIT = gl::STENCIL_BUFFER_BIT;
     }
 }
+
+bitflags::bitflags! {
+    pub struct ContextFlags: u32 {
+        const CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT = gl::CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
+        const CONTEXT_FLAG_DEBUG_BIT = gl::CONTEXT_FLAG_DEBUG_BIT;
+        const CONTEXT_FLAG_ROBUST_ACCESS_BIT = gl::CONTEXT_FLAG_ROBUST_ACCESS_BIT;
+        const CONTEXT_FLAG_NO_ERROR_BIT = gl::CONTEXT_FLAG_NO_ERROR_BIT;
+    }
+}

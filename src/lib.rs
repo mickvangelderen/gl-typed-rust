@@ -81,6 +81,19 @@ impl Gl {
         )
     }
 
+    // NOTE(mickvangelderen): Can do this with type parameters and group by
+    // return type length but thats rather clunky. Functions like these are
+    // unlikely to receive a run-time parameter. Most of the time you'll know
+    // what data you want to get. In the uncommon case you don't, simply use a
+    // switch statement around your dynamic parameter to decide which function
+    // to call.
+    #[inline]
+    pub unsafe fn get_context_flags(&self) -> ContextFlags {
+        let mut values: [i32; 1] =  std::mem::uninitialized();
+        self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
+        ContextFlags::from_bits_truncate(values[0] as u32)
+    }
+
     #[inline]
     pub unsafe fn get_error(&self) -> u32 {
         self.gl.GetError()
