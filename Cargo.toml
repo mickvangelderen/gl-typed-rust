@@ -3,7 +3,7 @@ authors = ["Mick van Gelderen <mickvangelderen@gmail.com>"]
 build = "build.rs"
 edition = "2018"
 name = "gl-typed"
-version = "0.4.1"
+version = "0.4.2"
 
 [profile.dev]
 opt-level = 3
