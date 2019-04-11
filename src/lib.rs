@@ -739,4 +739,59 @@ impl Gl {
     //     (uniform_matrix3x4f, Matrix3x4f, [f32; 12]),
     //     (uniform_matrix4x3f, Matrix4x3f, [f32; 12]),
     // );
+
+    #[inline]
+    pub unsafe fn get_uniform_block_index(
+        &self,
+        program_name: ProgramName,
+        uniform_block_name: &CStr,
+    ) -> OptionUniformBlockIndex {
+        OptionUniformBlockIndex::new(
+            self.gl
+                .GetUniformBlockIndex(program_name.into_u32(), uniform_block_name.as_ptr()),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn uniform_block_binding(
+        &self,
+        program_name: ProgramName,
+        uniform_block_index: UniformBlockIndex,
+        uniform_block_binding: u32,
+    ) {
+        self.gl.UniformBlockBinding(
+            program_name.into_u32(),
+            uniform_block_index.into_u32(),
+            uniform_block_binding,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn bind_buffer_base<T>(&self, target: T, index: u32, buffer_name: BufferName)
+    where
+        T: Into<BindBufferTarget>,
+    {
+        self.gl
+            .BindBufferBase(target.into() as u32, index, buffer_name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn bind_buffer_range<T>(
+        &self,
+        target: T,
+        index: u32,
+        buffer_name: BufferName,
+        offset: usize,
+        size: usize,
+    ) where
+        T: Into<BindBufferTarget>,
+    {
+        self.gl.BindBufferRange(
+            target.into() as u32,
+            index,
+            buffer_name.into_u32(),
+            offset as isize,
+            size as isize,
+        );
+    }
 }

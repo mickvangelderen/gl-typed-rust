@@ -246,6 +246,14 @@ impl_enums! {
         // Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
     }
 
+    struct UncheckedBindBufferTarget(u32);
+    BindBufferTarget {
+        AtomicCounterBuffer = gl::ATOMIC_COUNTER_BUFFER,
+        TransformFeedbackBuffer = gl::TRANSFORM_FEEDBACK_BUFFER,
+        UniformBuffer = gl::UNIFORM_BUFFER,
+        ShaderStorageBuffer = gl::SHADER_STORAGE_BUFFER,
+    }
+
     struct UncheckedDepthStencilTextureMode(i32);
     DepthStencilTextureMode {
         DepthComponent = gl::DEPTH_COMPONENT,

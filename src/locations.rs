@@ -161,3 +161,85 @@ unsafe impl convute::marker::TryTransmute<UniformLocation> for OptionUniformLoca
         self.into_option().is_some()
     }
 }
+
+/// Guaranteed to be in range 0..u32::MAX - 1.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct UniformBlockIndex(u32);
+
+impl UniformBlockIndex {
+    const NONE: u32 = std::u32::MAX;
+
+    #[inline]
+    fn is_some(val: u32) -> bool {
+        val < Self::NONE
+    }
+
+    #[inline]
+    fn is_none(val: u32) -> bool {
+        !Self::is_some(val)
+    }
+
+    #[inline]
+    pub fn new(val: u32) -> Option<Self> {
+        if Self::is_some(val) {
+            Some(UniformBlockIndex(val))
+        } else {
+            None
+        }
+    }
+
+    /// You must guarantee val is in range 0..u32::MAX.
+    pub unsafe fn new_unchecked(val: u32) -> Self {
+        UniformBlockIndex(val)
+    }
+
+    #[inline]
+    pub fn into_u32(self) -> u32 {
+        self.0
+    }
+}
+
+/// A more compact representation of Option<UniformLocation>.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct OptionUniformBlockIndex(pub u32);
+
+impl OptionUniformBlockIndex {
+    pub const NONE: Self = OptionUniformBlockIndex(UniformBlockIndex::NONE);
+
+    #[inline]
+    pub fn is_some(&self) -> bool {
+        UniformBlockIndex::is_some(self.0)
+    }
+
+    #[inline]
+    pub fn is_none(&self) -> bool {
+        UniformBlockIndex::is_none(self.0)
+    }
+
+    #[inline]
+    pub fn new(val: u32) -> Self {
+        OptionUniformBlockIndex(val)
+    }
+
+    #[inline]
+    pub fn into_option(self) -> Option<UniformBlockIndex> {
+        UniformBlockIndex::new(self.0)
+    }
+}
+
+impl From<OptionUniformBlockIndex> for Option<UniformBlockIndex> {
+    #[inline]
+    fn from(val: OptionUniformBlockIndex) -> Self {
+        val.into_option()
+    }
+}
+
+unsafe impl convute::marker::Transmute<OptionUniformBlockIndex> for UniformBlockIndex {}
+unsafe impl convute::marker::TryTransmute<UniformBlockIndex> for OptionUniformBlockIndex {
+    #[inline]
+    fn can_transmute(&self) -> bool {
+        self.into_option().is_some()
+    }
+}
