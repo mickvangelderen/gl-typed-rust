@@ -492,7 +492,57 @@ impl Gl {
         );
     }
 
-    // Buffer names.
+    // Renderbuffers.
+
+    #[inline]
+    pub unsafe fn gen_renderbuffers(&self, names: &mut [Option<RenderbufferName>]) {
+        self.gl
+            .GenRenderbuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
+
+    #[inline]
+    pub unsafe fn delete_renderbuffers(&self, names: &mut [Option<RenderbufferName>]) {
+        self.gl
+            .DeleteRenderbuffers(names.len() as i32, names.as_ptr() as *const u32);
+    }
+
+    #[inline]
+    pub unsafe fn bind_renderbuffer<T>(&self, target: T, name: RenderbufferName)
+    where
+        T: Into<RenderbufferTarget>,
+    {
+        self.gl
+            .BindRenderbuffer(target.into() as u32, name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn unbind_renderbuffer<T>(&self, target: T)
+    where
+        T: Into<RenderbufferTarget>,
+    {
+        self.gl.BindRenderbuffer(target.into() as u32, 0);
+    }
+
+    #[inline]
+    pub unsafe fn renderbuffer_storage<T, IF>(
+        &self,
+        target: T,
+        internal_format: IF,
+        width: i32,
+        height: i32,
+    ) where
+        T: Into<RenderbufferTarget>,
+        IF: Into<InternalFormat>,
+    {
+        self.gl.RenderbufferStorage(
+            target.into() as u32,
+            internal_format.into() as u32,
+            width,
+            height,
+        );
+    }
+
+    // Buffers.
 
     #[inline]
     pub unsafe fn gen_buffers(&self, names: &mut [Option<BufferName>]) {
@@ -669,6 +719,25 @@ impl Gl {
         uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f,
         f32
     );
+    #[inline]
+    pub unsafe fn framebuffer_renderbuffer<FT, FA, RT>(
+        &self,
+        framebuffer_target: FT,
+        framebuffer_attachment: FA,
+        renderbuffer_target: RT,
+        renderbuffer: RenderbufferName,
+    ) where
+        FT: Into<FramebufferTarget>,
+        FA: Into<FramebufferAttachment>,
+        RT: Into<RenderbufferTarget>,
+    {
+        self.gl.FramebufferRenderbuffer(
+            framebuffer_target.into() as u32,
+            framebuffer_attachment.into().into_u32(),
+            renderbuffer_target.into() as u32,
+            renderbuffer.into_u32(),
+        );
+    }
 
     #[inline]
     pub unsafe fn uniform_1iv(&self, uniform_location: UniformLocation, value: &[i32]) {

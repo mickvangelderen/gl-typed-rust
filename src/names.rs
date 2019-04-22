@@ -37,6 +37,7 @@ macro_rules! impl_names {
 
 impl_names!(
     BufferName,
+    RenderbufferName,
     FramebufferName,
     ProgramName,
     ShaderName,

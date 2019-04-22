@@ -254,6 +254,11 @@ impl_enums! {
         ShaderStorageBuffer = gl::SHADER_STORAGE_BUFFER,
     }
 
+    struct UncheckedRenderbufferTarget(u32);
+    RenderbufferTarget {
+        Renderbuffer = gl::RENDERBUFFER,
+    }
+
     struct UncheckedDepthStencilTextureMode(i32);
     DepthStencilTextureMode {
         DepthComponent = gl::DEPTH_COMPONENT,
