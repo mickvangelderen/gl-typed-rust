@@ -26,7 +26,7 @@ impl AttributeLocation {
     }
 
     /// You must guarantee val is in range 0..i32::MAX.
-    pub unsafe fn new_unchecked(val: i32) -> Self {
+    pub const unsafe fn new_unchecked(val: i32) -> Self {
         AttributeLocation(val as u32)
     }
 
@@ -108,7 +108,7 @@ impl UniformLocation {
     }
 
     /// You must guarantee val is in range 0..i32::MAX.
-    pub unsafe fn new_unchecked(val: i32) -> Self {
+    pub const unsafe fn new_unchecked(val: i32) -> Self {
         UniformLocation(val)
     }
 
@@ -190,7 +190,7 @@ impl UniformBlockIndex {
     }
 
     /// You must guarantee val is in range 0..u32::MAX.
-    pub unsafe fn new_unchecked(val: u32) -> Self {
+    pub const unsafe fn new_unchecked(val: u32) -> Self {
         UniformBlockIndex(val)
     }
 

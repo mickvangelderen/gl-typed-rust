@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
 ### Changed
  - Removed unused type parameter from `delete_buffers`.
+ - Made locations' new_unchecked const functions.
 
 ## [0.4.3] - 2019-04-10
 [0.4.3]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.2...0.4.3
