@@ -89,7 +89,7 @@ impl Gl {
     // to call.
     #[inline]
     pub unsafe fn get_context_flags(&self) -> ContextFlags {
-        let mut values: [i32; 1] =  std::mem::uninitialized();
+        let mut values: [i32; 1] = std::mem::uninitialized();
         self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
         ContextFlags::from_bits_truncate(values[0] as u32)
     }
