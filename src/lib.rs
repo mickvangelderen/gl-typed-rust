@@ -551,7 +551,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn delete_buffers<A>(&self, names: &mut [Option<BufferName>]) {
+    pub unsafe fn delete_buffers(&self, names: &mut [Option<BufferName>]) {
         self.gl
             .DeleteBuffers(names.len() as i32, names.as_ptr() as *const u32);
     }
