@@ -144,6 +144,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn clear_depth(&self, depth: f64) {
+        self.gl.ClearDepth(depth);
+    }
+
+    #[inline]
     pub unsafe fn clear(&self, flags: ClearFlags) {
         self.gl.Clear(flags.bits());
     }
