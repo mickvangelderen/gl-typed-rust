@@ -57,6 +57,30 @@ pub struct Gl {
 }
 
 impl Gl {
+    // Uniform setters.
+
+    impl_uniform_setters!(
+        uniform_1i, Uniform1i, uniform_2i, Uniform2i, uniform_3i, Uniform3i, uniform_4i, Uniform4i,
+        i32
+    );
+
+    impl_uniform_setters!(
+        uniform_1ui,
+        Uniform1ui,
+        uniform_2ui,
+        Uniform2ui,
+        uniform_3ui,
+        Uniform3ui,
+        uniform_4ui,
+        Uniform4ui,
+        u32
+    );
+
+    impl_uniform_setters!(
+        uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f,
+        f32
+    );
+
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
     where
@@ -97,7 +121,8 @@ impl Gl {
     #[inline]
     pub unsafe fn get_max_texture_max_anisotropy(&self) -> f32 {
         let mut values: [f32; 1] = std::mem::uninitialized();
-        self.gl.GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, values.as_mut_ptr());
+        self.gl
+            .GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, values.as_mut_ptr());
         values[0]
     }
 
@@ -161,17 +186,34 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn color_mask<R, G, B, A>(&self, r: R, g: G, b: B, a: A) where R: Into<WriteMask>, G: Into<WriteMask>, B: Into<WriteMask>, A: Into<WriteMask> {
-        self.gl.ColorMask(r.into() as u8, g.into() as u8, b.into() as u8, a.into() as u8);
+    pub unsafe fn color_mask<R, G, B, A>(&self, r: R, g: G, b: B, a: A)
+    where
+        R: Into<WriteMask>,
+        G: Into<WriteMask>,
+        B: Into<WriteMask>,
+        A: Into<WriteMask>,
+    {
+        self.gl.ColorMask(
+            r.into() as u8,
+            g.into() as u8,
+            b.into() as u8,
+            a.into() as u8,
+        );
     }
 
     #[inline]
-    pub unsafe fn depth_mask<D>(&self, d: D) where D: Into<WriteMask> {
+    pub unsafe fn depth_mask<D>(&self, d: D)
+    where
+        D: Into<WriteMask>,
+    {
         self.gl.DepthMask(d.into() as u8);
     }
 
     #[inline]
-    pub unsafe fn depth_func<DF>(&self, func: DF) where DF: Into<DepthFunc> {
+    pub unsafe fn depth_func<DF>(&self, func: DF)
+    where
+        DF: Into<DepthFunc>,
+    {
         self.gl.DepthFunc(func.into() as u32);
     }
 
@@ -744,29 +786,6 @@ impl Gl {
         );
     }
 
-    // Uniform setters.
-
-    impl_uniform_setters!(
-        uniform_1i, Uniform1i, uniform_2i, Uniform2i, uniform_3i, Uniform3i, uniform_4i, Uniform4i,
-        i32
-    );
-
-    impl_uniform_setters!(
-        uniform_1ui,
-        Uniform1ui,
-        uniform_2ui,
-        Uniform2ui,
-        uniform_3ui,
-        Uniform3ui,
-        uniform_4ui,
-        Uniform4ui,
-        u32
-    );
-
-    impl_uniform_setters!(
-        uniform_1f, Uniform1f, uniform_2f, Uniform2f, uniform_3f, Uniform3f, uniform_4f, Uniform4f,
-        f32
-    );
     #[inline]
     pub unsafe fn framebuffer_renderbuffer<FT, FA, RT>(
         &self,
