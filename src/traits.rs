@@ -77,3 +77,13 @@ impl TexParameteriParam for symbols::TextureWrapR {
     type Target = types::TextureTargetGE3D;
     type Value = types::TextureWrap;
 }
+
+pub trait TexParameterfParam: Into<types::TexParameterfParam> {
+    type Target: Into<types::TextureTarget>;
+    type Value: convute::marker::Transmute<f32>;
+}
+
+impl TexParameterfParam for symbols::TextureMaxAnisotropy {
+    type Target = types::TextureTarget;
+    type Value = f32;
+}

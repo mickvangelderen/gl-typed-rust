@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.5...HEAD
 
+### Added
+ - Extention ARB_texture_filter_anisotropic
+
 ## [0.4.5] - 2019-04-25
 [0.4.5]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.4...0.4.5
 

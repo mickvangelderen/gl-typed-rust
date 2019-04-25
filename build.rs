@@ -7,7 +7,10 @@ use std::io::Write;
 use std::path::Path;
 
 fn main() {
-    let gl_registry = Registry::new(Api::Gl, (4, 6), Profile::Core, Fallbacks::All, []);
+    let gl_registry = Registry::new(Api::Gl, (4, 6), Profile::Core, Fallbacks::All, [
+        "ARB_texture_filter_anisotropic"
+    ]);
+
     let out_dir = env::var("OUT_DIR").unwrap();
 
     // Ignore all file changes except build.rs.

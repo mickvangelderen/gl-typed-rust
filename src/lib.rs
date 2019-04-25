@@ -95,6 +95,13 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn get_max_texture_max_anisotropy(&self) -> f32 {
+        let mut values: [f32; 1] = std::mem::uninitialized();
+        self.gl.GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, values.as_mut_ptr());
+        values[0]
+    }
+
+    #[inline]
     pub unsafe fn get_error(&self) -> u32 {
         self.gl.GetError()
     }
@@ -473,6 +480,22 @@ impl Gl {
         V: Into<P::Value>,
     {
         self.gl.TexParameteri(
+            target.into().into() as u32,
+            param.into() as u32,
+            Into::into(value.into()),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn tex_parameter_f<P, T, V>(&self, target: T, param: P, value: V)
+    where
+        P: traits::TexParameterfParam,
+        P::Target: Into<TextureTarget>,
+        P::Value: Into<f32>,
+        T: Into<P::Target>,
+        V: Into<P::Value>,
+    {
+        self.gl.TexParameterf(
             target.into().into() as u32,
             param.into() as u32,
             Into::into(value.into()),

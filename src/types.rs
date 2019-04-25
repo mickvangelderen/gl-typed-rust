@@ -277,6 +277,12 @@ impl_enums! {
         TextureWrapR = gl::TEXTURE_WRAP_R,
     }
 
+    struct UncheckedTexParameterfParam(i32);
+    TexParameterfParam {
+        // ARB_texture_filter_anisotropic
+        TextureMaxAnisotropy = gl::TEXTURE_MAX_ANISOTROPY,
+    }
+
     struct UncheckedTextureMagFilter(i32);
     TextureMagFilter {
         Nearest = gl::NEAREST,
