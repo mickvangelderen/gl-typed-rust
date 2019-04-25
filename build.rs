@@ -51,14 +51,18 @@ fn main() {
             "Linked",
             "Row",
             "Column",
+            "Disabled",
+            "Enabled",
+            "LT",
+            "LE",
+            "GT",
+            "GE",
+            "EQ",
+            "NE",
         ]
         .iter()
         {
-            let s = ident
-                .to_camel_case()
-                .replace("1d", "1D")
-                .replace("2d", "2D")
-                .replace("3d", "3D");
+            let s = ident;
             let c = ident.to_shouty_snake_case();
 
             write_symbol(&mut symbols, &s);

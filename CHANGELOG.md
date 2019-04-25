@@ -6,9 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.5...HEAD
 
-## [0.4.4] - 2019-04-25
+## [0.4.5] - 2019-04-25
+[0.4.5]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.4...0.4.5
+
+### Changed
+ - Fixed build issues, version 0.4.4 should never be used.
+
+## [0.4.4] - 2019-04-25 (broken)
 [0.4.4]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.3...0.4.4
 
 ### Added

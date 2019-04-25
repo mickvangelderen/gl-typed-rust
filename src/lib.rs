@@ -154,17 +154,17 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn color_mask<R, G, B, A>(&self, r: R, g: G, b: B, a: A) where R: WriteMask, G: WriteMask, B: WriteMask, A: WriteMask {
+    pub unsafe fn color_mask<R, G, B, A>(&self, r: R, g: G, b: B, a: A) where R: Into<WriteMask>, G: Into<WriteMask>, B: Into<WriteMask>, A: Into<WriteMask> {
         self.gl.ColorMask(r.into() as u8, g.into() as u8, b.into() as u8, a.into() as u8);
     }
 
     #[inline]
-    pub unsafe fn depth_mask<D>(&self, d: WriteMask) where D: WriteMask {
+    pub unsafe fn depth_mask<D>(&self, d: D) where D: Into<WriteMask> {
         self.gl.DepthMask(d.into() as u8);
     }
 
     #[inline]
-    pub unsafe fn depth_func<DF>(&self, func: DF) where DF: DepthFunc {
+    pub unsafe fn depth_func<DF>(&self, func: DF) where DF: Into<DepthFunc> {
         self.gl.DepthFunc(func.into() as u32);
     }
 
