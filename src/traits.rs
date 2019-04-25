@@ -87,3 +87,49 @@ impl TexParameterfParam for symbols::TextureMaxAnisotropy {
     type Target = types::TextureTarget;
     type Value = f32;
 }
+
+pub trait SamplerParameteriValue {
+    fn to_i32(self) -> i32;
+}
+
+impl SamplerParameteriValue for types::TextureMagFilter {
+    fn to_i32(self) -> i32 {
+        self as i32
+    }
+}
+
+impl SamplerParameteriValue for types::TextureMinFilter {
+    fn to_i32(self) -> i32 {
+        self as i32
+    }
+}
+
+impl SamplerParameteriValue for types::TextureWrap {
+    fn to_i32(self) -> i32 {
+        self as i32
+    }
+}
+
+pub trait SamplerParameteriParam: Into<types::SamplerParameteri> {
+    type Value: SamplerParameteriValue;
+}
+
+impl SamplerParameteriParam for symbols::TextureMagFilter {
+    type Value = types::TextureMagFilter;
+}
+
+impl SamplerParameteriParam for symbols::TextureMinFilter {
+    type Value = types::TextureMinFilter;
+}
+
+impl SamplerParameteriParam for symbols::TextureWrapS {
+    type Value = types::TextureWrap;
+}
+
+impl SamplerParameteriParam for symbols::TextureWrapT {
+    type Value = types::TextureWrap;
+}
+
+impl SamplerParameteriParam for symbols::TextureWrapR {
+    type Value = types::TextureWrap;
+}

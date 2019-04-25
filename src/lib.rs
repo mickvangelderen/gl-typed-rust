@@ -935,4 +935,53 @@ impl Gl {
             size as isize,
         );
     }
+
+    // Samplers.
+
+    #[inline]
+    pub unsafe fn gen_samplers(&self, names: &mut [Option<SamplerName>]) {
+        self.gl
+            .GenSamplers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
+
+    #[inline]
+    pub unsafe fn delete_samplers(&self, names: &mut [Option<SamplerName>]) {
+        self.gl
+            .DeleteSamplers(names.len() as i32, names.as_ptr() as *const u32);
+    }
+
+    #[inline]
+    pub unsafe fn bind_sampler(&self, unit: u32, name: SamplerName) {
+        self.gl.BindSampler(unit, name.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn bind_samplers<N>(&self, first_unit: u32, count: u32, names: &[N])
+    where
+        N: Transmute<Option<SamplerName>>,
+    {
+        self.gl.BindSamplers(
+            first_unit,
+            count as i32,
+            names.transmute_each_ref().as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn unbind_sampler(&self, unit: u32) {
+        self.gl.BindSampler(unit, 0);
+    }
+
+    #[inline]
+    pub unsafe fn sampler_parameter_i<P, V>(&self, sampler: SamplerName, param: P, value: V)
+    where
+        P: traits::SamplerParameteriParam,
+        P::Value: From<V>,
+    {
+        self.gl.SamplerParameteri(
+            sampler.into_u32(),
+            param.into() as u32,
+            traits::SamplerParameteriValue::to_i32(P::Value::from(value)),
+        );
+    }
 }

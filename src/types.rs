@@ -283,6 +283,15 @@ impl_enums! {
         TextureMaxAnisotropy = gl::TEXTURE_MAX_ANISOTROPY,
     }
 
+    struct UncheckedSamplerParameteriParam(i32);
+    SamplerParameteri {
+        TextureMagFilter = gl::TEXTURE_MAG_FILTER,
+        TextureMinFilter = gl::TEXTURE_MIN_FILTER,
+        TextureWrapS = gl::TEXTURE_WRAP_S,
+        TextureWrapT = gl::TEXTURE_WRAP_T,
+        TextureWrapR = gl::TEXTURE_WRAP_R,
+    }
+
     struct UncheckedTextureMagFilter(i32);
     TextureMagFilter {
         Nearest = gl::NEAREST,

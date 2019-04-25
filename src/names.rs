@@ -43,6 +43,7 @@ impl_names!(
     ShaderName,
     TextureName,
     VertexArrayName,
+    SamplerName,
 );
 
 // Even though there is a distinction to be made between an
