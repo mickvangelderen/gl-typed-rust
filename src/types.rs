@@ -600,6 +600,24 @@ impl_enums! {
         Column = gl::FALSE,
         Row = gl::TRUE,
     }
+
+    struct UncheckedWriteMask(u8);
+    WriteMask {
+        Disabled = gl::FALSE,
+        Enabled = gl::TRUE,
+    }
+
+    struct UncheckedDepthFunc(u32);
+    DepthFunc {
+        Never = gl::NEVER,
+        LT = gl::LESS,
+        EQ = gl::EQUAL,
+        LE = gl::LEQUAL,
+        GT = gl::GREATER,
+        NE = gl::NOTEQUAL,
+        GE = gl::GEQUAL,
+        Always = gl::ALWAYS,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {

@@ -154,6 +154,31 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn color_mask<R, G, B, A>(&self, r: R, g: G, b: B, a: A) where R: WriteMask, G: WriteMask, B: WriteMask, A: WriteMask {
+        self.gl.ColorMask(r.into() as u8, g.into() as u8, b.into() as u8, a.into() as u8);
+    }
+
+    #[inline]
+    pub unsafe fn depth_mask<D>(&self, d: WriteMask) where D: WriteMask {
+        self.gl.DepthMask(d.into() as u8);
+    }
+
+    #[inline]
+    pub unsafe fn depth_func<DF>(&self, func: DF) where DF: DepthFunc {
+        self.gl.DepthFunc(func.into() as u32);
+    }
+
+    #[inline]
+    pub unsafe fn depth_range(&self, n: f64, f: f64) {
+        self.gl.DepthRange(n, f);
+    }
+
+    #[inline]
+    pub unsafe fn stencil_mask(&self, mask: u32) {
+        self.gl.StencilMask(mask);
+    }
+
+    #[inline]
     pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {
         self.gl.DrawBuffers(
             framebuffer_attachments.len() as i32,
