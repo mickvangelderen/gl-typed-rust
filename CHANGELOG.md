@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.5...HEAD
+[Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.6...HEAD
+
+## [0.4.6] - 2019-04-26
+[0.4.6]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.5...0.4.6
 
 ### Added
- - Extention ARB_texture_filter_anisotropic
+ - Extention ARB_texture_filter_anisotropic.
+ - Sampler objects.
 
 ## [0.4.5] - 2019-04-25
 [0.4.5]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.4...0.4.5
