@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.6...HEAD
 
+### Added
+ - `get_programiv_move`
+ - `get_program_info_log_move`
+
 ## [0.4.6] - 2019-04-26
 [0.4.6]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.5...0.4.6
 

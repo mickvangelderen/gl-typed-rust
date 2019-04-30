@@ -400,6 +400,18 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn get_programiv_move<P>(&self, name: ProgramName, param: P) -> P::Value
+    where
+        P: traits::GetProgramivParam,
+        P::Value: convute::marker::Transmute<i32>,
+        i32: convute::marker::Transmute<P::Value>,
+    {
+        let mut value: P::Value = std::mem::uninitialized();
+        self.get_programiv(name, param, &mut value);
+        value
+    }
+
+    #[inline]
     pub unsafe fn get_program_info_log(
         &self,
         name: ProgramName,
@@ -412,6 +424,26 @@ impl Gl {
             length,
             buffer.as_mut_ptr() as *mut i8,
         );
+    }
+
+    /// Returns Vec<u8> because the user should decide whether or not to trust
+    /// that OpenGL writes valid UTF-8 into the buffer.
+    #[inline]
+    pub unsafe fn get_program_info_log_move(&self, name: ProgramName) -> Vec<u8> {
+        let mut buffer = {
+            let capacity = self.get_programiv_move(name, INFO_LOG_LENGTH);
+            assert!(capacity >= 0);
+            Vec::with_capacity(capacity as usize)
+        };
+        let mut length = ::std::mem::uninitialized();
+        self.get_program_info_log(
+            name,
+            &mut length,
+            std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
+        );
+        assert!(length >= 0 && length <= buffer.capacity() as i32);
+        buffer.set_len(length as usize);
+        buffer
     }
 
     #[inline]
