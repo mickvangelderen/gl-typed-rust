@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.7...HEAD
 
+### Added
+
+ - `glClipControl`
+ 
 ## [0.4.7] - 2019-05-03
 [0.4.7]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.6...0.4.7
 

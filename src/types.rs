@@ -633,6 +633,18 @@ impl_enums! {
         GE = gl::GEQUAL,
         Always = gl::ALWAYS,
     }
+
+    struct UncheckedClipControlOrigin(u32);
+    ClipControlOrigin {
+        LowerLeft = gl::LOWER_LEFT,
+        UpperLeft = gl::UPPER_LEFT,
+    }
+
+    struct UncheckedClipControlDepth(u32);
+    ClipControlDepth {
+        NegativeOneToOne = gl::NEGATIVE_ONE_TO_ONE,
+        ZeroToOne = gl::ZERO_TO_ONE,
+    }
 }
 
 impl From<TextureTargetGE2D> for TextureTarget {

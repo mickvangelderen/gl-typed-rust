@@ -158,6 +158,15 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn clip_control<O, D>(&self, origin: O, depth: D)
+    where
+        O: Into<ClipControlOrigin>,
+        D: Into<ClipControlDepth>,
+    {
+        self.gl.ClipControl(origin.into() as u32, depth.into() as u32)
+    }
+
+    #[inline]
     pub unsafe fn cull_face<F>(&self, face: F)
     where
         F: Into<CullFace>,
