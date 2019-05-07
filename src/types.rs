@@ -767,6 +767,8 @@ impl FramebufferAttachment {
 
 impl_struct_from_symbol! (FramebufferAttachment {
     DepthStencilAttachment = gl::DEPTH_STENCIL_ATTACHMENT,
+    DepthAttachment = gl::DEPTH_ATTACHMENT,
+    StencilAttachment = gl::STENCIL_ATTACHMENT,
     ColorAttachment0 = gl::COLOR_ATTACHMENT0,
     ColorAttachment1 = gl::COLOR_ATTACHMENT1,
     ColorAttachment2 = gl::COLOR_ATTACHMENT2,

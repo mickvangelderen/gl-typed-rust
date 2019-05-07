@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
  - `glClipControl`
+ - `GL_DEPTH_ATTACHMENT` and `GL_STENCIL_ATTACHMENT` to `FramebufferAttachment`
  
 ## [0.4.7] - 2019-05-03
 [0.4.7]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.6...0.4.7
