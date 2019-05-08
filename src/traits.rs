@@ -69,12 +69,12 @@ impl TexParameteriParam for symbols::TextureWrapS {
 }
 
 impl TexParameteriParam for symbols::TextureWrapT {
-    type Target = types::TextureTargetGE2D;
+    type Target = types::TextureTarget;
     type Value = types::TextureWrap;
 }
 
 impl TexParameteriParam for symbols::TextureWrapR {
-    type Target = types::TextureTargetGE3D;
+    type Target = types::TextureTarget;
     type Value = types::TextureWrap;
 }
 

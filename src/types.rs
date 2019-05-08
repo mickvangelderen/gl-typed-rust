@@ -216,36 +216,6 @@ impl_enums! {
         Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
     }
 
-    struct UncheckedTextureTargetGE2D(u32);
-    TextureTargetGE2D {
-        // Texture1D = gl::TEXTURE_1D,
-        Texture2D = gl::TEXTURE_2D,
-        Texture3D = gl::TEXTURE_3D,
-        // Texture1DArray = gl::TEXTURE_1D_ARRAY,
-        Texture2DArray = gl::TEXTURE_2D_ARRAY,
-        TextureRectangle = gl::TEXTURE_RECTANGLE,
-        TextureBuffer = gl::TEXTURE_BUFFER,
-        TextureCubeMap = gl::TEXTURE_CUBE_MAP,
-        TextureCubeMapArray = gl::TEXTURE_CUBE_MAP_ARRAY,
-        Texture2DMultisample = gl::TEXTURE_2D_MULTISAMPLE,
-        Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
-    }
-
-    struct UncheckedTextureTargetGE3D(u32);
-    TextureTargetGE3D {
-        // Texture1D = gl::TEXTURE_1D,
-        // Texture2D = gl::TEXTURE_2D,
-        Texture3D = gl::TEXTURE_3D,
-        // Texture1DArray = gl::TEXTURE_1D_ARRAY,
-        // Texture2DArray = gl::TEXTURE_2D_ARRAY,
-        // TextureRectangle = gl::TEXTURE_RECTANGLE,
-        TextureBuffer = gl::TEXTURE_BUFFER,
-        // TextureCubeMap = gl::TEXTURE_CUBE_MAP,
-        // TextureCubeMapArray = gl::TEXTURE_CUBE_MAP_ARRAY,
-        // Texture2DMultisample = gl::TEXTURE_2D_MULTISAMPLE,
-        // Texture2DMultisampleArray = gl::TEXTURE_2D_MULTISAMPLE_ARRAY,
-    }
-
     struct UncheckedBindBufferTarget(u32);
     BindBufferTarget {
         AtomicCounterBuffer = gl::ATOMIC_COUNTER_BUFFER,
@@ -644,20 +614,6 @@ impl_enums! {
     ClipControlDepth {
         NegativeOneToOne = gl::NEGATIVE_ONE_TO_ONE,
         ZeroToOne = gl::ZERO_TO_ONE,
-    }
-}
-
-impl From<TextureTargetGE2D> for TextureTarget {
-    #[inline]
-    fn from(t: TextureTargetGE2D) -> Self {
-        unsafe { std::mem::transmute(t) }
-    }
-}
-
-impl From<TextureTargetGE3D> for TextureTarget {
-    #[inline]
-    fn from(t: TextureTargetGE3D) -> Self {
-        unsafe { std::mem::transmute(t) }
     }
 }
 
