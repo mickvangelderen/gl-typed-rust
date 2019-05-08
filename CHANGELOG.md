@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
  - **breaking** `TextureTargetGE2D` and `TextureTargetGE3D`. The benefits are not worth the added complexity. 
 
-## [0.4.8] - 2019-05-03
+## [0.4.8] - 2019-05-08
 [0.4.8]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.7...0.4.8
 
 ### Added
