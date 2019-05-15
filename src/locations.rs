@@ -72,6 +72,12 @@ impl From<OptionAttributeLocation> for Option<AttributeLocation> {
     }
 }
 
+impl Default for OptionAttributeLocation {
+    fn default() -> Self {
+        Self::NONE
+    }
+}
+
 unsafe impl convute::marker::Transmute<OptionAttributeLocation> for AttributeLocation {}
 unsafe impl convute::marker::TryTransmute<AttributeLocation> for OptionAttributeLocation {
     #[inline]
@@ -154,6 +160,12 @@ impl From<OptionUniformLocation> for Option<UniformLocation> {
     }
 }
 
+impl Default for OptionUniformLocation {
+    fn default() -> Self {
+        Self::NONE
+    }
+}
+
 unsafe impl convute::marker::Transmute<OptionUniformLocation> for UniformLocation {}
 unsafe impl convute::marker::TryTransmute<UniformLocation> for OptionUniformLocation {
     #[inline]
@@ -233,6 +245,12 @@ impl From<OptionUniformBlockIndex> for Option<UniformBlockIndex> {
     #[inline]
     fn from(val: OptionUniformBlockIndex) -> Self {
         val.into_option()
+    }
+}
+
+impl Default for OptionUniformBlockIndex {
+    fn default() -> Self {
+        Self::NONE
     }
 }
 
