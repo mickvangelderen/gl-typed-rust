@@ -22,6 +22,7 @@ pub mod marker {
 
 use convute::convert::*;
 use std::ffi::CStr;
+use std::mem::{ManuallyDrop, MaybeUninit};
 use std::os::raw::*;
 
 macro_rules! impl_uniform_setters {
@@ -92,6 +93,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn finish(&self) {
+        self.gl.Finish();
+    }
+
+    #[inline]
     pub unsafe fn get_string<P>(&self, name: P) -> &'static str
     where
         P: Into<GetStringParam>,
@@ -123,6 +129,24 @@ impl Gl {
         let mut values: [f32; 1] = std::mem::uninitialized();
         self.gl
             .GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, values.as_mut_ptr());
+        values[0]
+    }
+
+    #[inline]
+    pub unsafe fn get_uniform_buffer_offset_alignment(&self) -> i32 {
+        let mut values: [i32; 1] = std::mem::uninitialized();
+        self.gl
+            .GetIntegerv(gl::UNIFORM_BUFFER_OFFSET_ALIGNMENT, values.as_mut_ptr());
+        values[0]
+    }
+
+    #[inline]
+    pub unsafe fn get_shader_storage_buffer_offset_alignment(&self) -> i32 {
+        let mut values: [i32; 1] = std::mem::uninitialized();
+        self.gl.GetIntegerv(
+            gl::SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT,
+            values.as_mut_ptr(),
+        );
         values[0]
     }
 
@@ -163,7 +187,8 @@ impl Gl {
         O: Into<ClipControlOrigin>,
         D: Into<ClipControlDepth>,
     {
-        self.gl.ClipControl(origin.into() as u32, depth.into() as u32)
+        self.gl
+            .ClipControl(origin.into() as u32, depth.into() as u32)
     }
 
     #[inline]
@@ -270,7 +295,18 @@ impl Gl {
     // Shaders.
 
     #[inline]
-    pub unsafe fn create_shader<K>(&self, kind: K) -> Option<ShaderName>
+    pub unsafe fn create_shader<K>(&self, kind: K) -> ShaderName
+    where
+        K: Into<ShaderKind>,
+    {
+        self.try_create_shader(kind).unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_shader<K>(
+        &self,
+        kind: K,
+    ) -> Result<ShaderName, ReceivedInvalidShaderName>
     where
         K: Into<ShaderKind>,
     {
@@ -288,58 +324,39 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, param: P, value: &mut P::Value)
+    pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, param: P) -> P::Value
     where
         P: traits::GetShaderivParam,
         P::Value: convute::marker::Transmute<i32>,
         i32: convute::marker::Transmute<P::Value>,
     {
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetShaderiv(name.into_u32(), param.into() as u32, value.transmute_mut())
+            .GetShaderiv(name.into_u32(), param.into() as u32, value.as_mut_ptr());
+        // TODO: Implement and use TryFrom on these types.
+        value.assume_init().transmute()
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv_move<P>(&self, name: ShaderName, param: P) -> P::Value
-    where
-        P: traits::GetShaderivParam,
-        P::Value: convute::marker::Transmute<i32>,
-        i32: convute::marker::Transmute<P::Value>,
-    {
-        let mut value: P::Value = ::std::mem::uninitialized();
-        self.get_shaderiv(name, param, &mut value);
-        value
+    pub unsafe fn get_shader_info_log(&self, name: ShaderName) -> String {
+        String::from_utf8(self.get_shader_info_log_bytes(name)).unwrap()
     }
 
     #[inline]
-    pub unsafe fn get_shader_info_log(
-        &self,
-        name: ShaderName,
-        length: &mut i32,
-        buffer: &mut [u8],
-    ) {
-        self.gl.GetShaderInfoLog(
-            name.into_u32(),
-            buffer.len() as i32,
-            length,
-            buffer.as_mut_ptr() as *mut i8,
-        );
-    }
-
-    /// Returns Vec<u8> because the user should decide whether or not to trust
-    /// that OpenGL writes valid UTF-8 into the buffer.
-    #[inline]
-    pub unsafe fn get_shader_info_log_move(&self, name: ShaderName) -> Vec<u8> {
+    pub unsafe fn get_shader_info_log_bytes(&self, name: ShaderName) -> Vec<u8> {
         let mut buffer = {
-            let capacity = self.get_shaderiv_move(name, INFO_LOG_LENGTH);
+            let capacity = self.get_shaderiv(name, INFO_LOG_LENGTH);
             assert!(capacity >= 0);
             Vec::with_capacity(capacity as usize)
         };
-        let mut length = ::std::mem::uninitialized();
-        self.get_shader_info_log(
-            name,
-            &mut length,
-            std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
+        let mut length = MaybeUninit::<i32>::uninit();
+        self.gl.GetShaderInfoLog(
+            name.into_u32(),
+            buffer.capacity() as i32,
+            length.as_mut_ptr(),
+            buffer.as_mut_ptr() as *mut i8,
         );
+        let length = length.assume_init();
         assert!(length >= 0 && length <= buffer.capacity() as i32);
         buffer.set_len(length as usize);
         buffer
@@ -368,13 +385,18 @@ impl Gl {
     // Programs.
 
     #[inline]
-    pub unsafe fn create_program(&self) -> Option<ProgramName> {
+    pub unsafe fn create_program(&self) -> ProgramName {
+        self.try_create_program().unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_program(&self) -> Result<ProgramName, ReceivedInvalidProgramName> {
         ProgramName::new(self.gl.CreateProgram())
     }
 
     #[inline]
     pub unsafe fn delete_program(&self, name: ProgramName) {
-        self.gl.DeleteProgram(name.into_u32());
+        self.gl.DeleteProgram(ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
@@ -398,58 +420,39 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_programiv<P>(&self, name: ProgramName, param: P, value: &mut P::Value)
+    pub unsafe fn get_programiv<P>(&self, name: ProgramName, param: P) -> P::Value
     where
         P: traits::GetProgramivParam,
         P::Value: convute::marker::Transmute<i32>,
         i32: convute::marker::Transmute<P::Value>,
     {
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetProgramiv(name.into_u32(), param.into() as u32, value.transmute_mut());
+            .GetProgramiv(name.into_u32(), param.into() as u32, value.as_mut_ptr());
+        // TODO: Implement and use TryFrom on these types.
+        value.assume_init().transmute()
     }
 
     #[inline]
-    pub unsafe fn get_programiv_move<P>(&self, name: ProgramName, param: P) -> P::Value
-    where
-        P: traits::GetProgramivParam,
-        P::Value: convute::marker::Transmute<i32>,
-        i32: convute::marker::Transmute<P::Value>,
-    {
-        let mut value: P::Value = std::mem::uninitialized();
-        self.get_programiv(name, param, &mut value);
-        value
+    pub unsafe fn get_program_info_log(&self, name: ProgramName) -> String {
+        String::from_utf8(self.get_program_info_log_bytes(name)).unwrap()
     }
 
     #[inline]
-    pub unsafe fn get_program_info_log(
-        &self,
-        name: ProgramName,
-        length: &mut i32,
-        buffer: &mut [u8],
-    ) {
-        self.gl.GetProgramInfoLog(
-            name.into_u32(),
-            buffer.len() as i32,
-            length,
-            buffer.as_mut_ptr() as *mut i8,
-        );
-    }
-
-    /// Returns Vec<u8> because the user should decide whether or not to trust
-    /// that OpenGL writes valid UTF-8 into the buffer.
-    #[inline]
-    pub unsafe fn get_program_info_log_move(&self, name: ProgramName) -> Vec<u8> {
+    pub unsafe fn get_program_info_log_bytes(&self, name: ProgramName) -> Vec<u8> {
         let mut buffer = {
-            let capacity = self.get_programiv_move(name, INFO_LOG_LENGTH);
+            let capacity = self.get_programiv(name, INFO_LOG_LENGTH);
             assert!(capacity >= 0);
             Vec::with_capacity(capacity as usize)
         };
-        let mut length = ::std::mem::uninitialized();
-        self.get_program_info_log(
-            name,
-            &mut length,
-            std::slice::from_raw_parts_mut(buffer.as_mut_ptr(), buffer.capacity()),
+        let mut length = MaybeUninit::<i32>::uninit();
+        self.gl.GetProgramInfoLog(
+            name.into_u32(),
+            buffer.capacity() as i32,
+            length.as_mut_ptr(),
+            buffer.as_mut_ptr() as *mut i8,
         );
+        let length = length.assume_init();
         assert!(length >= 0 && length <= buffer.capacity() as i32);
         buffer.set_len(length as usize);
         buffer
@@ -515,11 +518,41 @@ impl Gl {
     // Textures.
 
     #[inline]
+    pub unsafe fn create_texture<K>(&self, kind: K) -> TextureName
+    where
+        K: Into<TextureTarget>,
+    {
+        self.try_create_texture(kind).unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_texture<K>(
+        &self,
+        kind: K,
+    ) -> Result<TextureName, ReceivedInvalidTextureName>
+    where
+        K: Into<TextureTarget>,
+    {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl
+            .CreateTextures(kind.into() as u32, 1, name.as_mut_ptr());
+        TextureName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_texture(&self, name: TextureName) {
+        self.gl
+            .DeleteTextures(1, &ManuallyDrop::new(name).into_u32());
+    }
+
+    #[deprecated]
+    #[inline]
     pub unsafe fn gen_textures(&self, names: &mut [Option<TextureName>]) {
         self.gl
             .GenTextures(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn delete_textures(&self, names: &mut [Option<TextureName>]) {
         self.gl
@@ -626,6 +659,27 @@ impl Gl {
     // Renderbuffers.
 
     #[inline]
+    pub unsafe fn create_renderbuffer(&self) -> RenderbufferName {
+        self.try_create_renderbuffer().unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_renderbuffer(
+        &self,
+    ) -> Result<RenderbufferName, ReceivedInvalidRenderbufferName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateRenderbuffers(1, name.as_mut_ptr());
+        RenderbufferName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_renderbuffer(&self, name: RenderbufferName) {
+        self.gl
+            .DeleteRenderbuffers(1, &ManuallyDrop::new(name).into_u32());
+    }
+
+    #[deprecated]
+    #[inline]
     pub unsafe fn gen_renderbuffers(&self, names: &mut [Option<RenderbufferName>]) {
         self.gl
             .GenRenderbuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
@@ -654,6 +708,7 @@ impl Gl {
         self.gl.BindRenderbuffer(target.into() as u32, 0);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn renderbuffer_storage<T, IF>(
         &self,
@@ -675,16 +730,36 @@ impl Gl {
 
     // Buffers.
 
+    #[deprecated]
     #[inline]
     pub unsafe fn gen_buffers(&self, names: &mut [Option<BufferName>]) {
         self.gl
             .GenBuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn delete_buffers(&self, names: &mut [Option<BufferName>]) {
         self.gl
             .DeleteBuffers(names.len() as i32, names.as_ptr() as *const u32);
+    }
+
+    #[inline]
+    pub unsafe fn create_buffer(&self) -> BufferName {
+        self.try_create_buffer().unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_buffer(&self) -> Result<BufferName, ReceivedInvalidBufferName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateBuffers(1, name.as_mut_ptr());
+        BufferName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_buffer(&self, name: BufferName) {
+        self.gl
+            .DeleteBuffers(1, &ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
@@ -746,18 +821,76 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn named_buffer_data<U>(&self, name: BufferName, bytes: &[u8], usage: U)
+    where
+        U: Into<BufferUsage>,
+    {
+        self.gl.NamedBufferData(
+            name.into_u32(),
+            bytes.len() as isize,
+            bytes.as_ptr() as *const c_void,
+            usage.into() as u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_buffer_reserve<U>(&self, name: BufferName, capacity: usize, usage: U)
+    where
+        U: Into<BufferUsage>,
+    {
+        self.gl.NamedBufferData(
+            name.into_u32(),
+            capacity as isize,
+            std::ptr::null(),
+            usage.into() as u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_buffer_sub_data(&self, name: BufferName, offset: usize, bytes: &[u8]) {
+        self.gl.NamedBufferSubData(
+            name.into_u32(),
+            offset as isize,
+            bytes.len() as isize,
+            bytes.as_ptr() as *const c_void,
+        );
+    }
+
     // Vertex array names.
 
+    #[deprecated]
     #[inline]
     pub unsafe fn gen_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
         self.gl
             .GenVertexArrays(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn delete_vertex_arrays(&self, names: &mut [Option<VertexArrayName>]) {
         self.gl
             .DeleteVertexArrays(names.len() as i32, names.as_ptr() as *const u32);
+    }
+
+    #[inline]
+    pub unsafe fn create_vertex_array(&self) -> VertexArrayName {
+        self.try_create_vertex_array().unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_vertex_array(
+        &self,
+    ) -> Result<VertexArrayName, ReceivedInvalidVertexArrayName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateVertexArrays(1, name.as_mut_ptr());
+        VertexArrayName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_vertex_array(&self, name: VertexArrayName) {
+        self.gl
+            .DeleteVertexArrays(1, &ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
@@ -772,16 +905,38 @@ impl Gl {
 
     // Framebuffer names.
 
+    #[deprecated]
     #[inline]
     pub unsafe fn gen_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
         self.gl
             .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn delete_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
         self.gl
             .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    }
+
+    #[inline]
+    pub unsafe fn create_framebuffer(&self) -> FramebufferName {
+        self.try_create_framebuffer().unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_framebuffer(
+        &self,
+    ) -> Result<FramebufferName, ReceivedInvalidFramebufferName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateFramebuffers(1, name.as_mut_ptr());
+        FramebufferName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_framebuffer(&self, name: FramebufferName) {
+        self.gl
+            .DeleteFramebuffers(1, &ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
@@ -980,15 +1135,21 @@ impl Gl {
     // Samplers.
 
     #[inline]
-    pub unsafe fn gen_samplers(&self, names: &mut [Option<SamplerName>]) {
-        self.gl
-            .GenSamplers(names.len() as i32, names.as_mut_ptr() as *mut u32);
+    pub unsafe fn create_sampler(&self) -> SamplerName {
+        self.try_create_sampler().unwrap()
     }
 
     #[inline]
-    pub unsafe fn delete_samplers(&self, names: &mut [Option<SamplerName>]) {
+    pub unsafe fn try_create_sampler(&self) -> Result<SamplerName, ReceivedInvalidSamplerName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateSamplers(1, name.as_mut_ptr());
+        SamplerName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn delete_sampler(&self, name: SamplerName) {
         self.gl
-            .DeleteSamplers(names.len() as i32, names.as_ptr() as *const u32);
+            .DeleteSamplers(1, &ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
@@ -997,14 +1158,11 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_samplers<N>(&self, first_unit: u32, count: u32, names: &[N])
-    where
-        N: Transmute<Option<SamplerName>>,
-    {
+    pub unsafe fn bind_samplers(&self, first_unit: u32, count: u32, names: &[SamplerName]) {
         self.gl.BindSamplers(
             first_unit,
             count as i32,
-            names.transmute_each_ref().as_ptr() as *const u32,
+            names.as_ptr() as *const SamplerName as *const u32,
         );
     }
 
@@ -1014,7 +1172,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn sampler_parameter_i<P, V>(&self, sampler: SamplerName, param: P, value: V)
+    pub unsafe fn sampler_parameteri<P, V>(&self, sampler: SamplerName, param: P, value: V)
     where
         P: traits::SamplerParameteriParam,
         P::Value: From<V>,
