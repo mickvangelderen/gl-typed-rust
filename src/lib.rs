@@ -315,7 +315,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_shader(&self, name: ShaderName) {
-        self.gl.DeleteShader(name.into_u32());
+        self.gl.DeleteShader(ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
