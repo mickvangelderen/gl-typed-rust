@@ -736,7 +736,7 @@ impl Gl {
         width: i32,
         height: i32,
     ) where
-    IF: Into<InternalFormat>,
+        IF: Into<InternalFormat>,
     {
         self.gl.NamedRenderbufferStorage(
             name.into_u32(),
@@ -958,14 +958,13 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_framebuffer<T>(&self, target: T, name: FramebufferName)
+    pub unsafe fn bind_framebuffer<T, N>(&self, target: T, name: N)
     where
         T: Into<FramebufferTarget>,
+        N: Into<FramebufferName>,
     {
-        self.gl.BindFramebuffer(
-            target.into() as u32,
-            name.into_u32(),
-        )
+        self.gl
+            .BindFramebuffer(target.into() as u32, name.into().into_u32())
     }
 
     #[inline]
@@ -978,6 +977,7 @@ impl Gl {
             .transmute()
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn framebuffer_texture_2d<FT, FA, TT>(
         &self,
@@ -1001,6 +1001,25 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn named_framebuffer_texture<FA>(
+        &self,
+        framebuffer_name: NonDefaultFramebufferName,
+        framebuffer_attachment: FA,
+        texture_name: TextureName,
+        level: i32,
+    ) where
+        FA: Into<FramebufferAttachment>,
+    {
+        self.gl.NamedFramebufferTexture(
+            framebuffer_name.into_u32(),
+            framebuffer_attachment.into().into_u32(),
+            texture_name.into_u32(),
+            level,
+        );
+    }
+
+    #[deprecated]
+    #[inline]
     pub unsafe fn framebuffer_renderbuffer<FT, FA, RT>(
         &self,
         framebuffer_target: FT,
@@ -1017,6 +1036,25 @@ impl Gl {
             framebuffer_attachment.into().into_u32(),
             renderbuffer_target.into() as u32,
             renderbuffer.into_u32(),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_framebuffer_renderbuffer<FA, RT>(
+        &self,
+        framebuffer_name: NonDefaultFramebufferName,
+        framebuffer_attachment: FA,
+        renderbuffer_target: RT,
+        renderbuffer_name: RenderbufferName,
+    ) where
+        FA: Into<FramebufferAttachment>,
+        RT: Into<RenderbufferTarget>,
+    {
+        self.gl.NamedFramebufferRenderbuffer(
+            framebuffer_name.into_u32(),
+            framebuffer_attachment.into().into_u32(),
+            renderbuffer_target.into() as u32,
+            renderbuffer_name.into_u32(),
         );
     }
 

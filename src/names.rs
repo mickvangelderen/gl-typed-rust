@@ -114,6 +114,7 @@ impl_names!(
     ReceivedInvalidSamplerName,
 );
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum FramebufferName {
     NonDefault(NonDefaultFramebufferName),
     Default,
