@@ -728,6 +728,24 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn named_renderbuffer_storage<IF>(
+        &self,
+        name: RenderbufferName,
+        internal_format: IF,
+        width: i32,
+        height: i32,
+    ) where
+    IF: Into<InternalFormat>,
+    {
+        self.gl.NamedRenderbufferStorage(
+            name.into_u32(),
+            internal_format.into() as u32,
+            width,
+            height,
+        );
+    }
+
     // Buffers.
 
     #[deprecated]
@@ -907,46 +925,46 @@ impl Gl {
 
     #[deprecated]
     #[inline]
-    pub unsafe fn gen_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
+    pub unsafe fn gen_framebuffers(&self, names: &mut [Option<NonDefaultFramebufferName>]) {
         self.gl
             .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
     #[deprecated]
     #[inline]
-    pub unsafe fn delete_framebuffers(&self, names: &mut [Option<FramebufferName>]) {
+    pub unsafe fn delete_framebuffers(&self, names: &mut [Option<NonDefaultFramebufferName>]) {
         self.gl
             .GenFramebuffers(names.len() as i32, names.as_mut_ptr() as *mut u32);
     }
 
     #[inline]
-    pub unsafe fn create_framebuffer(&self) -> FramebufferName {
-        self.try_create_framebuffer().unwrap()
+    pub unsafe fn create_framebuffer(&self) -> NonDefaultFramebufferName {
+        self.try_create_framebuffer().unwrap().into()
     }
 
     #[inline]
     pub unsafe fn try_create_framebuffer(
         &self,
-    ) -> Result<FramebufferName, ReceivedInvalidFramebufferName> {
+    ) -> Result<NonDefaultFramebufferName, ReceivedInvalidFramebufferName> {
         let mut name = MaybeUninit::<u32>::uninit();
         self.gl.CreateFramebuffers(1, name.as_mut_ptr());
-        FramebufferName::new(name.assume_init())
+        NonDefaultFramebufferName::new(name.assume_init())
     }
 
     #[inline]
-    pub unsafe fn delete_framebuffer(&self, name: FramebufferName) {
+    pub unsafe fn delete_framebuffer(&self, name: NonDefaultFramebufferName) {
         self.gl
             .DeleteFramebuffers(1, &ManuallyDrop::new(name).into_u32());
     }
 
     #[inline]
-    pub unsafe fn bind_framebuffer<T>(&self, target: T, name: Option<FramebufferName>)
+    pub unsafe fn bind_framebuffer<T>(&self, target: T, name: FramebufferName)
     where
         T: Into<FramebufferTarget>,
     {
         self.gl.BindFramebuffer(
             target.into() as u32,
-            name.map(FramebufferName::into_u32).unwrap_or_default(),
+            name.into_u32(),
         )
     }
 

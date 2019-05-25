@@ -100,7 +100,7 @@ impl_names!(
     ReceivedInvalidBufferName,
     RenderbufferName,
     ReceivedInvalidRenderbufferName,
-    FramebufferName,
+    NonDefaultFramebufferName,
     ReceivedInvalidFramebufferName,
     ProgramName,
     ReceivedInvalidProgramName,
@@ -114,7 +114,29 @@ impl_names!(
     ReceivedInvalidSamplerName,
 );
 
-// Even though there is a distinction to be made between an
-// Option<FramebufferName> and the default framebuffer, I don't think it is
-// likely enough to create the types NonDefaultFramebufferName, FramebufferName
-// and the conversion between them for it. Maybe I'll change my mind.
+pub enum FramebufferName {
+    NonDefault(NonDefaultFramebufferName),
+    Default,
+}
+
+impl Default for FramebufferName {
+    fn default() -> Self {
+        FramebufferName::Default
+    }
+}
+
+impl From<NonDefaultFramebufferName> for FramebufferName {
+    fn from(name: NonDefaultFramebufferName) -> Self {
+        FramebufferName::NonDefault(name)
+    }
+}
+
+impl FramebufferName {
+    #[inline]
+    pub fn into_u32(self) -> u32 {
+        match self {
+            FramebufferName::NonDefault(name) => name.into_u32(),
+            FramebufferName::Default => 0,
+        }
+    }
+}
