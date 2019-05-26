@@ -1,26 +1,24 @@
+#[macro_use]
+mod macros;
+
 pub mod array;
-pub mod constants;
-pub mod convert;
 pub mod gl;
 pub mod locations;
 pub mod names;
 pub mod num;
+pub mod params;
 pub mod string;
 pub mod symbols;
-pub mod traits;
 pub mod types;
 
 pub use array::*;
-pub use constants::*;
 pub use locations::*;
 pub use names::*;
+pub use params::*;
+pub use symbols::*;
 pub use types::*;
 
-pub mod marker {
-    pub use convute::marker::{Transmute, TryTransmute};
-}
-
-use convute::convert::*;
+use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::mem::{ManuallyDrop, MaybeUninit};
 use std::os::raw::*;
@@ -121,7 +119,7 @@ impl Gl {
     pub unsafe fn get_context_flags(&self) -> ContextFlags {
         let mut values: [i32; 1] = std::mem::uninitialized();
         self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
-        ContextFlags::from_bits_truncate(values[0] as u32)
+        context_flags::ContextFlags::from_bits_truncate(values[0] as u32)
     }
 
     #[inline]
@@ -324,17 +322,15 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, param: P) -> P::Value
+    pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, _param: P) -> P::Value
     where
-        P: traits::GetShaderivParam,
-        P::Value: convute::marker::Transmute<i32>,
-        i32: convute::marker::Transmute<P::Value>,
+        P: get_shaderiv_param::Variant,
+        <P::Value as TryFrom<P::Raw>>::Error: std::fmt::Debug,
     {
-        let mut value = MaybeUninit::<i32>::uninit();
+        let mut value = MaybeUninit::<P::Raw>::uninit();
         self.gl
-            .GetShaderiv(name.into_u32(), param.into() as u32, value.as_mut_ptr());
-        // TODO: Implement and use TryFrom on these types.
-        value.assume_init().transmute()
+            .GetShaderiv(name.into_u32(), P::VALUE, value.as_mut_ptr() as *mut i32);
+        value.assume_init().try_into().unwrap()
     }
 
     #[inline]
@@ -344,11 +340,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn get_shader_info_log_bytes(&self, name: ShaderName) -> Vec<u8> {
-        let mut buffer = {
-            let capacity = self.get_shaderiv(name, INFO_LOG_LENGTH);
-            assert!(capacity >= 0);
-            Vec::with_capacity(capacity as usize)
-        };
+        let mut buffer = Vec::with_capacity(self.get_shaderiv(name, INFO_LOG_LENGTH));
         let mut length = MaybeUninit::<i32>::uninit();
         self.gl.GetShaderInfoLog(
             name.into_u32(),
@@ -420,17 +412,15 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn get_programiv<P>(&self, name: ProgramName, param: P) -> P::Value
+    pub unsafe fn get_programiv<P>(&self, name: ProgramName, _param: P) -> P::Value
     where
-        P: traits::GetProgramivParam,
-        P::Value: convute::marker::Transmute<i32>,
-        i32: convute::marker::Transmute<P::Value>,
+        P: get_programiv_param::Variant,
+        <P::Value as TryFrom<P::Raw>>::Error: std::fmt::Debug,
     {
-        let mut value = MaybeUninit::<i32>::uninit();
+        let mut value = MaybeUninit::<P::Raw>::uninit();
         self.gl
-            .GetProgramiv(name.into_u32(), param.into() as u32, value.as_mut_ptr());
-        // TODO: Implement and use TryFrom on these types.
-        value.assume_init().transmute()
+            .GetProgramiv(name.into_u32(), P::VALUE, value.as_mut_ptr() as *mut i32);
+        value.assume_init().try_into().unwrap()
     }
 
     #[inline]
@@ -440,11 +430,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn get_program_info_log_bytes(&self, name: ProgramName) -> Vec<u8> {
-        let mut buffer = {
-            let capacity = self.get_programiv(name, INFO_LOG_LENGTH);
-            assert!(capacity >= 0);
-            Vec::with_capacity(capacity as usize)
-        };
+        let mut buffer = Vec::with_capacity(self.get_programiv(name, INFO_LOG_LENGTH));
         let mut length = MaybeUninit::<i32>::uninit();
         self.gl.GetProgramInfoLog(
             name.into_u32(),
@@ -471,23 +457,22 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn vertex_attrib_pointer<T, N>(
+    pub unsafe fn vertex_attrib_pointer<T>(
         &self,
         loc: AttributeLocation,
         size: usize,
         ty: T,
-        normalized: N,
+        normalized: bool,
         stride: usize,
         offset: usize,
     ) where
         T: Into<VertexAttribPointerType>,
-        N: Into<Bool>,
     {
         self.gl.VertexAttribPointer(
             loc.into_u32(),
             size as i32,
             ty.into() as u32,
-            normalized.into() as u8,
+            normalized as u8,
             stride as i32,
             offset as *const c_void,
         );
@@ -583,39 +568,30 @@ impl Gl {
         self.gl.BindTexture(target.into() as u32, 0);
     }
 
-    // FIXME: Figure out why we need the additional type bounds even though
-    // TexParameteriParam already specifies P::Target to be Into<TextureTarget>
-    // etc.
     #[inline]
-    pub unsafe fn tex_parameter_i<P, T, V>(&self, target: T, param: P, value: V)
+    pub unsafe fn tex_parameteri<T, P>(&self, target: T, _param: P, value: P::Value)
     where
-        P: traits::TexParameteriParam,
-        P::Target: Into<TextureTarget>,
-        P::Value: Into<i32>,
-        T: Into<P::Target>,
-        V: Into<P::Value>,
+        T: Into<TextureTarget>,
+        P: tex_parameteri_param::Variant,
     {
         self.gl.TexParameteri(
-            target.into().into() as u32,
-            param.into() as u32,
-            Into::into(value.into()),
-        )
+            target.into() as u32,
+            P::VALUE,
+            i32::from(P::Intermediate::from(value).into()),
+        );
     }
 
     #[inline]
-    pub unsafe fn tex_parameter_f<P, T, V>(&self, target: T, param: P, value: V)
+    pub unsafe fn tex_parameterf<T, P>(&self, target: T, _param: P, value: P::Value)
     where
-        P: traits::TexParameterfParam,
-        P::Target: Into<TextureTarget>,
-        P::Value: Into<f32>,
-        T: Into<P::Target>,
-        V: Into<P::Value>,
+        T: Into<TextureTarget>,
+        P: tex_parameterf_param::Variant,
     {
         self.gl.TexParameterf(
-            target.into().into() as u32,
-            param.into() as u32,
-            Into::into(value.into()),
-        )
+            target.into() as u32,
+            P::VALUE,
+            f32::from(P::Intermediate::from(value).into()),
+        );
     }
 
     #[inline]
@@ -968,13 +944,14 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn check_framebuffer_status<T>(&self, target: T) -> UncheckedFramebufferStatus
+    pub unsafe fn named_framebuffer_status<N>(&self, name: N) -> FramebufferStatus
     where
-        T: Into<FramebufferTarget>,
+        N: Into<FramebufferName>,
     {
         self.gl
-            .CheckFramebufferStatus(target.into() as u32)
-            .transmute()
+            .CheckFramebufferStatus(name.into().into_u32())
+            .try_into()
+            .unwrap()
     }
 
     #[deprecated]
@@ -1228,15 +1205,14 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn sampler_parameteri<P, V>(&self, sampler: SamplerName, param: P, value: V)
+    pub unsafe fn sampler_parameteri<P>(&self, sampler: SamplerName, _param: P, value: P::Value)
     where
-        P: traits::SamplerParameteriParam,
-        P::Value: From<V>,
+        P: sampler_parameteri_param::Variant,
     {
         self.gl.SamplerParameteri(
             sampler.into_u32(),
-            param.into() as u32,
-            traits::SamplerParameteriValue::to_i32(P::Value::from(value)),
+            P::VALUE,
+            i32::from(P::Intermediate::from(value).into()),
         );
     }
 }

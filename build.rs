@@ -1,15 +1,17 @@
 use gl_generator::{Api, Fallbacks, Profile, Registry, StructGenerator};
-use heck::CamelCase;
-use heck::ShoutySnakeCase;
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
 fn main() {
-    let gl_registry = Registry::new(Api::Gl, (4, 6), Profile::Core, Fallbacks::All, [
-        "ARB_texture_filter_anisotropic"
-    ]);
+    let gl_registry = Registry::new(
+        Api::Gl,
+        (4, 5),
+        Profile::Core,
+        Fallbacks::All,
+        ["GL_ARB_texture_filter_anisotropic"],
+    );
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
@@ -25,74 +27,61 @@ fn main() {
 
     {
         let mut symbols = File::create(&Path::new(&out_dir).join("symbols.rs")).unwrap();
-        let mut constants = File::create(&Path::new(&out_dir).join("constants.rs")).unwrap();
+
+        write!(&mut symbols,
+               r##"
+pub trait Symbol<T> {{
+    const VALUE: T;
+}}
+"##).unwrap();
 
         for e in gl_registry.enums.iter() {
-            if let Some(ref _alias) = e.alias {
-                // println!(
-                //     "cargo:warning=Ignoring {} which is an alias for {}.",
-                //     alias, &e.ident
-                // );
+            let bits = match e.ty.as_ref() {
+                "GLboolean" => 8,
+                "GLenum" => 32,
+                "GLuint" => 32,
+                "GLuint64" => 64,
+                _ => panic!("Unexpected type"),
+            };
+
+            write_symbol_decl(&mut symbols, &e.ident);
+
+            for &b in &[32, 64] {
+                if bits <= b {
+                    write_symbol_impl(&mut symbols, &e.ident, b, &e.value);
+                }
             }
-
-            let s = e
-                .ident
-                .to_camel_case()
-                .replace("1d", "1D")
-                .replace("2d", "2D")
-                .replace("3d", "3D");
-            let c = e.ident.to_shouty_snake_case();
-
-            write_symbol(&mut symbols, &s);
-            write_constant(&mut constants, &s, &c);
-        }
-
-        for ident in [
-            "Uncompiled",
-            "Compiled",
-            "Unlinked",
-            "Linked",
-            "Row",
-            "Column",
-            "Disabled",
-            "Enabled",
-            "LT",
-            "LE",
-            "GT",
-            "GE",
-            "EQ",
-            "NE",
-        ]
-        .iter()
-        {
-            let s = ident;
-            let c = ident.to_shouty_snake_case();
-
-            write_symbol(&mut symbols, &s);
-            write_constant(&mut constants, &s, &c);
         }
     }
 }
 
-fn write_symbol(w: &mut File, s: &str) {
+fn write_symbol_decl(w: &mut File, symbol: &str) {
     write!(
         w,
         r##"
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct {s};
+#[derive(Debug, Copy, Clone)]
+pub struct {symbol};
 "##,
-        s = s,
+        symbol = symbol
     )
-    .unwrap();
+    .unwrap()
 }
 
-fn write_constant(w: &mut File, s: &str, c: &str) {
+fn write_symbol_impl(w: &mut File, symbol: &str, bits: u32, value: &str) {
     write!(
         w,
-        r##"pub const {c}: symbols::{s} = symbols::{s};
+        r##"
+impl Symbol<u{bits}> for {symbol} {{
+    const VALUE: u{bits} = {value} as u{bits};
+}}
+
+impl Symbol<i{bits}> for {symbol} {{
+    const VALUE: i{bits} = {value} as u{bits} as i{bits};
+}}
 "##,
-        c = c,
-        s = s,
+        symbol = symbol,
+        bits = bits,
+        value = value,
     )
     .unwrap();
 }

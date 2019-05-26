@@ -51,3 +51,37 @@ impl NonMinusOneI32 {
 impl_nonzero_fmt! {
     (Debug, Display, Binary, Octal, LowerHex, UpperHex) for NonMinusOneI32
 }
+
+#[allow(non_camel_case_types)]
+pub union b32 {
+    u: u32,
+    i: i32,
+}
+
+impl From<u32> for b32 {
+    fn from(val: u32) -> Self {
+        b32 { u: val }
+    }
+}
+
+impl From<b32> for u32 {
+    fn from(val: b32) -> Self {
+        unsafe {
+            val.u
+        }
+    }
+}
+
+impl From<i32> for b32 {
+    fn from(val: i32) -> Self {
+        b32 { i: val }
+    }
+}
+
+impl From<b32> for i32 {
+    fn from(val: b32) -> Self {
+        unsafe {
+            val.i
+        }
+    }
+}

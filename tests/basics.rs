@@ -74,14 +74,14 @@ fn create_a_shader() {
         let mut name: ShaderName = gl.create_shader(VERTEX_SHADER).unwrap();
         gl.shader_source(&mut name, &[BASIC_VERTEX_SHADER.as_bytes()]);
         gl.compile_shader(&mut name);
-        let mut status: RawShaderCompileStatus = std::mem::uninitialized();
+        let mut status: RawCompileStatus = std::mem::uninitialized();
         gl.get_shaderiv(&name, COMPILE_STATUS, &mut status);
         match status.into() {
-            ShaderCompileStatus::Uncompiled => {
+            CompileStatus::Uncompiled => {
                 eprintln!("{}", get_shader_info_log(&gl, &name));
                 panic!("Failed to compile shader.");
             }
-            ShaderCompileStatus::Compiled => name,
+            CompileStatus::Compiled => name,
         }
     };
 
@@ -89,14 +89,14 @@ fn create_a_shader() {
         let mut name: ShaderName = gl.create_shader(FRAGMENT_SHADER).unwrap();
         gl.shader_source(&mut name, &[BASIC_FRAGMENT_SHADER.as_bytes()]);
         gl.compile_shader(&mut name);
-        let mut status: RawShaderCompileStatus = std::mem::uninitialized();
+        let mut status: RawCompileStatus = std::mem::uninitialized();
         gl.get_shaderiv(&name, COMPILE_STATUS, &mut status);
         match status.into() {
-            ShaderCompileStatus::Uncompiled => {
+            CompileStatus::Uncompiled => {
                 eprintln!("{}", get_shader_info_log(&gl, &name));
                 panic!("Failed to compile shader.");
             }
-            ShaderCompileStatus::Compiled => name,
+            CompileStatus::Compiled => name,
         }
     };
 
@@ -105,9 +105,9 @@ fn create_a_shader() {
         gl.attach_shader(&mut name, &vs);
         gl.attach_shader(&mut name, &fs);
         gl.link_program(&mut name);
-        let mut status: RawProgramLinkStatus = std::mem::uninitialized();
+        let mut status: RawLinkStatus = std::mem::uninitialized();
         gl.get_programiv(&name, LINK_STATUS, &mut status);
-        assert_eq!(status, ProgramLinkStatus::Linked.into());
+        assert_eq!(status, LinkStatus::Linked.into());
         name
     };
 }

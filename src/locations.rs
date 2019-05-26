@@ -78,14 +78,6 @@ impl Default for OptionAttributeLocation {
     }
 }
 
-unsafe impl convute::marker::Transmute<OptionAttributeLocation> for AttributeLocation {}
-unsafe impl convute::marker::TryTransmute<AttributeLocation> for OptionAttributeLocation {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
-    }
-}
-
 /// Guaranteed to be in range 0..i32::MAX.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -166,14 +158,6 @@ impl Default for OptionUniformLocation {
     }
 }
 
-unsafe impl convute::marker::Transmute<OptionUniformLocation> for UniformLocation {}
-unsafe impl convute::marker::TryTransmute<UniformLocation> for OptionUniformLocation {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
-    }
-}
-
 /// Guaranteed to be in range 0..u32::MAX - 1.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -251,13 +235,5 @@ impl From<OptionUniformBlockIndex> for Option<UniformBlockIndex> {
 impl Default for OptionUniformBlockIndex {
     fn default() -> Self {
         Self::NONE
-    }
-}
-
-unsafe impl convute::marker::Transmute<OptionUniformBlockIndex> for UniformBlockIndex {}
-unsafe impl convute::marker::TryTransmute<UniformBlockIndex> for OptionUniformBlockIndex {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
     }
 }
