@@ -279,7 +279,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn draw_elements<M, T>(&self, mode: M, count: usize, ty: T, offset: usize)
+    pub unsafe fn draw_elements<M, T>(&self, mode: M, count: u32, ty: T, offset: u32)
     where
         M: Into<DrawMode>,
         T: Into<DrawElementsType>,
@@ -289,6 +289,27 @@ impl Gl {
             count as i32,
             ty.into() as u32,
             offset as *const c_void,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn draw_elements_base_vertex<M, T>(
+        &self,
+        mode: M,
+        count: u32,
+        ty: T,
+        offset: usize,
+        base_vertex: u32,
+    ) where
+        M: Into<DrawMode>,
+        T: Into<DrawElementsType>,
+    {
+        self.gl.DrawElementsBaseVertex(
+            mode.into() as u32,
+            count as i32,
+            ty.into() as u32,
+            offset as *const c_void,
+            base_vertex as i32,
         );
     }
 
