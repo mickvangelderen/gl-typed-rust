@@ -575,6 +575,27 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn texture_parameteri<P, V>(&self, name: TextureName, _param: P, value: V)
+    where
+        P: tex_parameteri_param::Variant,
+        V: Into<P::Value>,
+    {
+        self.gl
+            .TextureParameteri(name.into_u32(), P::VALUE, value.into().into().cast_into());
+    }
+
+    #[inline]
+    pub unsafe fn texture_parameterf<P, V>(&self, name: TextureName, _param: P, value: V)
+    where
+        P: tex_parameterf_param::Variant,
+        V: Into<P::Value>,
+    {
+        self.gl
+            .TextureParameterf(name.into_u32(), P::VALUE, value.into().into().cast_into());
+    }
+
+    #[deprecated]
+    #[inline]
     pub unsafe fn tex_parameteri<T, P, V>(&self, target: T, _param: P, value: V)
     where
         T: Into<TextureTarget>,
