@@ -588,6 +588,7 @@ impl Gl {
         );
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn tex_parameterf<T, P, V>(&self, target: T, _param: P, value: V)
     where
@@ -780,6 +781,7 @@ impl Gl {
         self.gl.BindBuffer(target.into() as u32, 0);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn buffer_data<T, D, U>(&self, target: T, data: &[D], usage: U)
     where
@@ -796,6 +798,7 @@ impl Gl {
 
     /// Complement our inability to specify a slice of a certain size without
     /// wanting to write anything.
+    #[deprecated]
     #[inline]
     pub unsafe fn buffer_reserve<T, U>(&self, target: T, capacity: usize, usage: U)
     where
@@ -810,6 +813,7 @@ impl Gl {
         );
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn buffer_sub_data<T, D>(&self, target: T, offset: usize, data: &[D])
     where
