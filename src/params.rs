@@ -2,21 +2,21 @@ use crate::*;
 
 macro_rules! impl_param_read_single {
     (
-        mod $mod:ident {
-            $( $Symbol:ident($Raw:ty => $Value:ty), )*
+        mod $mod:ident($Raw: ty) {
+            $( $Symbol:ident($Intermediate:ty => $Value:ty), )*
         }
     ) => {
         pub mod $mod {
             use super::*;
 
             pub unsafe trait Variant: Symbol<u32> {
-                type Raw;
-                type Value: std::convert::TryFrom<Self::Raw>;
+                type Intermediate: CastFrom<$Raw>;
+                type Value: std::convert::TryFrom<Self::Intermediate>;
             }
 
             $(
                 unsafe impl Variant for $Symbol {
-                    type Raw = $Raw;
+                    type Intermediate = $Intermediate;
                     type Value = $Value;
                 }
             )*
@@ -26,7 +26,7 @@ macro_rules! impl_param_read_single {
 
 macro_rules! impl_param_write_single {
     (
-        mod $mod:ident($Final:ty) {
+        mod $mod:ident($Raw: ty) {
             $( $Symbol:ident($Value:ty => $Intermediate:ty), )*
         }
     ) => {
@@ -34,7 +34,7 @@ macro_rules! impl_param_write_single {
             use super::*;
 
             pub trait Variant: Symbol<u32> {
-                type Intermediate: std::convert::Into<$Final> + std::convert::From<Self::Value>;
+                type Intermediate: CastInto<$Raw>;
                 type Value: std::convert::Into<Self::Intermediate>;
             }
 
@@ -49,7 +49,7 @@ macro_rules! impl_param_write_single {
 }
 
 impl_param_read_single! {
-    mod get_shaderiv_param {
+    mod get_shaderiv_param(i32) {
         COMPILE_STATUS(i32 => CompileStatus),
         // DELETE_STATUS(DeleteStatus),
         SHADER_TYPE(u32 => ShaderKind),
@@ -59,7 +59,7 @@ impl_param_read_single! {
 }
 
 impl_param_read_single! {
-    mod get_programiv_param {
+    mod get_programiv_param(i32) {
 // ACTIVE_ATOMIC_COUNTER_BUFFERS,
 // ACTIVE_ATTRIBUTE_MAX_LENGTH,
 // ACTIVE_ATTRIBUTES,
@@ -90,13 +90,13 @@ impl_param_read_single! {
 }
 
 impl_param_read_single! {
-    mod get_integerv_param {
+    mod get_integerv_param(i32) {
         MAX_COMPUTE_SHADER_STORAGE_BLOCKS(u32 => u32),
     }
 }
 
 impl_param_write_single! {
-    mod tex_parameteri_param(crate::num::b32) {
+    mod tex_parameteri_param(i32) {
 // DEPTH_STENCIL_TEXTURE_MODE
 // TEXTURE_BASE_LEVEL
         TEXTURE_MAX_LEVEL(u32 => u32),
@@ -115,7 +115,7 @@ impl_param_write_single! {
 }
 
 impl_param_write_single! {
-    mod sampler_parameteri_param(crate::num::b32) {
+    mod sampler_parameteri_param(i32) {
 // DEPTH_STENCIL_TEXTURE_MODE
 // TEXTURE_BASE_LEVEL
         TEXTURE_MAX_LEVEL(u32 => u32),

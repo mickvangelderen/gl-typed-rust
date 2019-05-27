@@ -2,6 +2,7 @@
 mod macros;
 
 pub mod array;
+pub mod convert;
 pub mod gl;
 pub mod locations;
 pub mod names;
@@ -12,6 +13,7 @@ pub mod symbols;
 pub mod types;
 
 pub use array::*;
+pub use convert::*;
 pub use locations::*;
 pub use names::*;
 pub use params::*;
@@ -325,12 +327,12 @@ impl Gl {
     pub unsafe fn get_shaderiv<P>(&self, name: ShaderName, _param: P) -> P::Value
     where
         P: get_shaderiv_param::Variant,
-        <P::Value as TryFrom<P::Raw>>::Error: std::fmt::Debug,
+        <P::Value as TryFrom<P::Intermediate>>::Error: std::fmt::Debug,
     {
-        let mut value = MaybeUninit::<P::Raw>::uninit();
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetShaderiv(name.into_u32(), P::VALUE, value.as_mut_ptr() as *mut i32);
-        value.assume_init().try_into().unwrap()
+            .GetShaderiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
+        P::Intermediate::cast_from(value.assume_init()).try_into().unwrap()
     }
 
     #[inline]
@@ -415,12 +417,12 @@ impl Gl {
     pub unsafe fn get_programiv<P>(&self, name: ProgramName, _param: P) -> P::Value
     where
         P: get_programiv_param::Variant,
-        <P::Value as TryFrom<P::Raw>>::Error: std::fmt::Debug,
+        <P::Value as TryFrom<P::Intermediate>>::Error: std::fmt::Debug,
     {
-        let mut value = MaybeUninit::<P::Raw>::uninit();
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetProgramiv(name.into_u32(), P::VALUE, value.as_mut_ptr() as *mut i32);
-        value.assume_init().try_into().unwrap()
+            .GetProgramiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
+        P::Intermediate::cast_from(value.assume_init()).try_into().unwrap()
     }
 
     #[inline]
@@ -569,28 +571,30 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn tex_parameteri<T, P>(&self, target: T, _param: P, value: P::Value)
+    pub unsafe fn tex_parameteri<T, P, V>(&self, target: T, _param: P, value: V)
     where
         T: Into<TextureTarget>,
         P: tex_parameteri_param::Variant,
+        V: Into<P::Value>,
     {
         self.gl.TexParameteri(
             target.into() as u32,
             P::VALUE,
-            i32::from(P::Intermediate::from(value).into()),
+            value.into().into().cast_into(),
         );
     }
 
     #[inline]
-    pub unsafe fn tex_parameterf<T, P>(&self, target: T, _param: P, value: P::Value)
+    pub unsafe fn tex_parameterf<T, P, V>(&self, target: T, _param: P, value: V)
     where
         T: Into<TextureTarget>,
         P: tex_parameterf_param::Variant,
+        V: Into<P::Value>,
     {
         self.gl.TexParameterf(
             target.into() as u32,
             P::VALUE,
-            f32::from(P::Intermediate::from(value).into()),
+            value.into().into().cast_into(),
         );
     }
 
@@ -1205,14 +1209,15 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn sampler_parameteri<P>(&self, sampler: SamplerName, _param: P, value: P::Value)
+    pub unsafe fn sampler_parameteri<P, V>(&self, sampler: SamplerName, _param: P, value: V)
     where
         P: sampler_parameteri_param::Variant,
+        V: Into<P::Value>,
     {
         self.gl.SamplerParameteri(
             sampler.into_u32(),
             P::VALUE,
-            i32::from(P::Intermediate::from(value).into()),
+            value.into().into().cast_into(),
         );
     }
 }
