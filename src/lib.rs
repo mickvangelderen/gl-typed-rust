@@ -332,7 +332,9 @@ impl Gl {
         let mut value = MaybeUninit::<i32>::uninit();
         self.gl
             .GetShaderiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
-        P::Intermediate::cast_from(value.assume_init()).try_into().unwrap()
+        P::Intermediate::cast_from(value.assume_init())
+            .try_into()
+            .unwrap()
     }
 
     #[inline]
@@ -422,7 +424,9 @@ impl Gl {
         let mut value = MaybeUninit::<i32>::uninit();
         self.gl
             .GetProgramiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
-        P::Intermediate::cast_from(value.assume_init()).try_into().unwrap()
+        P::Intermediate::cast_from(value.assume_init())
+            .try_into()
+            .unwrap()
     }
 
     #[inline]
@@ -948,12 +952,17 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn named_framebuffer_status<N>(&self, name: N) -> FramebufferStatus
+    pub unsafe fn check_named_framebuffer_status<N, T>(
+        &self,
+        name: N,
+        target: T,
+    ) -> FramebufferStatus
     where
         N: Into<FramebufferName>,
+        T: Into<FramebufferTarget>,
     {
         self.gl
-            .CheckFramebufferStatus(name.into().into_u32())
+            .CheckNamedFramebufferStatus(name.into().into_u32(), target.into() as u32)
             .try_into()
             .unwrap()
     }
