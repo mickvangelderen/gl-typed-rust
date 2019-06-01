@@ -483,6 +483,7 @@ impl Gl {
         )
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn vertex_attrib_pointer<T>(
         &self,
@@ -493,7 +494,7 @@ impl Gl {
         stride: usize,
         offset: usize,
     ) where
-        T: Into<VertexAttribPointerType>,
+        T: Into<VertexAttributeType>,
     {
         self.gl.VertexAttribPointer(
             loc.into_u32(),
@@ -949,6 +950,83 @@ impl Gl {
     #[inline]
     pub unsafe fn unbind_vertex_array(&self) {
         self.gl.BindVertexArray(0);
+    }
+
+    #[inline]
+    pub unsafe fn bind_vertex_buffer(
+        &self,
+        index: VertexAttributeBindingIndex,
+        buffer: BufferName,
+        offset: usize,
+        stride: u32,
+    ) {
+        self.gl.BindVertexBuffer(
+            index.to_u32(),
+            buffer.into_u32(),
+            offset as isize,
+            stride as i32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn vertex_binding_divisor(&self, index: VertexAttributeBindingIndex, divisor: u32) {
+        self.gl.VertexBindingDivisor(index.to_u32(), divisor);
+    }
+
+    #[inline]
+    pub unsafe fn vertex_attrib_format<T>(
+        &self,
+        index: VertexAttributeBindingIndex,
+        size: u32,
+        ty: T,
+        normalized: bool,
+        offset: u32,
+    ) where
+        T: Into<VertexAttributeType>,
+    {
+        self.gl.VertexAttribFormat(
+            index.to_u32(),
+            size as i32,
+            ty.into() as u32,
+            normalized as u8,
+            offset,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn vertex_attrib_l_format<T>(
+        &self,
+        index: VertexAttributeBindingIndex,
+        size: u32,
+        ty: T,
+        offset: u32,
+    ) where
+        T: Into<VertexAttributeIType>,
+    {
+        self.gl.VertexAttribLFormat(
+            index.to_u32(),
+            size as i32,
+            ty.into() as u32,
+            offset,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn vertex_attrib_i_format<T>(
+        &self,
+        index: VertexAttributeBindingIndex,
+        size: u32,
+        ty: T,
+        offset: u32,
+    ) where
+        T: Into<VertexAttributeIType>,
+    {
+        self.gl.VertexAttribIFormat(
+            index.to_u32(),
+            size as i32,
+            ty.into() as u32,
+            offset,
+        );
     }
 
     // Framebuffer names.
