@@ -939,7 +939,7 @@ impl Gl {
     #[inline]
     pub unsafe fn bind_vertex_buffer(
         &self,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         buffer: BufferName,
         offset: usize,
         stride: u32,
@@ -956,7 +956,7 @@ impl Gl {
     pub unsafe fn vertex_array_vertex_buffer(
         &self,
         vertex_array_name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         buffer_name: BufferName,
         offset: usize,
         stride: u32,
@@ -984,7 +984,7 @@ impl Gl {
     pub unsafe fn vertex_array_vertex_buffers(
         &self,
         vertex_array_name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         buffer_names: &[BufferName],
         offsets: &[usize],
         strides: &[u32],
@@ -1004,7 +1004,7 @@ impl Gl {
 
     #[deprecated]
     #[inline]
-    pub unsafe fn vertex_binding_divisor(&self, index: VertexAttributeBindingIndex, divisor: u32) {
+    pub unsafe fn vertex_binding_divisor(&self, index: VertexArrayBufferBindingIndex, divisor: u32) {
         self.gl.VertexBindingDivisor(index.to_u32(), divisor);
     }
 
@@ -1012,7 +1012,7 @@ impl Gl {
     pub unsafe fn vertex_array_binding_divisor(
         &self,
         name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         divisor: u32,
     ) {
         self.gl
@@ -1023,7 +1023,7 @@ impl Gl {
     #[inline]
     pub unsafe fn vertex_attrib_format<T>(
         &self,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         normalized: bool,
@@ -1044,7 +1044,7 @@ impl Gl {
     pub unsafe fn vertex_array_attrib_format<T>(
         &self,
         name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         normalized: bool,
@@ -1066,7 +1066,7 @@ impl Gl {
     #[inline]
     pub unsafe fn vertex_attrib_l_format<T>(
         &self,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         offset: u32,
@@ -1080,7 +1080,7 @@ impl Gl {
     pub unsafe fn vertex_array_attrib_l_format<T>(
         &self,
         name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         offset: u32,
@@ -1100,7 +1100,7 @@ impl Gl {
     #[inline]
     pub unsafe fn vertex_attrib_i_format<T>(
         &self,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         offset: u32,
@@ -1114,7 +1114,7 @@ impl Gl {
     pub unsafe fn vertex_array_attrib_i_format<T>(
         &self,
         name: VertexArrayName,
-        index: VertexAttributeBindingIndex,
+        index: VertexArrayBufferBindingIndex,
         size: u32,
         ty: T,
         offset: u32,

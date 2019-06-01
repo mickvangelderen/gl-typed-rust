@@ -239,11 +239,11 @@ impl Default for OptionUniformBlockIndex {
 }
 
 #[derive(Debug)]
-pub struct VertexAttributeBindingIndex(u32);
+pub struct VertexArrayBufferBindingIndex(u32);
 
-impl VertexAttributeBindingIndex {
+impl VertexArrayBufferBindingIndex {
     pub const fn from_u32(value: u32) -> Self {
-        VertexAttributeBindingIndex(value)
+        VertexArrayBufferBindingIndex(value)
     }
 
     pub const fn to_u32(self) -> u32 {
