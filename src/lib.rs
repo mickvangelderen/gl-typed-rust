@@ -539,12 +539,22 @@ impl Gl {
             .DeleteTextures(names.len() as i32, names.as_ptr() as *const u32);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn active_texture<U>(&self, unit: U)
     where
         U: Into<TextureUnit>,
     {
         self.gl.ActiveTexture(unit.into().into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn bind_texture_unit<U>(&self, unit: U, texture_name: TextureName)
+    where
+        U: Into<TextureUnit>,
+    {
+        self.gl
+            .BindTextureUnit(unit.into().into_u32(), texture_name.into_u32());
     }
 
     #[inline]
@@ -613,12 +623,18 @@ impl Gl {
         );
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn generate_mipmap<T>(&self, target: T)
     where
         T: Into<TextureTarget>,
     {
         self.gl.GenerateMipmap(target.into() as u32);
+    }
+
+    #[inline]
+    pub unsafe fn generate_texture_mipmap(&self, texture_name: TextureName) {
+        self.gl.GenerateTextureMipmap(texture_name.into_u32());
     }
 
     #[inline]
@@ -960,7 +976,8 @@ impl Gl {
         vertex_array_name: VertexArrayName,
         element_buffer_name: BufferName,
     ) {
-        self.gl.VertexArrayElementBuffer(vertex_array_name.into_u32(), element_buffer_name.into_u32());
+        self.gl
+            .VertexArrayElementBuffer(vertex_array_name.into_u32(), element_buffer_name.into_u32());
     }
 
     #[inline]
