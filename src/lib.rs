@@ -549,12 +549,9 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn bind_texture_unit<U>(&self, unit: U, texture_name: TextureName)
-    where
-        U: Into<TextureUnit>,
-    {
+    pub unsafe fn bind_texture_unit(&self, unit: u32, texture_name: TextureName) {
         self.gl
-            .BindTextureUnit(unit.into().into_u32(), texture_name.into_u32());
+            .BindTextureUnit(unit, texture_name.into_u32());
     }
 
     #[inline]
