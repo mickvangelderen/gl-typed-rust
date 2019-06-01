@@ -518,14 +518,32 @@ impl Gl {
         )
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn enable_vertex_attrib_array(&self, loc: AttributeLocation) {
         self.gl.EnableVertexAttribArray(loc.into_u32());
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn disable_vertex_attrib_array(&self, loc: AttributeLocation) {
         self.gl.DisableVertexAttribArray(loc.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn enable_vertex_array_attrib(&self, name: VertexArrayName, loc: AttributeLocation) {
+        self.gl
+            .EnableVertexArrayAttrib(name.into_u32(), loc.into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn disable_vertex_array_attrib(
+        &self,
+        name: VertexArrayName,
+        loc: AttributeLocation,
+    ) {
+        self.gl
+            .DisableVertexArrayAttrib(name.into_u32(), loc.into_u32());
     }
 
     // Textures.
@@ -1003,12 +1021,8 @@ impl Gl {
     ) where
         T: Into<VertexAttributeIType>,
     {
-        self.gl.VertexAttribLFormat(
-            index.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
+        self.gl
+            .VertexAttribLFormat(index.to_u32(), size as i32, ty.into() as u32, offset);
     }
 
     #[inline]
@@ -1021,12 +1035,8 @@ impl Gl {
     ) where
         T: Into<VertexAttributeIType>,
     {
-        self.gl.VertexAttribIFormat(
-            index.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
+        self.gl
+            .VertexAttribIFormat(index.to_u32(), size as i32, ty.into() as u32, offset);
     }
 
     // Framebuffer names.
