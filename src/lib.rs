@@ -261,9 +261,23 @@ impl Gl {
         self.gl.StencilMask(mask);
     }
 
+    #[deprecated]
     #[inline]
     pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {
         self.gl.DrawBuffers(
+            framebuffer_attachments.len() as i32,
+            framebuffer_attachments.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_framebuffer_draw_buffers(
+        &self,
+        framebuffer_name: NonDefaultFramebufferName,
+        framebuffer_attachments: &[FramebufferAttachment],
+    ) {
+        self.gl.NamedFramebufferDrawBuffers(
+            framebuffer_name.into_u32(),
             framebuffer_attachments.len() as i32,
             framebuffer_attachments.as_ptr() as *const u32,
         );
@@ -550,8 +564,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn bind_texture_unit(&self, unit: u32, texture_name: TextureName) {
-        self.gl
-            .BindTextureUnit(unit, texture_name.into_u32());
+        self.gl.BindTextureUnit(unit, texture_name.into_u32());
     }
 
     #[inline]
@@ -915,8 +928,10 @@ impl Gl {
     #[deprecated]
     #[inline]
     pub unsafe fn delete_vertex_arrays(&self, vertex_array_names: &mut [Option<VertexArrayName>]) {
-        self.gl
-            .DeleteVertexArrays(vertex_array_names.len() as i32, vertex_array_names.as_ptr() as *const u32);
+        self.gl.DeleteVertexArrays(
+            vertex_array_names.len() as i32,
+            vertex_array_names.as_ptr() as *const u32,
+        );
     }
 
     #[inline]
@@ -1081,8 +1096,12 @@ impl Gl {
     ) where
         T: Into<VertexAttributeIType>,
     {
-        self.gl
-            .VertexAttribLFormat(attribute_location.into_u32(), size as i32, ty.into() as u32, offset);
+        self.gl.VertexAttribLFormat(
+            attribute_location.into_u32(),
+            size as i32,
+            ty.into() as u32,
+            offset,
+        );
     }
 
     pub unsafe fn vertex_array_attrib_l_format<T>(
