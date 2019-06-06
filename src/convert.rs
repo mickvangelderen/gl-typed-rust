@@ -1,53 +1,41 @@
-pub use convute::convert::{
-    // This comment makes rustfmt do good.
-    Transmute,
-    TransmuteEach,
-    TransmuteEachMut,
-    TransmuteEachRef,
-    TransmuteMut,
-    TransmuteRef,
-    TryTransmute,
-    TryTransmuteEach,
-    TryTransmuteEachMut,
-    TryTransmuteEachRef,
-    TryTransmuteMut,
-    TryTransmuteRef,
-};
-
-/// An attempted conversion that consumes `self`, which may or may not be
-/// expensive.
-///
-/// Library authors should not directly implement this trait, but should prefer
-/// implementing the [`TryFrom`] trait, which offers greater flexibility and
-/// provides an equivalent `TryInto` implementation for free, thanks to a
-/// blanket implementation in the standard library. For more information on this,
-/// see the documentation for [`Into`].
-///
-/// [`TryFrom`]: trait.TryFrom.html
-/// [`Into`]: trait.Into.html
-pub trait TryInto<T>: Sized {
-    /// The type returned in the event of a conversion error.
-    type Error;
-
-    /// Performs the conversion.
-    fn try_into(self) -> Result<T, Self::Error>;
+pub trait CastFrom<T> {
+    fn cast_from(value: T) -> Self;
 }
 
-/// Attempt to construct `Self` via a conversion.
-pub trait TryFrom<T>: Sized {
-    /// The type returned in the event of a conversion error.
-    type Error;
-
-    /// Performs the conversion.
-    fn try_from(value: T) -> Result<Self, Self::Error>;
-}
-
-// TryFrom implies TryInto
-impl<T, U> TryInto<U> for T where U: TryFrom<T>
-{
-    type Error = U::Error;
-
-    fn try_into(self) -> Result<U, U::Error> {
-        U::try_from(self)
+impl<T> CastFrom<T> for T {
+    #[inline]
+    fn cast_from(value: T) -> Self {
+        value
     }
 }
+
+pub trait CastInto<T> {
+    fn cast_into(self) -> T;
+}
+
+impl<F, I> CastInto<I> for F where I: CastFrom<F> {
+    #[inline]
+    fn cast_into(self) -> I {
+        I::cast_from(self)
+    }
+}
+
+macro_rules! impl_casts {
+    ($(
+        $A: ty => $B: ty,
+    )*) => {
+        $(
+            impl CastFrom<$A> for $B {
+                #[inline]
+                fn cast_from(value: $A) -> Self {
+                    value as Self
+                }
+            }
+        )*
+    };
+}
+
+impl_casts!(
+    u32 => i32,
+    i32 => u32,
+);

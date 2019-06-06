@@ -78,14 +78,6 @@ impl Default for OptionAttributeLocation {
     }
 }
 
-unsafe impl convute::marker::Transmute<OptionAttributeLocation> for AttributeLocation {}
-unsafe impl convute::marker::TryTransmute<AttributeLocation> for OptionAttributeLocation {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
-    }
-}
-
 /// Guaranteed to be in range 0..i32::MAX.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -163,14 +155,6 @@ impl From<OptionUniformLocation> for Option<UniformLocation> {
 impl Default for OptionUniformLocation {
     fn default() -> Self {
         Self::NONE
-    }
-}
-
-unsafe impl convute::marker::Transmute<OptionUniformLocation> for UniformLocation {}
-unsafe impl convute::marker::TryTransmute<UniformLocation> for OptionUniformLocation {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
     }
 }
 
@@ -254,10 +238,15 @@ impl Default for OptionUniformBlockIndex {
     }
 }
 
-unsafe impl convute::marker::Transmute<OptionUniformBlockIndex> for UniformBlockIndex {}
-unsafe impl convute::marker::TryTransmute<UniformBlockIndex> for OptionUniformBlockIndex {
-    #[inline]
-    fn can_transmute(&self) -> bool {
-        self.into_option().is_some()
+#[derive(Debug)]
+pub struct VertexArrayBufferBindingIndex(u32);
+
+impl VertexArrayBufferBindingIndex {
+    pub const fn from_u32(value: u32) -> Self {
+        VertexArrayBufferBindingIndex(value)
+    }
+
+    pub const fn to_u32(self) -> u32 {
+        self.0
     }
 }

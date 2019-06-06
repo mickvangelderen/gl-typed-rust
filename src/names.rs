@@ -1,79 +1,13 @@
-macro_rules! impl_received_invalid {
-    ($Name: ident, $Error: ident) => {
-        #[derive(Debug, Copy, Clone)]
-        pub struct $Error;
-
-        impl std::fmt::Display for $Error {
-            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(
-                    f,
-                    concat!(
-                        "The OpenGL driver returned an invalid ",
-                        stringify!($Name),
-                        "."
-                    )
-                )
-            }
-        }
-
-        impl std::error::Error for $Error {
-            fn description(&self) -> &'static str {
-                concat!(
-                    "The OpenGL driver returned an invalid ",
-                    stringify!($Name),
-                    "."
-                )
-            }
-        }
-    };
-    ($Error: ident($Value: ident), $what: tt) => {
-        #[derive(Debug, Copy, Clone)]
-        pub struct $Error($Value);
-
-        impl std::fmt::Display for $Error {
-            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(
-                    f,
-                    concat!(
-                        "The OpenGL driver returned an invalid ",
-                        stringify!($Name),
-                        ": {:?}."
-                    ),
-                    &self.0
-                )
-            }
-        }
-
-        impl std::error::Error for $Error {
-            fn description(&self) -> &'static str {
-                concat!(
-                    "The OpenGL driver returned an invalid ",
-                    stringify!($Name),
-                    "."
-                )
-            }
-        }
-    };
-}
-
 macro_rules! impl_names {
     ($($Name: ident, $Error: ident,)*) => {
         $(
-            impl_received_invalid!($Name, $Error);
+            impl_received_invalid!($Error, $Name);
 
             /// No guarantees are made about the validity of the object this
             /// name represents.
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
             pub struct $Name(pub ::std::num::NonZeroU32);
-
-            unsafe impl convute::marker::Transmute<Option<$Name>> for $Name {}
-            unsafe impl convute::marker::TryTransmute<$Name> for Option<$Name> {
-                #[inline]
-                fn can_transmute(&self) -> bool {
-                    self.is_some()
-                }
-            }
 
             impl $Name {
                 #[inline]

@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [Unreleased]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.5.0...HEAD
 
+## [0.6.0] - 2019-05-27
+[0.6.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.5.0...0.6.0
+
+### Added
+ - A bunch of direct state access functions.
+ 
+### Changed
+ - Downgrade OpenGL from 4.6 to 4.5.
+ - Panic if the driver returns an invalid enum value.
+ - Unwrap by default, provide try_ variants of functions to explicitly handle errors.
+ - No longer provide the ability to write into a memory location so we can perform checks on values returned by OpenGL.
+ 
+### Removed
+ - Convute dependency.
+ - Custom symbols, only the OpenGL constants are created now.
+ - Multi-object creation and deletion has been removed because they shouldn't
+   happen in performance critical situations. It is hard to allocate a bunch of
+   them anyway without doing your own sub-allocation. In that case use the raw
+   OpenGL api.
+ - Deprecated a whole bunch of non direct state access functions.
+
 ## [0.5.0] - 2019-05-08
 [0.5.0]: https://github.com/mickvangelderen/gl-typed-rust/compare/v0.4.8...0.5.0
 
