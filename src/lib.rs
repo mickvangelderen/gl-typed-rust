@@ -354,6 +354,30 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn shader_source<'i, K, I>(&self, shader_name: ShaderName, sources: I)
+    where
+        I: IntoIterator,
+        I::Item: 'i + AsRef<[u8]>,
+    {
+        let (pointers, lengths) = sources.into_iter().fold(
+            (Vec::new(), Vec::new()),
+            |(mut pointers, mut lengths), source| {
+                let bytes = source.as_ref();
+                pointers.push(bytes.as_ptr() as *const i8);
+                lengths.push(bytes.len() as i32);
+                (pointers, lengths)
+            },
+        );
+
+        self.gl.ShaderSource(
+            shader_name.into_u32(),
+            pointers.len() as i32,
+            pointers.as_ptr(),
+            lengths.as_ptr(),
+        );
+    }
+
+    #[inline]
     pub unsafe fn compile_shader(&self, name: ShaderName) {
         self.gl.CompileShader(name.into_u32());
     }
@@ -391,26 +415,6 @@ impl Gl {
         assert!(length >= 0 && length <= buffer.capacity() as i32);
         buffer.set_len(length as usize);
         buffer
-    }
-
-    #[inline]
-    pub unsafe fn shader_source<
-        's,
-        A: Array<Item = &'s [u8]> + ArrayMap<*const i8> + ArrayMap<i32> + ?Sized,
-    >(
-        &self,
-        name: ShaderName,
-        sources: &A,
-    ) {
-        let pointers = sources.map(|s| s.as_ptr() as *const c_char);
-        let lengths = sources.map(|s| s.len() as i32);
-        assert_eq!(pointers.len(), lengths.len());
-        self.gl.ShaderSource(
-            name.into_u32(),
-            pointers.len() as i32,
-            pointers.as_ptr(),
-            lengths.as_ptr(),
-        )
     }
 
     // Programs.
