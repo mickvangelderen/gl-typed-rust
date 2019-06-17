@@ -354,7 +354,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn shader_source<'i, K, I>(&self, shader_name: ShaderName, sources: I)
+    pub unsafe fn shader_source<'i, I>(&self, shader_name: ShaderName, sources: I)
     where
         I: IntoIterator,
         I::Item: 'i + AsRef<[u8]>,
