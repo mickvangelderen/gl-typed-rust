@@ -24,6 +24,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::mem::{ManuallyDrop, MaybeUninit};
 use std::os::raw::*;
+use std::num::NonZeroU64;
 
 macro_rules! impl_uniform_setters {
     ($fn1: ident, $glfn1: ident, $fn2: ident, $glfn2: ident, $fn3: ident, $glfn3: ident, $fn4: ident, $glfn4: ident, $ty: ty) => {
@@ -1572,5 +1573,108 @@ impl Gl {
             P::VALUE,
             value.into().into().cast_into(),
         );
+    }
+
+    // Queries.
+
+    #[inline]
+    pub unsafe fn create_query(&self, target: impl Into<QueryTarget>) -> QueryName {
+        self.try_create_query(target).unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_query(&self, target: impl Into<QueryTarget>) -> Result<QueryName, ReceivedInvalidQueryName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl.CreateQueries(target.into() as u32, 1, name.as_mut_ptr());
+        QueryName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn create_queries(&self, target: impl Into<QueryTarget>, count: usize) -> Vec<QueryName> {
+        self.try_create_queries(target, count)
+            .into_iter()
+            .map(|name| name.unwrap())
+            .collect()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_queries(
+        &self,
+        target: impl Into<QueryTarget>,
+        count: usize,
+    ) -> Vec<Result<QueryName, ReceivedInvalidQueryName>> {
+        let mut names: Vec<Result<QueryName, ReceivedInvalidQueryName>> = Vec::with_capacity(count);
+        self.gl.CreateQueries(
+            target.into() as u32,
+            i32::try_from(count).unwrap(),
+            names.as_mut_ptr() as *mut u32,
+        );
+        names.set_len(count);
+        names
+    }
+
+    #[inline]
+    pub unsafe fn delete_query(&self, query_name: QueryName) {
+        self.gl
+            .DeleteQueries(1, &ManuallyDrop::new(query_name).into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn delete_queries(&self, query_names: Vec<QueryName>) {
+        let query_names = ManuallyDrop::new(query_names);
+        self.gl.DeleteQueries(
+            i32::try_from(query_names.len()).unwrap(),
+            query_names.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn begin_query(
+        &self,
+        target: impl Into<QueryTarget>,
+        query_name: impl AsRef<QueryName>,
+    ) {
+        self.gl
+            .BeginQuery(target.into() as u32, query_name.as_ref().into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn end_query(&self, target: impl Into<QueryTarget>) {
+        self.gl.EndQuery(target.into() as u32);
+    }
+
+    /// Blocking.
+    #[inline]
+    pub unsafe fn query_result_u64(&self, query_name: impl AsRef<QueryName>) -> u64 {
+        let mut value = MaybeUninit::<u64>::uninit();
+        self.gl.GetQueryObjectui64v(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT,
+            value.as_mut_ptr(),
+        );
+        value.assume_init()
+    }
+
+    /// Non-blocking.
+    #[inline]
+    pub unsafe fn try_query_result_u64(&self, query_name: impl AsRef<QueryName>) -> Option<NonZeroU64> {
+        let mut value = 0u64;
+        self.gl.GetQueryObjectui64v(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT_NO_WAIT,
+            &mut value,
+        );
+        NonZeroU64::new(value)
+    }
+
+    #[inline]
+    pub unsafe fn query_result_available(&self, query_name: impl AsRef<QueryName>) -> bool {
+        let mut value = MaybeUninit::<i32>::uninit();
+        self.gl.GetQueryObjectiv(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT_AVAILABLE,
+            value.as_mut_ptr(),
+        );
+        value.assume_init() != 0
     }
 }

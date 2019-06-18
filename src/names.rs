@@ -46,6 +46,8 @@ impl_names!(
     ReceivedInvalidVertexArrayName,
     SamplerName,
     ReceivedInvalidSamplerName,
+    QueryName,
+    ReceivedInvalidQueryName,
 );
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]

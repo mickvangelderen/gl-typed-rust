@@ -581,6 +581,16 @@ impl_enums! {
         N1P1 = NEGATIVE_ONE_TO_ONE,
         Z0P1 = ZERO_TO_ONE,
     }
+
+    struct ReceivedInvalidQueryTarget(u32);
+    QueryTarget {
+        SamplesPassed = SAMPLES_PASSED,
+        AnySamplesPassed = ANY_SAMPLES_PASSED,
+        AnySamplesPassedConservative = ANY_SAMPLES_PASSED_CONSERVATIVE,
+        PrimitivesGenerated = PRIMITIVES_GENERATED,
+        TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+        TimeElapsed = TIME_ELAPSED,
+    }
 }
 
 macro_rules! impl_struct_from_symbol {
