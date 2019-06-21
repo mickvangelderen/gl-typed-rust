@@ -591,6 +591,12 @@ impl_enums! {
         TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
         TimeElapsed = TIME_ELAPSED,
     }
+
+    struct ReceivedInvalidBlitFilter(u32);
+    BlitFilter {
+        Nearest = NEAREST,
+        Linear = LINEAR,
+    }
 }
 
 macro_rules! impl_struct_from_symbol {
@@ -744,3 +750,34 @@ pub mod context_flags {
 }
 
 pub type ContextFlags = context_flags::ContextFlags;
+
+pub mod blit_mask {
+    bitflags::bitflags! {
+        pub struct BlitMask : u32 {
+            const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
+            const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
+            const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
+        }
+    }
+
+    impl From<crate::COLOR_BUFFER_BIT> for BlitMask {
+        fn from(_: crate::COLOR_BUFFER_BIT) -> BlitMask {
+            BlitMask::COLOR_BUFFER_BIT
+        }
+    }
+
+    impl From<crate::DEPTH_BUFFER_BIT> for BlitMask {
+        fn from(_: crate::DEPTH_BUFFER_BIT) -> BlitMask {
+            BlitMask::DEPTH_BUFFER_BIT
+        }
+    }
+
+    impl From<crate::STENCIL_BUFFER_BIT> for BlitMask {
+        fn from(_: crate::STENCIL_BUFFER_BIT) -> BlitMask {
+            BlitMask::STENCIL_BUFFER_BIT
+        }
+    }
+}
+
+pub type BlitMask = blit_mask::BlitMask;
+

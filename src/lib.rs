@@ -23,8 +23,8 @@ pub use types::*;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::mem::{ManuallyDrop, MaybeUninit};
-use std::os::raw::*;
 use std::num::NonZeroU64;
+use std::os::raw::*;
 
 macro_rules! impl_uniform_setters {
     ($fn1: ident, $glfn1: ident, $fn2: ident, $glfn2: ident, $fn3: ident, $glfn3: ident, $fn4: ident, $glfn4: ident, $ty: ty) => {
@@ -281,6 +281,38 @@ impl Gl {
             framebuffer_name.into_u32(),
             framebuffer_attachments.len() as i32,
             framebuffer_attachments.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn blit_named_framebuffer(
+        &self,
+        read_framebuffer_name: FramebufferName,
+        draw_framebuffer_name: FramebufferName,
+        src_x0: i32,
+        src_y0: i32,
+        src_x1: i32,
+        src_y1: i32,
+        dst_x0: i32,
+        dst_y0: i32,
+        dst_x1: i32,
+        dst_y1: i32,
+        mask: impl Into<BlitMask>,
+        filter: impl Into<BlitFilter>,
+    ) {
+        self.gl.BlitNamedFramebuffer(
+            read_framebuffer_name.into_u32(),
+            draw_framebuffer_name.into_u32(),
+            src_x0,
+            src_y0,
+            src_x1,
+            src_y1,
+            dst_x0,
+            dst_y0,
+            dst_x1,
+            dst_y1,
+            mask.into().bits(),
+            filter.into() as u32,
         );
     }
 
@@ -1583,14 +1615,22 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn try_create_query(&self, target: impl Into<QueryTarget>) -> Result<QueryName, ReceivedInvalidQueryName> {
+    pub unsafe fn try_create_query(
+        &self,
+        target: impl Into<QueryTarget>,
+    ) -> Result<QueryName, ReceivedInvalidQueryName> {
         let mut name = MaybeUninit::<u32>::uninit();
-        self.gl.CreateQueries(target.into() as u32, 1, name.as_mut_ptr());
+        self.gl
+            .CreateQueries(target.into() as u32, 1, name.as_mut_ptr());
         QueryName::new(name.assume_init())
     }
 
     #[inline]
-    pub unsafe fn create_queries(&self, target: impl Into<QueryTarget>, count: usize) -> Vec<QueryName> {
+    pub unsafe fn create_queries(
+        &self,
+        target: impl Into<QueryTarget>,
+        count: usize,
+    ) -> Vec<QueryName> {
         self.try_create_queries(target, count)
             .into_iter()
             .map(|name| name.unwrap())
@@ -1657,7 +1697,10 @@ impl Gl {
 
     /// Non-blocking.
     #[inline]
-    pub unsafe fn try_query_result_u64(&self, query_name: impl AsRef<QueryName>) -> Option<NonZeroU64> {
+    pub unsafe fn try_query_result_u64(
+        &self,
+        query_name: impl AsRef<QueryName>,
+    ) -> Option<NonZeroU64> {
         let mut value = 0u64;
         self.gl.GetQueryObjectui64v(
             query_name.as_ref().into_u32(),
