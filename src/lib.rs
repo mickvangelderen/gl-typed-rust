@@ -1671,7 +1671,7 @@ impl Gl {
     #[inline]
     pub unsafe fn begin_query(
         &self,
-        target: impl Into<QueryTarget>,
+        target: impl Into<ScopeQueryTarget>,
         query_name: impl AsRef<QueryName>,
     ) {
         self.gl
@@ -1679,7 +1679,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn end_query(&self, target: impl Into<QueryTarget>) {
+    pub unsafe fn end_query(&self, target: impl Into<ScopeQueryTarget>) {
         self.gl.EndQuery(target.into() as u32);
     }
 

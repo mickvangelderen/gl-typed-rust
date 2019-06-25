@@ -587,10 +587,22 @@ impl_enums! {
         SamplesPassed = SAMPLES_PASSED,
         AnySamplesPassed = ANY_SAMPLES_PASSED,
         AnySamplesPassedConservative = ANY_SAMPLES_PASSED_CONSERVATIVE,
+        TimeElapsed = TIME_ELAPSED,
+        Timestamp = TIMESTAMP,
+        PrimitivesGenerated = PRIMITIVES_GENERATED,
+        TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+    }
+
+    struct ReceivedInvalidScopeQueryTarget(u32);
+    ScopeQueryTarget {
+        SamplesPassed = SAMPLES_PASSED,
+        AnySamplesPassed = ANY_SAMPLES_PASSED,
+        AnySamplesPassedConservative = ANY_SAMPLES_PASSED_CONSERVATIVE,
         PrimitivesGenerated = PRIMITIVES_GENERATED,
         TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
         TimeElapsed = TIME_ELAPSED,
     }
+
 
     struct ReceivedInvalidBlitFilter(u32);
     BlitFilter {
