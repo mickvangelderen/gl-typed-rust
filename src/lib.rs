@@ -1683,6 +1683,11 @@ impl Gl {
         self.gl.EndQuery(target.into() as u32);
     }
 
+    #[inline]
+    pub unsafe fn query_counter(&self, query_name: impl AsRef<QueryName>) {
+        self.gl.QueryCounter(query_name.as_ref().into_u32(), gl::TIMESTAMP);
+    }
+
     /// Blocking.
     #[inline]
     pub unsafe fn query_result_u64(&self, query_name: impl AsRef<QueryName>) -> u64 {
