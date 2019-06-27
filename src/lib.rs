@@ -262,6 +262,11 @@ impl Gl {
         self.gl.StencilMask(mask);
     }
 
+    #[inline]
+    pub unsafe fn blend_func(&self, src: impl Into<BlendFactor>, dst: impl Into<BlendFactor>) {
+        self.gl.BlendFunc(src.into() as u32, dst.into() as u32);
+    }
+
     #[deprecated]
     #[inline]
     pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {
@@ -1685,7 +1690,8 @@ impl Gl {
 
     #[inline]
     pub unsafe fn query_counter(&self, query_name: impl AsRef<QueryName>) {
-        self.gl.QueryCounter(query_name.as_ref().into_u32(), gl::TIMESTAMP);
+        self.gl
+            .QueryCounter(query_name.as_ref().into_u32(), gl::TIMESTAMP);
     }
 
     /// Blocking.

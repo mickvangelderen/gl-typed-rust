@@ -609,6 +609,29 @@ impl_enums! {
         Nearest = NEAREST,
         Linear = LINEAR,
     }
+
+    struct ReceivedInvalidBlendFactor(u32);
+    BlendFactor {
+        Zero = ZERO,
+        One = ONE,
+        SrcColor = SRC_COLOR,
+        OneMinusSrcColor = ONE_MINUS_SRC_COLOR,
+        DstColor = DST_COLOR,
+        OneMinusDstColor = ONE_MINUS_DST_COLOR,
+        SrcAlpha = SRC_ALPHA,
+        OneMinusSrcAlpha = ONE_MINUS_SRC_ALPHA,
+        DstAlpha = DST_ALPHA,
+        OneMinusDstAlpha = ONE_MINUS_DST_ALPHA,
+        ConstantColor = CONSTANT_COLOR,
+        OneMinusConstantColor = ONE_MINUS_CONSTANT_COLOR,
+        ConstantAlpha = CONSTANT_ALPHA,
+        OneMinusConstantAlpha = ONE_MINUS_CONSTANT_ALPHA,
+        SrcAlphaSaturate = SRC_ALPHA_SATURATE,
+        Src1Color = SRC1_COLOR,
+        OneMinusSrc1Color = ONE_MINUS_SRC1_COLOR,
+        Src1Alpha = SRC1_ALPHA,
+        OneMinusSrc1Alpha = ONE_MINUS_SRC1_ALPHA,
+    }
 }
 
 macro_rules! impl_struct_from_symbol {
