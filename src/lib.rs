@@ -719,6 +719,50 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn texture_storage_2d(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        levels: i32,
+        internal_format: impl Into<InternalFormat>,
+        width: i32,
+        height: i32,
+    ) {
+        self.gl.TextureStorage2D(
+            texture_name.as_ref().into_u32(),
+            levels,
+            internal_format.into() as u32,
+            width,
+            height,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn texture_sub_image_2d(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        level: i32,
+        offset_x: i32,
+        offset_y: i32,
+        width: i32,
+        height: i32,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        pixels: *const c_void,
+    ) {
+        self.gl.TextureSubImage2D(
+            texture_name.as_ref().into_u32(),
+            level,
+            offset_x,
+            offset_y,
+            width,
+            height,
+            format.into() as u32,
+            ty.into() as u32,
+            pixels
+        );
+    }
+
     // Renderbuffers.
 
     #[inline]
