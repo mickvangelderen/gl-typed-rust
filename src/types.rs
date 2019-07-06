@@ -762,88 +762,50 @@ impl_struct_from_symbol! (
     }
 );
 
-pub mod clear_flags {
-    bitflags::bitflags! {
-        pub struct ClearFlags : u32 {
-            const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
-            const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
-            const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
-        }
+bitflags::bitflags! {
+    pub struct ClearFlag : u32 {
+        const COLOR_BUFFER = crate::gl::COLOR_BUFFER_BIT;
+        const DEPTH_BUFFER = crate::gl::DEPTH_BUFFER_BIT;
+        const STENCIL_BUFFER = crate::gl::STENCIL_BUFFER_BIT;
     }
 }
 
-pub type ClearFlags = clear_flags::ClearFlags;
-
-pub mod context_flags {
-    bitflags::bitflags! {
-        pub struct ContextFlags : u32 {
-            const CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT = crate::gl::CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
-            const CONTEXT_FLAG_DEBUG_BIT = crate::gl::CONTEXT_FLAG_DEBUG_BIT;
-            const CONTEXT_FLAG_ROBUST_ACCESS_BIT = crate::gl::CONTEXT_FLAG_ROBUST_ACCESS_BIT;
-        }
+bitflags::bitflags! {
+    pub struct ContextFlag : u32 {
+        const FORWARD_COMPATIBLE = crate::gl::CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
+        const DEBUG = crate::gl::CONTEXT_FLAG_DEBUG_BIT;
+        const ROBUST_ACCESS = crate::gl::CONTEXT_FLAG_ROBUST_ACCESS_BIT;
     }
 }
 
-pub type ContextFlags = context_flags::ContextFlags;
-
-pub mod blit_mask {
-    bitflags::bitflags! {
-        pub struct BlitMask : u32 {
-            const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
-            const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
-            const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
-        }
-    }
-
-    impl From<crate::COLOR_BUFFER_BIT> for BlitMask {
-        fn from(_: crate::COLOR_BUFFER_BIT) -> BlitMask {
-            BlitMask::COLOR_BUFFER_BIT
-        }
-    }
-
-    impl From<crate::DEPTH_BUFFER_BIT> for BlitMask {
-        fn from(_: crate::DEPTH_BUFFER_BIT) -> BlitMask {
-            BlitMask::DEPTH_BUFFER_BIT
-        }
-    }
-
-    impl From<crate::STENCIL_BUFFER_BIT> for BlitMask {
-        fn from(_: crate::STENCIL_BUFFER_BIT) -> BlitMask {
-            BlitMask::STENCIL_BUFFER_BIT
-        }
+bitflags::bitflags! {
+    pub struct BlitMask : u32 {
+        const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
+        const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
+        const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
     }
 }
 
-pub type BlitMask = blit_mask::BlitMask;
-
-pub mod buffer_storage_flags {
-    bitflags::bitflags! {
-        pub struct BufferStorageFlags : u32 {
-            const DYNAMIC_STORAGE_BIT = crate::gl::DYNAMIC_STORAGE_BIT;
-            const MAP_READ_BIT = crate::gl::MAP_READ_BIT;
-            const MAP_WRITE_BIT = crate::gl::MAP_WRITE_BIT;
-            const MAP_PERSISTENT_BIT = crate::gl::MAP_PERSISTENT_BIT;
-            const MAP_COHERENT_BIT = crate::gl::MAP_COHERENT_BIT;
-            const CLIENT_STORAGE_BIT = crate::gl::CLIENT_STORAGE_BIT;
-        }
+bitflags::bitflags! {
+    pub struct BufferStorageFlag : u32 {
+        const DYNAMIC_STORAGE = crate::gl::DYNAMIC_STORAGE_BIT;
+        const READ = crate::gl::MAP_READ_BIT;
+        const WRITE = crate::gl::MAP_WRITE_BIT;
+        const PERSISTENT = crate::gl::MAP_PERSISTENT_BIT;
+        const COHERENT = crate::gl::MAP_COHERENT_BIT;
+        const CLIENT_STORAGE = crate::gl::CLIENT_STORAGE_BIT;
     }
 }
 
-pub type BufferStorageFlags = buffer_storage_flags::BufferStorageFlags;
-
-pub mod map_access_flags {
-    bitflags::bitflags! {
-        pub struct MapAccessFlags : u32 {
-            const MAP_READ_BIT = crate::gl::MAP_READ_BIT;
-            const MAP_WRITE_BIT = crate::gl::MAP_WRITE_BIT;
-            const MAP_PERSISTENT_BIT = crate::gl::MAP_PERSISTENT_BIT;
-            const MAP_COHERENT_BIT = crate::gl::MAP_COHERENT_BIT;
-            const MAP_INVALIDATE_RANGE_BIT = crate::gl::MAP_INVALIDATE_RANGE_BIT;
-            const MAP_INVALIDATE_BUFFER_BIT = crate::gl::MAP_INVALIDATE_BUFFER_BIT;
-            const MAP_FLUSH_EXPLICIT_BIT = crate::gl::MAP_FLUSH_EXPLICIT_BIT;
-            const MAP_UNSYNCHRONIZED_BIT = crate::gl::MAP_UNSYNCHRONIZED_BIT;
-        }
+bitflags::bitflags! {
+    pub struct MapAccessFlag : u32 {
+        const READ = crate::gl::MAP_READ_BIT;
+        const WRITE = crate::gl::MAP_WRITE_BIT;
+        const PERSISTENT = crate::gl::MAP_PERSISTENT_BIT;
+        const COHERENT = crate::gl::MAP_COHERENT_BIT;
+        const INVALIDATE_RANGE = crate::gl::MAP_INVALIDATE_RANGE_BIT;
+        const INVALIDATE_BUFFER = crate::gl::MAP_INVALIDATE_BUFFER_BIT;
+        const FLUSH_EXPLICIT = crate::gl::MAP_FLUSH_EXPLICIT_BIT;
+        const UNSYNCHRONIZED = crate::gl::MAP_UNSYNCHRONIZED_BIT;
     }
 }
-
-pub type MapAccessFlags = map_access_flags::MapAccessFlags;

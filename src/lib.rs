@@ -119,10 +119,10 @@ impl Gl {
     // switch statement around your dynamic parameter to decide which function
     // to call.
     #[inline]
-    pub unsafe fn get_context_flags(&self) -> ContextFlags {
+    pub unsafe fn get_context_flags(&self) -> ContextFlag {
         let mut values: [i32; 1] = std::mem::uninitialized();
         self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
-        context_flags::ContextFlags::from_bits_truncate(values[0] as u32)
+        ContextFlag::from_bits_truncate(values[0] as u32)
     }
 
     #[inline]
@@ -216,7 +216,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn clear(&self, flags: ClearFlags) {
+    pub unsafe fn clear(&self, flags: ClearFlag) {
         self.gl.Clear(flags.bits());
     }
 
@@ -990,7 +990,7 @@ impl Gl {
         &self,
         name: impl AsRef<BufferName>,
         bytes: &[u8],
-        flags: BufferStorageFlags,
+        flags: BufferStorageFlag,
     ) {
         self.gl.NamedBufferStorage(
             name.as_ref().into_u32(),
@@ -1005,7 +1005,7 @@ impl Gl {
         &self,
         name: impl AsRef<BufferName>,
         byte_size: usize,
-        flags: BufferStorageFlags,
+        flags: BufferStorageFlag,
     ) {
         self.gl.NamedBufferStorage(
             name.as_ref().into_u32(),
@@ -1079,7 +1079,7 @@ impl Gl {
     pub unsafe fn map_named_buffer(
         &self,
         buffer_name: impl AsRef<BufferName>,
-        access: MapAccessFlags,
+        access: MapAccessFlag,
     ) -> *mut c_void {
         self.gl
             .MapNamedBuffer(buffer_name.as_ref().into_u32(), access.bits())
@@ -1097,7 +1097,7 @@ impl Gl {
         buffer_name: impl AsRef<BufferName>,
         byte_offset: usize,
         byte_count: usize,
-        access: MapAccessFlags,
+        access: MapAccessFlag,
     ) -> *mut c_void {
         self.gl.MapNamedBufferRange(
             buffer_name.as_ref().into_u32(),
