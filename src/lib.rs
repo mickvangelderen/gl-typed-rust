@@ -1059,6 +1059,23 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn get_named_buffer_sub_data(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+        bytes: &mut [u8],
+    ) {
+        assert!(bytes.len() >= byte_count);
+        self.gl.GetNamedBufferSubData(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
+            bytes.as_ptr() as *mut c_void,
+        );
+    }
+
+    #[inline]
     pub unsafe fn map_named_buffer(
         &self,
         buffer_name: impl AsRef<BufferName>,
