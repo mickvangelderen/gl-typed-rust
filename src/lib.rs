@@ -551,6 +551,18 @@ impl Gl {
         )
     }
 
+    #[inline]
+    pub unsafe fn dispatch_compute(&self, num_groups_x: u32, num_groups_y: u32, num_groups_z: u32) {
+        self.gl
+            .DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    }
+
+    #[inline]
+    pub unsafe fn dispatch_compute_indirect(&self, byte_offset: usize) {
+        self.gl
+            .DispatchComputeIndirect(byte_offset as isize);
+    }
+
     // Textures.
 
     #[inline]
