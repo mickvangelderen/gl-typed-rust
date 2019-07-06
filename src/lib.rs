@@ -759,7 +759,7 @@ impl Gl {
             height,
             format.into() as u32,
             ty.into() as u32,
-            pixels
+            pixels,
         );
     }
 
