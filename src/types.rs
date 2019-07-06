@@ -816,3 +816,34 @@ pub mod blit_mask {
 
 pub type BlitMask = blit_mask::BlitMask;
 
+pub mod buffer_storage_flags {
+    bitflags::bitflags! {
+        pub struct BufferStorageFlags : u32 {
+            const DYNAMIC_STORAGE_BIT = crate::gl::DYNAMIC_STORAGE_BIT;
+            const MAP_READ_BIT = crate::gl::MAP_READ_BIT;
+            const MAP_WRITE_BIT = crate::gl::MAP_WRITE_BIT;
+            const MAP_PERSISTENT_BIT = crate::gl::MAP_PERSISTENT_BIT;
+            const MAP_COHERENT_BIT = crate::gl::MAP_COHERENT_BIT;
+            const CLIENT_STORAGE_BIT = crate::gl::CLIENT_STORAGE_BIT;
+        }
+    }
+}
+
+pub type BufferStorageFlags = buffer_storage_flags::BufferStorageFlags;
+
+pub mod map_access_flags {
+    bitflags::bitflags! {
+        pub struct MapAccessFlags : u32 {
+            const MAP_READ_BIT = crate::gl::MAP_READ_BIT;
+            const MAP_WRITE_BIT = crate::gl::MAP_WRITE_BIT;
+            const MAP_PERSISTENT_BIT = crate::gl::MAP_PERSISTENT_BIT;
+            const MAP_COHERENT_BIT = crate::gl::MAP_COHERENT_BIT;
+            const MAP_INVALIDATE_RANGE_BIT = crate::gl::MAP_INVALIDATE_RANGE_BIT;
+            const MAP_INVALIDATE_BUFFER_BIT = crate::gl::MAP_INVALIDATE_BUFFER_BIT;
+            const MAP_FLUSH_EXPLICIT_BIT = crate::gl::MAP_FLUSH_EXPLICIT_BIT;
+            const MAP_UNSYNCHRONIZED_BIT = crate::gl::MAP_UNSYNCHRONIZED_BIT;
+        }
+    }
+}
+
+pub type MapAccessFlags = map_access_flags::MapAccessFlags;

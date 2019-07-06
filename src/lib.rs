@@ -985,6 +985,125 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn named_buffer_storage(
+        &self,
+        name: impl AsRef<BufferName>,
+        bytes: &[u8],
+        flags: BufferStorageFlags,
+    ) {
+        self.gl.NamedBufferStorage(
+            name.as_ref().into_u32(),
+            bytes.len() as isize,
+            bytes.as_ptr() as *const c_void,
+            flags.bits(),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_buffer_storage_reserve(
+        &self,
+        name: impl AsRef<BufferName>,
+        byte_size: usize,
+        flags: BufferStorageFlags,
+    ) {
+        self.gl.NamedBufferStorage(
+            name.as_ref().into_u32(),
+            byte_size as isize,
+            std::ptr::null(),
+            flags.bits(),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn copy_named_buffer_sub_data(
+        &self,
+        read_buffer_name: impl AsRef<BufferName>,
+        write_buffer_name: impl AsRef<BufferName>,
+        read_byte_offset: usize,
+        write_byte_offset: usize,
+        byte_count: usize,
+    ) {
+        self.gl.CopyNamedBufferSubData(
+            read_buffer_name.as_ref().into_u32(),
+            write_buffer_name.as_ref().into_u32(),
+            read_byte_offset as isize,
+            write_byte_offset as isize,
+            byte_count as isize,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn clear_named_buffer_sub_data(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        internal_format: impl Into<InternalFormat>,
+        byte_offset: usize,
+        byte_count: usize,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        bytes: Option<&[u8]>,
+    ) {
+        self.gl.ClearNamedBufferSubData(
+            buffer_name.as_ref().into_u32(),
+            internal_format.into() as u32,
+            byte_offset as isize,
+            byte_count as isize,
+            format.into() as u32,
+            ty.into() as u32,
+            match bytes {
+                Some(bytes) => bytes.as_ptr() as *const c_void,
+                None => std::ptr::null(),
+            },
+        );
+    }
+
+    #[inline]
+    pub unsafe fn map_named_buffer(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        access: MapAccessFlags,
+    ) -> *mut c_void {
+        self.gl
+            .MapNamedBuffer(buffer_name.as_ref().into_u32(), access.bits())
+    }
+
+    #[inline]
+    pub unsafe fn unmap_named_buffer(&self, buffer_name: impl AsRef<BufferName>) {
+        self.gl.UnmapNamedBuffer(buffer_name.as_ref().into_u32());
+    }
+
+    /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
+    #[inline]
+    pub unsafe fn map_named_buffer_range(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+        access: MapAccessFlags,
+    ) -> *mut c_void {
+        self.gl.MapNamedBufferRange(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
+            access.bits(),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn flush_mapped_named_buffer_range(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+    ) {
+        self.gl.FlushMappedNamedBufferRange(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
+        );
+    }
+
     // Vertex array names.
 
     #[deprecated]
