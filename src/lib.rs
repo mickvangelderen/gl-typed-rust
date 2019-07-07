@@ -112,6 +112,11 @@ impl Gl {
         )
     }
 
+    #[inline]
+    pub unsafe fn get_integer_v(&self, name: u32, data: &mut [u32]) {
+        self.gl.GetIntegerv(name, data.as_mut_ptr() as *mut i32);
+    }
+
     // NOTE(mickvangelderen): Can do this with type parameters and group by
     // return type length but thats rather clunky. Functions like these are
     // unlikely to receive a run-time parameter. Most of the time you'll know
