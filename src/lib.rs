@@ -99,6 +99,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn memory_barrier(&self, flags: MemoryBarrierFlag) {
+        self.gl.MemoryBarrier(flags.bits());
+    }
+
+    #[inline]
     pub unsafe fn get_string<P>(&self, name: P) -> &'static str
     where
         P: Into<GetStringParam>,

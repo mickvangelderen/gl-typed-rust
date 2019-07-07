@@ -809,3 +809,22 @@ bitflags::bitflags! {
         const UNSYNCHRONIZED = crate::gl::MAP_UNSYNCHRONIZED_BIT;
     }
 }
+
+bitflags::bitflags! {
+    pub struct MemoryBarrierFlag : u32 {
+        const VERTEX_ATTRIB_ARRAY = crate::gl::VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+        const ELEMENT_ARRAY = crate::gl::ELEMENT_ARRAY_BARRIER_BIT;
+        const UNIFORM = crate::gl::UNIFORM_BARRIER_BIT;
+        const TEXTURE_FETCH = crate::gl::TEXTURE_FETCH_BARRIER_BIT;
+        const SHADER_IMAGE_ACCESS = crate::gl::SHADER_IMAGE_ACCESS_BARRIER_BIT;
+        const COMMAND = crate::gl::COMMAND_BARRIER_BIT;
+        const PIXEL_BUFFER = crate::gl::PIXEL_BUFFER_BARRIER_BIT;
+        const TEXTURE_UPDATE = crate::gl::TEXTURE_UPDATE_BARRIER_BIT;
+        const BUFFER_UPDATE = crate::gl::BUFFER_UPDATE_BARRIER_BIT;
+        const FRAMEBUFFER = crate::gl::FRAMEBUFFER_BARRIER_BIT;
+        const TRANSFORM_FEEDBACK = crate::gl::TRANSFORM_FEEDBACK_BARRIER_BIT;
+        const ATOMIC_COUNTER = crate::gl::ATOMIC_COUNTER_BARRIER_BIT;
+        const SHADER_STORAGE = crate::gl::SHADER_STORAGE_BARRIER_BIT;
+        const QUERY_BUFFER = crate::gl::QUERY_BUFFER_BARRIER_BIT;
+    }
+}
