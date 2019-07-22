@@ -375,6 +375,29 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn draw_elements_instanced_base_vertex<M, T>(
+        &self,
+        mode: M,
+        count: u32,
+        ty: T,
+        offset: usize,
+        instance_count: u32,
+        base_vertex: u32,
+    ) where
+        M: Into<DrawMode>,
+        T: Into<DrawElementsType>,
+    {
+        self.gl.DrawElementsInstancedBaseVertex(
+            mode.into() as u32,
+            count as i32,
+            ty.into() as u32,
+            offset as *const c_void,
+            instance_count as i32,
+            base_vertex as i32,
+        );
+    }
+
     // Shaders.
 
     #[inline]
