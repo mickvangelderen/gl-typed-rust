@@ -238,7 +238,7 @@ impl Default for OptionUniformBlockIndex {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct VertexArrayBufferBindingIndex(u32);
 
 impl VertexArrayBufferBindingIndex {

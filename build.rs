@@ -10,7 +10,7 @@ fn main() {
         (4, 5),
         Profile::Core,
         Fallbacks::All,
-        ["GL_ARB_texture_filter_anisotropic"],
+        ["GL_ARB_texture_filter_anisotropic", "GL_NV_shader_thread_group"],
     );
 
     let out_dir = env::var("OUT_DIR").unwrap();

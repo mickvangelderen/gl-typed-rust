@@ -25,6 +25,12 @@ macro_rules! impl_names {
                     self.0.get()
                 }
             }
+
+            impl AsRef<$Name> for $Name {
+                fn as_ref(&self) -> &Self {
+                    self
+                }
+            }
         )*
     };
 }
@@ -46,6 +52,8 @@ impl_names!(
     ReceivedInvalidVertexArrayName,
     SamplerName,
     ReceivedInvalidSamplerName,
+    QueryName,
+    ReceivedInvalidQueryName,
 );
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]

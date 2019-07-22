@@ -23,6 +23,7 @@ pub use types::*;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::mem::{ManuallyDrop, MaybeUninit};
+use std::num::NonZeroU64;
 use std::os::raw::*;
 
 macro_rules! impl_uniform_setters {
@@ -98,6 +99,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn memory_barrier(&self, flags: MemoryBarrierFlag) {
+        self.gl.MemoryBarrier(flags.bits());
+    }
+
+    #[inline]
     pub unsafe fn get_string<P>(&self, name: P) -> &'static str
     where
         P: Into<GetStringParam>,
@@ -111,6 +117,11 @@ impl Gl {
         )
     }
 
+    #[inline]
+    pub unsafe fn get_integer_v(&self, name: u32, data: &mut [u32]) {
+        self.gl.GetIntegerv(name, data.as_mut_ptr() as *mut i32);
+    }
+
     // NOTE(mickvangelderen): Can do this with type parameters and group by
     // return type length but thats rather clunky. Functions like these are
     // unlikely to receive a run-time parameter. Most of the time you'll know
@@ -118,10 +129,10 @@ impl Gl {
     // switch statement around your dynamic parameter to decide which function
     // to call.
     #[inline]
-    pub unsafe fn get_context_flags(&self) -> ContextFlags {
+    pub unsafe fn get_context_flags(&self) -> ContextFlag {
         let mut values: [i32; 1] = std::mem::uninitialized();
         self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
-        context_flags::ContextFlags::from_bits_truncate(values[0] as u32)
+        ContextFlag::from_bits_truncate(values[0] as u32)
     }
 
     #[inline]
@@ -215,7 +226,7 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn clear(&self, flags: ClearFlags) {
+    pub unsafe fn clear(&self, flags: ClearFlag) {
         self.gl.Clear(flags.bits());
     }
 
@@ -261,6 +272,11 @@ impl Gl {
         self.gl.StencilMask(mask);
     }
 
+    #[inline]
+    pub unsafe fn blend_func(&self, src: impl Into<BlendFactor>, dst: impl Into<BlendFactor>) {
+        self.gl.BlendFunc(src.into() as u32, dst.into() as u32);
+    }
+
     #[deprecated]
     #[inline]
     pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {
@@ -280,6 +296,38 @@ impl Gl {
             framebuffer_name.into_u32(),
             framebuffer_attachments.len() as i32,
             framebuffer_attachments.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn blit_named_framebuffer(
+        &self,
+        read_framebuffer_name: FramebufferName,
+        draw_framebuffer_name: FramebufferName,
+        src_x0: i32,
+        src_y0: i32,
+        src_x1: i32,
+        src_y1: i32,
+        dst_x0: i32,
+        dst_y0: i32,
+        dst_x1: i32,
+        dst_y1: i32,
+        mask: impl Into<BlitMask>,
+        filter: impl Into<BlitFilter>,
+    ) {
+        self.gl.BlitNamedFramebuffer(
+            read_framebuffer_name.into_u32(),
+            draw_framebuffer_name.into_u32(),
+            src_x0,
+            src_y0,
+            src_x1,
+            src_y1,
+            dst_x0,
+            dst_y0,
+            dst_x1,
+            dst_y1,
+            mask.into().bits(),
+            filter.into() as u32,
         );
     }
 
@@ -513,6 +561,18 @@ impl Gl {
         )
     }
 
+    #[inline]
+    pub unsafe fn dispatch_compute(&self, num_groups_x: u32, num_groups_y: u32, num_groups_z: u32) {
+        self.gl
+            .DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    }
+
+    #[inline]
+    pub unsafe fn dispatch_compute_indirect(&self, byte_offset: usize) {
+        self.gl
+            .DispatchComputeIndirect(byte_offset as isize);
+    }
+
     // Textures.
 
     #[inline]
@@ -678,6 +738,50 @@ impl Gl {
             format.into() as u32,
             component_format.into() as u32,
             data,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn texture_storage_2d(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        levels: i32,
+        internal_format: impl Into<InternalFormat>,
+        width: i32,
+        height: i32,
+    ) {
+        self.gl.TextureStorage2D(
+            texture_name.as_ref().into_u32(),
+            levels,
+            internal_format.into() as u32,
+            width,
+            height,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn texture_sub_image_2d(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        level: i32,
+        offset_x: i32,
+        offset_y: i32,
+        width: i32,
+        height: i32,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        pixels: *const c_void,
+    ) {
+        self.gl.TextureSubImage2D(
+            texture_name.as_ref().into_u32(),
+            level,
+            offset_x,
+            offset_y,
+            width,
+            height,
+            format.into() as u32,
+            ty.into() as u32,
+            pixels,
         );
     }
 
@@ -900,6 +1004,142 @@ impl Gl {
             offset as isize,
             bytes.len() as isize,
             bytes.as_ptr() as *const c_void,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_buffer_storage(
+        &self,
+        name: impl AsRef<BufferName>,
+        bytes: &[u8],
+        flags: BufferStorageFlag,
+    ) {
+        self.gl.NamedBufferStorage(
+            name.as_ref().into_u32(),
+            bytes.len() as isize,
+            bytes.as_ptr() as *const c_void,
+            flags.bits(),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn named_buffer_storage_reserve(
+        &self,
+        name: impl AsRef<BufferName>,
+        byte_size: usize,
+        flags: BufferStorageFlag,
+    ) {
+        self.gl.NamedBufferStorage(
+            name.as_ref().into_u32(),
+            byte_size as isize,
+            std::ptr::null(),
+            flags.bits(),
+        );
+    }
+
+    #[inline]
+    pub unsafe fn copy_named_buffer_sub_data(
+        &self,
+        read_buffer_name: impl AsRef<BufferName>,
+        write_buffer_name: impl AsRef<BufferName>,
+        read_byte_offset: usize,
+        write_byte_offset: usize,
+        byte_count: usize,
+    ) {
+        self.gl.CopyNamedBufferSubData(
+            read_buffer_name.as_ref().into_u32(),
+            write_buffer_name.as_ref().into_u32(),
+            read_byte_offset as isize,
+            write_byte_offset as isize,
+            byte_count as isize,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn clear_named_buffer_sub_data(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        internal_format: impl Into<InternalFormat>,
+        byte_offset: usize,
+        byte_count: usize,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        bytes: Option<&[u8]>,
+    ) {
+        self.gl.ClearNamedBufferSubData(
+            buffer_name.as_ref().into_u32(),
+            internal_format.into() as u32,
+            byte_offset as isize,
+            byte_count as isize,
+            format.into() as u32,
+            ty.into() as u32,
+            match bytes {
+                Some(bytes) => bytes.as_ptr() as *const c_void,
+                None => std::ptr::null(),
+            },
+        );
+    }
+
+    #[inline]
+    pub unsafe fn get_named_buffer_sub_data(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+        bytes: &mut [u8],
+    ) {
+        assert!(bytes.len() >= byte_count);
+        self.gl.GetNamedBufferSubData(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
+            bytes.as_ptr() as *mut c_void,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn map_named_buffer(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        access: MapAccessFlag,
+    ) -> *mut c_void {
+        self.gl
+            .MapNamedBuffer(buffer_name.as_ref().into_u32(), access.bits())
+    }
+
+    #[inline]
+    pub unsafe fn unmap_named_buffer(&self, buffer_name: impl AsRef<BufferName>) {
+        self.gl.UnmapNamedBuffer(buffer_name.as_ref().into_u32());
+    }
+
+    /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
+    #[inline]
+    pub unsafe fn map_named_buffer_range(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+        access: MapAccessFlag,
+    ) -> *mut c_void {
+        self.gl.MapNamedBufferRange(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
+            access.bits(),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn flush_mapped_named_buffer_range(
+        &self,
+        buffer_name: impl AsRef<BufferName>,
+        byte_offset: usize,
+        byte_count: usize,
+    ) {
+        self.gl.FlushMappedNamedBufferRange(
+            buffer_name.as_ref().into_u32(),
+            byte_offset as isize,
+            byte_count as isize,
         );
     }
 
@@ -1572,5 +1812,125 @@ impl Gl {
             P::VALUE,
             value.into().into().cast_into(),
         );
+    }
+
+    // Queries.
+
+    #[inline]
+    pub unsafe fn create_query(&self, target: impl Into<QueryTarget>) -> QueryName {
+        self.try_create_query(target).unwrap()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_query(
+        &self,
+        target: impl Into<QueryTarget>,
+    ) -> Result<QueryName, ReceivedInvalidQueryName> {
+        let mut name = MaybeUninit::<u32>::uninit();
+        self.gl
+            .CreateQueries(target.into() as u32, 1, name.as_mut_ptr());
+        QueryName::new(name.assume_init())
+    }
+
+    #[inline]
+    pub unsafe fn create_queries(
+        &self,
+        target: impl Into<QueryTarget>,
+        count: usize,
+    ) -> Vec<QueryName> {
+        self.try_create_queries(target, count)
+            .into_iter()
+            .map(|name| name.unwrap())
+            .collect()
+    }
+
+    #[inline]
+    pub unsafe fn try_create_queries(
+        &self,
+        target: impl Into<QueryTarget>,
+        count: usize,
+    ) -> Vec<Result<QueryName, ReceivedInvalidQueryName>> {
+        let mut names: Vec<Result<QueryName, ReceivedInvalidQueryName>> = Vec::with_capacity(count);
+        self.gl.CreateQueries(
+            target.into() as u32,
+            i32::try_from(count).unwrap(),
+            names.as_mut_ptr() as *mut u32,
+        );
+        names.set_len(count);
+        names
+    }
+
+    #[inline]
+    pub unsafe fn delete_query(&self, query_name: QueryName) {
+        self.gl
+            .DeleteQueries(1, &ManuallyDrop::new(query_name).into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn delete_queries(&self, query_names: Vec<QueryName>) {
+        let query_names = ManuallyDrop::new(query_names);
+        self.gl.DeleteQueries(
+            i32::try_from(query_names.len()).unwrap(),
+            query_names.as_ptr() as *const u32,
+        );
+    }
+
+    #[inline]
+    pub unsafe fn begin_query(
+        &self,
+        target: impl Into<ScopeQueryTarget>,
+        query_name: impl AsRef<QueryName>,
+    ) {
+        self.gl
+            .BeginQuery(target.into() as u32, query_name.as_ref().into_u32());
+    }
+
+    #[inline]
+    pub unsafe fn end_query(&self, target: impl Into<ScopeQueryTarget>) {
+        self.gl.EndQuery(target.into() as u32);
+    }
+
+    #[inline]
+    pub unsafe fn query_counter(&self, query_name: impl AsRef<QueryName>) {
+        self.gl
+            .QueryCounter(query_name.as_ref().into_u32(), gl::TIMESTAMP);
+    }
+
+    /// Blocking.
+    #[inline]
+    pub unsafe fn query_result_u64(&self, query_name: impl AsRef<QueryName>) -> u64 {
+        let mut value = MaybeUninit::<u64>::uninit();
+        self.gl.GetQueryObjectui64v(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT,
+            value.as_mut_ptr(),
+        );
+        value.assume_init()
+    }
+
+    /// Non-blocking.
+    #[inline]
+    pub unsafe fn try_query_result_u64(
+        &self,
+        query_name: impl AsRef<QueryName>,
+    ) -> Option<NonZeroU64> {
+        let mut value = 0u64;
+        self.gl.GetQueryObjectui64v(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT_NO_WAIT,
+            &mut value,
+        );
+        NonZeroU64::new(value)
+    }
+
+    #[inline]
+    pub unsafe fn query_result_available(&self, query_name: impl AsRef<QueryName>) -> bool {
+        let mut value = MaybeUninit::<i32>::uninit();
+        self.gl.GetQueryObjectiv(
+            query_name.as_ref().into_u32(),
+            gl::QUERY_RESULT_AVAILABLE,
+            value.as_mut_ptr(),
+        );
+        value.assume_init() != 0
     }
 }

@@ -581,6 +581,57 @@ impl_enums! {
         N1P1 = NEGATIVE_ONE_TO_ONE,
         Z0P1 = ZERO_TO_ONE,
     }
+
+    struct ReceivedInvalidQueryTarget(u32);
+    QueryTarget {
+        SamplesPassed = SAMPLES_PASSED,
+        AnySamplesPassed = ANY_SAMPLES_PASSED,
+        AnySamplesPassedConservative = ANY_SAMPLES_PASSED_CONSERVATIVE,
+        TimeElapsed = TIME_ELAPSED,
+        Timestamp = TIMESTAMP,
+        PrimitivesGenerated = PRIMITIVES_GENERATED,
+        TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+    }
+
+    struct ReceivedInvalidScopeQueryTarget(u32);
+    ScopeQueryTarget {
+        SamplesPassed = SAMPLES_PASSED,
+        AnySamplesPassed = ANY_SAMPLES_PASSED,
+        AnySamplesPassedConservative = ANY_SAMPLES_PASSED_CONSERVATIVE,
+        PrimitivesGenerated = PRIMITIVES_GENERATED,
+        TransformFeedbackPrimitivesWritten = TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+        TimeElapsed = TIME_ELAPSED,
+    }
+
+
+    struct ReceivedInvalidBlitFilter(u32);
+    BlitFilter {
+        Nearest = NEAREST,
+        Linear = LINEAR,
+    }
+
+    struct ReceivedInvalidBlendFactor(u32);
+    BlendFactor {
+        Zero = ZERO,
+        One = ONE,
+        SrcColor = SRC_COLOR,
+        OneMinusSrcColor = ONE_MINUS_SRC_COLOR,
+        DstColor = DST_COLOR,
+        OneMinusDstColor = ONE_MINUS_DST_COLOR,
+        SrcAlpha = SRC_ALPHA,
+        OneMinusSrcAlpha = ONE_MINUS_SRC_ALPHA,
+        DstAlpha = DST_ALPHA,
+        OneMinusDstAlpha = ONE_MINUS_DST_ALPHA,
+        ConstantColor = CONSTANT_COLOR,
+        OneMinusConstantColor = ONE_MINUS_CONSTANT_COLOR,
+        ConstantAlpha = CONSTANT_ALPHA,
+        OneMinusConstantAlpha = ONE_MINUS_CONSTANT_ALPHA,
+        SrcAlphaSaturate = SRC_ALPHA_SATURATE,
+        Src1Color = SRC1_COLOR,
+        OneMinusSrc1Color = ONE_MINUS_SRC1_COLOR,
+        Src1Alpha = SRC1_ALPHA,
+        OneMinusSrc1Alpha = ONE_MINUS_SRC1_ALPHA,
+    }
 }
 
 macro_rules! impl_struct_from_symbol {
@@ -711,26 +762,69 @@ impl_struct_from_symbol! (
     }
 );
 
-pub mod clear_flags {
-    bitflags::bitflags! {
-        pub struct ClearFlags : u32 {
-            const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
-            const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
-            const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
-        }
+bitflags::bitflags! {
+    pub struct ClearFlag : u32 {
+        const COLOR_BUFFER = crate::gl::COLOR_BUFFER_BIT;
+        const DEPTH_BUFFER = crate::gl::DEPTH_BUFFER_BIT;
+        const STENCIL_BUFFER = crate::gl::STENCIL_BUFFER_BIT;
     }
 }
 
-pub type ClearFlags = clear_flags::ClearFlags;
-
-pub mod context_flags {
-    bitflags::bitflags! {
-        pub struct ContextFlags : u32 {
-            const CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT = crate::gl::CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
-            const CONTEXT_FLAG_DEBUG_BIT = crate::gl::CONTEXT_FLAG_DEBUG_BIT;
-            const CONTEXT_FLAG_ROBUST_ACCESS_BIT = crate::gl::CONTEXT_FLAG_ROBUST_ACCESS_BIT;
-        }
+bitflags::bitflags! {
+    pub struct ContextFlag : u32 {
+        const FORWARD_COMPATIBLE = crate::gl::CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
+        const DEBUG = crate::gl::CONTEXT_FLAG_DEBUG_BIT;
+        const ROBUST_ACCESS = crate::gl::CONTEXT_FLAG_ROBUST_ACCESS_BIT;
     }
 }
 
-pub type ContextFlags = context_flags::ContextFlags;
+bitflags::bitflags! {
+    pub struct BlitMask : u32 {
+        const COLOR_BUFFER_BIT = crate::gl::COLOR_BUFFER_BIT;
+        const DEPTH_BUFFER_BIT = crate::gl::DEPTH_BUFFER_BIT;
+        const STENCIL_BUFFER_BIT = crate::gl::STENCIL_BUFFER_BIT;
+    }
+}
+
+bitflags::bitflags! {
+    pub struct BufferStorageFlag : u32 {
+        const DYNAMIC_STORAGE = crate::gl::DYNAMIC_STORAGE_BIT;
+        const READ = crate::gl::MAP_READ_BIT;
+        const WRITE = crate::gl::MAP_WRITE_BIT;
+        const PERSISTENT = crate::gl::MAP_PERSISTENT_BIT;
+        const COHERENT = crate::gl::MAP_COHERENT_BIT;
+        const CLIENT_STORAGE = crate::gl::CLIENT_STORAGE_BIT;
+    }
+}
+
+bitflags::bitflags! {
+    pub struct MapAccessFlag : u32 {
+        const READ = crate::gl::MAP_READ_BIT;
+        const WRITE = crate::gl::MAP_WRITE_BIT;
+        const PERSISTENT = crate::gl::MAP_PERSISTENT_BIT;
+        const COHERENT = crate::gl::MAP_COHERENT_BIT;
+        const INVALIDATE_RANGE = crate::gl::MAP_INVALIDATE_RANGE_BIT;
+        const INVALIDATE_BUFFER = crate::gl::MAP_INVALIDATE_BUFFER_BIT;
+        const FLUSH_EXPLICIT = crate::gl::MAP_FLUSH_EXPLICIT_BIT;
+        const UNSYNCHRONIZED = crate::gl::MAP_UNSYNCHRONIZED_BIT;
+    }
+}
+
+bitflags::bitflags! {
+    pub struct MemoryBarrierFlag : u32 {
+        const VERTEX_ATTRIB_ARRAY = crate::gl::VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+        const ELEMENT_ARRAY = crate::gl::ELEMENT_ARRAY_BARRIER_BIT;
+        const UNIFORM = crate::gl::UNIFORM_BARRIER_BIT;
+        const TEXTURE_FETCH = crate::gl::TEXTURE_FETCH_BARRIER_BIT;
+        const SHADER_IMAGE_ACCESS = crate::gl::SHADER_IMAGE_ACCESS_BARRIER_BIT;
+        const COMMAND = crate::gl::COMMAND_BARRIER_BIT;
+        const PIXEL_BUFFER = crate::gl::PIXEL_BUFFER_BARRIER_BIT;
+        const TEXTURE_UPDATE = crate::gl::TEXTURE_UPDATE_BARRIER_BIT;
+        const BUFFER_UPDATE = crate::gl::BUFFER_UPDATE_BARRIER_BIT;
+        const FRAMEBUFFER = crate::gl::FRAMEBUFFER_BARRIER_BIT;
+        const TRANSFORM_FEEDBACK = crate::gl::TRANSFORM_FEEDBACK_BARRIER_BIT;
+        const ATOMIC_COUNTER = crate::gl::ATOMIC_COUNTER_BARRIER_BIT;
+        const SHADER_STORAGE = crate::gl::SHADER_STORAGE_BARRIER_BIT;
+        const QUERY_BUFFER = crate::gl::QUERY_BUFFER_BARRIER_BIT;
+    }
+}
