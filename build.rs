@@ -10,7 +10,10 @@ fn main() {
         (4, 5),
         Profile::Core,
         Fallbacks::All,
-        ["GL_ARB_texture_filter_anisotropic", "GL_NV_shader_thread_group"],
+        [
+            "GL_ARB_texture_filter_anisotropic",
+            "GL_NV_shader_thread_group",
+        ],
     );
 
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -28,12 +31,15 @@ fn main() {
     {
         let mut symbols = File::create(&Path::new(&out_dir).join("symbols.rs")).unwrap();
 
-        write!(&mut symbols,
-               r##"
+        write!(
+            &mut symbols,
+            r##"
 pub trait Symbol<T> {{
     const VALUE: T;
 }}
-"##).unwrap();
+"##
+        )
+        .unwrap();
 
         for e in gl_registry.enums.iter() {
             let bits = match e.ty.as_ref() {

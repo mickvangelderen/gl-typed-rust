@@ -13,7 +13,10 @@ pub trait CastInto<T> {
     fn cast_into(self) -> T;
 }
 
-impl<F, I> CastInto<I> for F where I: CastFrom<F> {
+impl<F, I> CastInto<I> for F
+where
+    I: CastFrom<F>,
+{
     #[inline]
     fn cast_into(self) -> I {
         I::cast_from(self)

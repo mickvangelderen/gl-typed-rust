@@ -399,14 +399,10 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn draw_elements_indirect<M, T>(
-        &self,
-        mode: M,
-        ty: T,
-        offset: usize,
-    ) where
+    pub unsafe fn draw_elements_indirect<M, T>(&self, mode: M, ty: T, offset: usize)
+    where
         M: Into<DrawMode>,
-    T: Into<DrawElementsType>,
+        T: Into<DrawElementsType>,
     {
         self.gl.DrawElementsIndirect(
             mode.into() as u32,
@@ -609,8 +605,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn dispatch_compute_indirect(&self, byte_offset: usize) {
-        self.gl
-            .DispatchComputeIndirect(byte_offset as isize);
+        self.gl.DispatchComputeIndirect(byte_offset as isize);
     }
 
     // Textures.
