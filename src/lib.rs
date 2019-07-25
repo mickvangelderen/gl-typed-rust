@@ -398,6 +398,23 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn draw_elements_indirect<M, T>(
+        &self,
+        mode: M,
+        ty: T,
+        offset: usize,
+    ) where
+        M: Into<DrawMode>,
+    T: Into<DrawElementsType>,
+    {
+        self.gl.DrawElementsIndirect(
+            mode.into() as u32,
+            ty.into() as u32,
+            offset as *const c_void,
+        );
+    }
+
     // Shaders.
 
     #[inline]
