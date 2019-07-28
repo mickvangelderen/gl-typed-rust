@@ -54,6 +54,24 @@ macro_rules! impl_uniform_setters {
     }
 }
 
+macro_rules! impl_object_label {
+    ($(
+        ($fn: ident, $name: ident, $variant: expr),
+    )*) => {
+        $(
+            #[inline]
+            pub unsafe fn $fn(&self, $name: impl AsRef<ProgramName>, label: &str) {
+                self.gl.ObjectLabel(
+                    $variant,
+                    $name.as_ref().into_u32(),
+                    label.len() as i32,
+                    label.as_ptr() as *const i8,
+                );
+            }
+        )*
+    };
+}
+
 pub struct Gl {
     gl: gl::Gl,
 }
@@ -96,6 +114,20 @@ impl Gl {
     #[inline]
     pub unsafe fn finish(&self) {
         self.gl.Finish();
+    }
+
+    impl_object_label! {
+        (buffer_label, buffer_name, gl::BUFFER),
+        (shader_label, shader_name, gl::SHADER),
+        (program_label, program_name, gl::PROGRAM),
+        (vertex_array_label, vertex_array_name, gl::VERTEX_ARRAY),
+        (query_label, query_name, gl::QUERY),
+        (program_pipeline_label, program_pipeline_name, gl::PROGRAM_PIPELINE),
+        (transform_feedback_label, transform_feedback_name, gl::TRANSFORM_FEEDBACK),
+        (sampler_label, sampler_name, gl::SAMPLER),
+        (texture_label, texture_name, gl::TEXTURE),
+        (renderbuffer_label, renderbuffer_name, gl::RENDERBUFFER),
+        (framebuffer_label, framebuffer_name, gl::FRAMEBUFFER),
     }
 
     #[inline]
