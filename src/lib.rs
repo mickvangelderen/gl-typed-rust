@@ -56,11 +56,11 @@ macro_rules! impl_uniform_setters {
 
 macro_rules! impl_object_label {
     ($(
-        ($fn: ident, $name: ident, $variant: expr),
+        ($fn: ident, $name: ident, $Name: ty, $variant: expr),
     )*) => {
         $(
             #[inline]
-            pub unsafe fn $fn(&self, $name: impl AsRef<ProgramName>, label: &str) {
+            pub unsafe fn $fn(&self, $name: impl AsRef<$Name>, label: &str) {
                 self.gl.ObjectLabel(
                     $variant,
                     $name.as_ref().into_u32(),
@@ -117,17 +117,17 @@ impl Gl {
     }
 
     impl_object_label! {
-        (buffer_label, buffer_name, gl::BUFFER),
-        (shader_label, shader_name, gl::SHADER),
-        (program_label, program_name, gl::PROGRAM),
-        (vertex_array_label, vertex_array_name, gl::VERTEX_ARRAY),
-        (query_label, query_name, gl::QUERY),
-        (program_pipeline_label, program_pipeline_name, gl::PROGRAM_PIPELINE),
-        (transform_feedback_label, transform_feedback_name, gl::TRANSFORM_FEEDBACK),
-        (sampler_label, sampler_name, gl::SAMPLER),
-        (texture_label, texture_name, gl::TEXTURE),
-        (renderbuffer_label, renderbuffer_name, gl::RENDERBUFFER),
-        (framebuffer_label, framebuffer_name, gl::FRAMEBUFFER),
+        (buffer_label, buffer_name, BufferName, gl::BUFFER),
+        (shader_label, shader_name, ShaderName, gl::SHADER),
+        (program_label, program_name, ProgramName, gl::PROGRAM),
+        (vertex_array_label, vertex_array_name, VertexArrayName, gl::VERTEX_ARRAY),
+        (query_label, query_name, QueryName, gl::QUERY),
+        (program_pipeline_label, program_pipeline_name, ProgramPipelineName, gl::PROGRAM_PIPELINE),
+        (transform_feedback_label, transform_feedback_name, TransformFeedbackName, gl::TRANSFORM_FEEDBACK),
+        (sampler_label, sampler_name, SamplerName, gl::SAMPLER),
+        (texture_label, texture_name, TextureName, gl::TEXTURE),
+        (renderbuffer_label, renderbuffer_name, RenderbufferName, gl::RENDERBUFFER),
+        (framebuffer_label, framebuffer_name, NonDefaultFramebufferName, gl::FRAMEBUFFER),
     }
 
     #[inline]

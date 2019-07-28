@@ -54,6 +54,10 @@ impl_names!(
     ReceivedInvalidSamplerName,
     QueryName,
     ReceivedInvalidQueryName,
+    ProgramPipelineName,
+    ReceivedInvalidProgramPipelineName,
+    TransformFeedbackName,
+    ReceivedInvalidTransformFeedbackName,
 );
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
