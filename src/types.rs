@@ -826,5 +826,6 @@ bitflags::bitflags! {
         const ATOMIC_COUNTER = crate::gl::ATOMIC_COUNTER_BARRIER_BIT;
         const SHADER_STORAGE = crate::gl::SHADER_STORAGE_BARRIER_BIT;
         const QUERY_BUFFER = crate::gl::QUERY_BUFFER_BARRIER_BIT;
+        const ALL = crate::gl::ALL_BARRIER_BITS;
     }
 }
