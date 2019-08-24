@@ -123,7 +123,7 @@ impl AttributeLocation {
 
     #[deprecated]
     #[inline]
-    pub unsafe fn new_unchecked(val: i32) -> Self {
+    pub unsafe const fn new_unchecked(val: i32) -> Self {
         Self::from_i32_unchecked(val)
     }
 }
@@ -155,7 +155,7 @@ impl UniformLocation {
 
     #[deprecated]
     #[inline]
-    pub unsafe fn new_unchecked(val: i32) -> Self {
+    pub unsafe const fn new_unchecked(val: i32) -> Self {
         Self::from_i32_unchecked(val)
     }
 }
@@ -187,7 +187,7 @@ impl UniformBlockIndex {
 
     #[deprecated]
     #[inline]
-    pub unsafe fn new_unchecked(val: u32) -> Self {
+    pub unsafe const fn new_unchecked(val: u32) -> Self {
         Self::from_u32_unchecked(val)
     }
 }
