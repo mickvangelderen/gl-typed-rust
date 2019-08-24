@@ -1,7 +1,6 @@
 #[macro_use]
 mod macros;
 
-pub mod array;
 pub mod convert;
 pub mod gl;
 pub mod locations;
@@ -12,7 +11,6 @@ pub mod string;
 pub mod symbols;
 pub mod types;
 
-pub use array::*;
 pub use convert::*;
 pub use locations::*;
 pub use names::*;
@@ -24,32 +22,32 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::mem::{ManuallyDrop, MaybeUninit};
 use std::num::NonZeroU64;
-use std::os::raw::*;
+use std::os::raw::{c_char, c_void};
 
 macro_rules! impl_uniform_setters {
     ($fn1: ident, $glfn1: ident, $fn2: ident, $glfn2: ident, $fn3: ident, $glfn3: ident, $fn4: ident, $glfn4: ident, $ty: ty) => {
         #[inline]
         pub unsafe fn $fn1(&self, uniform_location: UniformLocation, value: $ty) {
-            self.gl.$glfn1(uniform_location.into_i32(), value);
+            self.gl.$glfn1(uniform_location.to_i32(), value);
         }
 
         #[inline]
         pub unsafe fn $fn2(&self, uniform_location: UniformLocation, value: [$ty; 2]) {
             let [v0, v1] = value;
-            self.gl.$glfn2(uniform_location.into_i32(), v0, v1);
+            self.gl.$glfn2(uniform_location.to_i32(), v0, v1);
         }
 
         #[inline]
         pub unsafe fn $fn3(&self, uniform_location: UniformLocation, value: [$ty; 3]) {
             let [v0, v1, v2] = value;
-            self.gl.$glfn3(uniform_location.into_i32(), v0, v1, v2);
+            self.gl.$glfn3(uniform_location.to_i32(), v0, v1, v2);
         }
 
         #[inline]
         pub unsafe fn $fn4(&self, uniform_location: UniformLocation, value: [$ty; 4]) {
             let [v0, v1, v2, v3] = value;
             self.gl
-                .$glfn4(uniform_location.into_i32(), v0, v1, v2, v3);
+                .$glfn4(uniform_location.to_i32(), v0, v1, v2, v3);
         }
     }
 }
@@ -63,7 +61,7 @@ macro_rules! impl_object_label {
             pub unsafe fn $fn(&self, $name: impl AsRef<$Name>, label: &str) {
                 self.gl.ObjectLabel(
                     $variant,
-                    $name.as_ref().into_u32(),
+                    $name.as_ref().to_u32(),
                     label.len() as i32,
                     label.as_ptr() as *const i8,
                 );
@@ -325,7 +323,7 @@ impl Gl {
         framebuffer_attachments: &[FramebufferAttachment],
     ) {
         self.gl.NamedFramebufferDrawBuffers(
-            framebuffer_name.into_u32(),
+            framebuffer_name.to_u32(),
             framebuffer_attachments.len() as i32,
             framebuffer_attachments.as_ptr() as *const u32,
         );
@@ -348,8 +346,8 @@ impl Gl {
         filter: impl Into<BlitFilter>,
     ) {
         self.gl.BlitNamedFramebuffer(
-            read_framebuffer_name.into_u32(),
-            draw_framebuffer_name.into_u32(),
+            read_framebuffer_name.to_u32(),
+            draw_framebuffer_name.to_u32(),
             src_x0,
             src_y0,
             src_x1,
@@ -466,7 +464,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_shader(&self, name: ShaderName) {
-        self.gl.DeleteShader(ManuallyDrop::new(name).into_u32());
+        self.gl.DeleteShader(ManuallyDrop::new(name).to_u32());
     }
 
     #[inline]
@@ -486,7 +484,7 @@ impl Gl {
         );
 
         self.gl.ShaderSource(
-            shader_name.into_u32(),
+            shader_name.to_u32(),
             pointers.len() as i32,
             pointers.as_ptr(),
             lengths.as_ptr(),
@@ -495,7 +493,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn compile_shader(&self, name: ShaderName) {
-        self.gl.CompileShader(name.into_u32());
+        self.gl.CompileShader(name.to_u32());
     }
 
     #[inline]
@@ -506,7 +504,7 @@ impl Gl {
     {
         let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetShaderiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
+            .GetShaderiv(name.to_u32(), P::VALUE, value.as_mut_ptr());
         P::Intermediate::cast_from(value.assume_init())
             .try_into()
             .unwrap()
@@ -522,7 +520,7 @@ impl Gl {
         let mut buffer = Vec::with_capacity(self.get_shaderiv(name, INFO_LOG_LENGTH));
         let mut length = MaybeUninit::<i32>::uninit();
         self.gl.GetShaderInfoLog(
-            name.into_u32(),
+            name.to_u32(),
             buffer.capacity() as i32,
             length.as_mut_ptr(),
             buffer.as_mut_ptr() as *mut i8,
@@ -547,12 +545,12 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_program(&self, name: ProgramName) {
-        self.gl.DeleteProgram(ManuallyDrop::new(name).into_u32());
+        self.gl.DeleteProgram(ManuallyDrop::new(name).to_u32());
     }
 
     #[inline]
-    pub unsafe fn use_program(&self, program: ProgramName) {
-        self.gl.UseProgram(program.into_u32());
+    pub unsafe fn use_program(&self, program_name: ProgramName) {
+        self.gl.UseProgram(program_name.to_u32());
     }
 
     #[inline]
@@ -561,13 +559,14 @@ impl Gl {
     }
 
     #[inline]
-    pub unsafe fn attach_shader(&self, program: ProgramName, shader: ShaderName) {
-        self.gl.AttachShader(program.into_u32(), shader.into_u32());
+    pub unsafe fn attach_shader(&self, program_name: ProgramName, shader_name: ShaderName) {
+        self.gl
+            .AttachShader(program_name.to_u32(), shader_name.to_u32());
     }
 
     #[inline]
-    pub unsafe fn link_program(&self, program: ProgramName) {
-        self.gl.LinkProgram(program.into_u32());
+    pub unsafe fn link_program(&self, program_name: ProgramName) {
+        self.gl.LinkProgram(program_name.to_u32());
     }
 
     #[inline]
@@ -578,7 +577,7 @@ impl Gl {
     {
         let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetProgramiv(name.into_u32(), P::VALUE, value.as_mut_ptr());
+            .GetProgramiv(name.to_u32(), P::VALUE, value.as_mut_ptr());
         P::Intermediate::cast_from(value.assume_init())
             .try_into()
             .unwrap()
@@ -594,7 +593,7 @@ impl Gl {
         let mut buffer = Vec::with_capacity(self.get_programiv(name, INFO_LOG_LENGTH));
         let mut length = MaybeUninit::<i32>::uninit();
         self.gl.GetProgramInfoLog(
-            name.into_u32(),
+            name.to_u32(),
             buffer.capacity() as i32,
             length.as_mut_ptr(),
             buffer.as_mut_ptr() as *mut i8,
@@ -611,9 +610,9 @@ impl Gl {
         program_name: ProgramName,
         attrib_name: &CStr,
     ) -> OptionAttributeLocation {
-        OptionAttributeLocation::new(
+        OptionAttributeLocation::from_i32(
             self.gl
-                .GetAttribLocation(program_name.into_u32(), attrib_name.as_ptr()),
+                .GetAttribLocation(program_name.to_u32(), attrib_name.as_ptr()),
         )
     }
 
@@ -623,9 +622,9 @@ impl Gl {
         program_name: ProgramName,
         uniform_name: &CStr,
     ) -> OptionUniformLocation {
-        OptionUniformLocation::new(
+        OptionUniformLocation::from_i32(
             self.gl
-                .GetUniformLocation(program_name.into_u32(), uniform_name.as_ptr()),
+                .GetUniformLocation(program_name.to_u32(), uniform_name.as_ptr()),
         )
     }
 
@@ -666,8 +665,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_texture(&self, name: TextureName) {
-        self.gl
-            .DeleteTextures(1, &ManuallyDrop::new(name).into_u32());
+        self.gl.DeleteTextures(1, &ManuallyDrop::new(name).to_u32());
     }
 
     #[deprecated]
@@ -690,12 +688,12 @@ impl Gl {
     where
         U: Into<TextureUnit>,
     {
-        self.gl.ActiveTexture(unit.into().into_u32());
+        self.gl.ActiveTexture(unit.into().to_u32());
     }
 
     #[inline]
     pub unsafe fn bind_texture_unit(&self, unit: u32, texture_name: TextureName) {
-        self.gl.BindTextureUnit(unit, texture_name.into_u32());
+        self.gl.BindTextureUnit(unit, texture_name.to_u32());
     }
 
     #[inline]
@@ -703,7 +701,7 @@ impl Gl {
     where
         T: Into<TextureTarget>,
     {
-        self.gl.BindTexture(target.into() as u32, name.into_u32());
+        self.gl.BindTexture(target.into() as u32, name.to_u32());
     }
 
     #[inline]
@@ -721,7 +719,7 @@ impl Gl {
         V: Into<P::Value>,
     {
         self.gl
-            .TextureParameteri(name.into_u32(), P::VALUE, value.into().into().cast_into());
+            .TextureParameteri(name.to_u32(), P::VALUE, value.into().into().cast_into());
     }
 
     #[inline]
@@ -731,7 +729,7 @@ impl Gl {
         V: Into<P::Value>,
     {
         self.gl
-            .TextureParameterf(name.into_u32(), P::VALUE, value.into().into().cast_into());
+            .TextureParameterf(name.to_u32(), P::VALUE, value.into().into().cast_into());
     }
 
     #[deprecated]
@@ -775,7 +773,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn generate_texture_mipmap(&self, texture_name: TextureName) {
-        self.gl.GenerateTextureMipmap(texture_name.into_u32());
+        self.gl.GenerateTextureMipmap(texture_name.to_u32());
     }
 
     #[inline]
@@ -818,7 +816,7 @@ impl Gl {
         height: i32,
     ) {
         self.gl.TextureStorage2D(
-            texture_name.as_ref().into_u32(),
+            texture_name.as_ref().to_u32(),
             levels,
             internal_format.into() as u32,
             width,
@@ -840,7 +838,7 @@ impl Gl {
         pixels: *const c_void,
     ) {
         self.gl.TextureSubImage2D(
-            texture_name.as_ref().into_u32(),
+            texture_name.as_ref().to_u32(),
             level,
             offset_x,
             offset_y,
@@ -871,7 +869,7 @@ impl Gl {
     #[inline]
     pub unsafe fn delete_renderbuffer(&self, name: RenderbufferName) {
         self.gl
-            .DeleteRenderbuffers(1, &ManuallyDrop::new(name).into_u32());
+            .DeleteRenderbuffers(1, &ManuallyDrop::new(name).to_u32());
     }
 
     #[deprecated]
@@ -893,7 +891,7 @@ impl Gl {
         T: Into<RenderbufferTarget>,
     {
         self.gl
-            .BindRenderbuffer(target.into() as u32, name.into_u32());
+            .BindRenderbuffer(target.into() as u32, name.to_u32());
     }
 
     #[inline]
@@ -935,7 +933,7 @@ impl Gl {
         IF: Into<InternalFormat>,
     {
         self.gl.NamedRenderbufferStorage(
-            name.into_u32(),
+            name.to_u32(),
             internal_format.into() as u32,
             width,
             height,
@@ -972,8 +970,7 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_buffer(&self, name: BufferName) {
-        self.gl
-            .DeleteBuffers(1, &ManuallyDrop::new(name).into_u32());
+        self.gl.DeleteBuffers(1, &ManuallyDrop::new(name).to_u32());
     }
 
     #[inline]
@@ -981,7 +978,7 @@ impl Gl {
     where
         T: Into<BufferTarget>,
     {
-        self.gl.BindBuffer(target.into() as u32, name.into_u32());
+        self.gl.BindBuffer(target.into() as u32, name.to_u32());
     }
 
     #[inline]
@@ -1044,7 +1041,7 @@ impl Gl {
         U: Into<BufferUsage>,
     {
         self.gl.NamedBufferData(
-            name.into_u32(),
+            name.to_u32(),
             bytes.len() as isize,
             bytes.as_ptr() as *const c_void,
             usage.into() as u32,
@@ -1057,7 +1054,7 @@ impl Gl {
         U: Into<BufferUsage>,
     {
         self.gl.NamedBufferData(
-            name.into_u32(),
+            name.to_u32(),
             capacity as isize,
             std::ptr::null(),
             usage.into() as u32,
@@ -1067,7 +1064,7 @@ impl Gl {
     #[inline]
     pub unsafe fn named_buffer_sub_data(&self, name: BufferName, offset: usize, bytes: &[u8]) {
         self.gl.NamedBufferSubData(
-            name.into_u32(),
+            name.to_u32(),
             offset as isize,
             bytes.len() as isize,
             bytes.as_ptr() as *const c_void,
@@ -1082,7 +1079,7 @@ impl Gl {
         flags: BufferStorageFlag,
     ) {
         self.gl.NamedBufferStorage(
-            name.as_ref().into_u32(),
+            name.as_ref().to_u32(),
             bytes.len() as isize,
             bytes.as_ptr() as *const c_void,
             flags.bits(),
@@ -1097,7 +1094,7 @@ impl Gl {
         flags: BufferStorageFlag,
     ) {
         self.gl.NamedBufferStorage(
-            name.as_ref().into_u32(),
+            name.as_ref().to_u32(),
             byte_size as isize,
             std::ptr::null(),
             flags.bits(),
@@ -1114,8 +1111,8 @@ impl Gl {
         byte_count: usize,
     ) {
         self.gl.CopyNamedBufferSubData(
-            read_buffer_name.as_ref().into_u32(),
-            write_buffer_name.as_ref().into_u32(),
+            read_buffer_name.as_ref().to_u32(),
+            write_buffer_name.as_ref().to_u32(),
             read_byte_offset as isize,
             write_byte_offset as isize,
             byte_count as isize,
@@ -1134,7 +1131,7 @@ impl Gl {
         bytes: Option<&[u8]>,
     ) {
         self.gl.ClearNamedBufferSubData(
-            buffer_name.as_ref().into_u32(),
+            buffer_name.as_ref().to_u32(),
             internal_format.into() as u32,
             byte_offset as isize,
             byte_count as isize,
@@ -1157,7 +1154,7 @@ impl Gl {
     ) {
         assert!(bytes.len() >= byte_count);
         self.gl.GetNamedBufferSubData(
-            buffer_name.as_ref().into_u32(),
+            buffer_name.as_ref().to_u32(),
             byte_offset as isize,
             byte_count as isize,
             bytes.as_ptr() as *mut c_void,
@@ -1171,12 +1168,12 @@ impl Gl {
         access: MapAccessFlag,
     ) -> *mut c_void {
         self.gl
-            .MapNamedBuffer(buffer_name.as_ref().into_u32(), access.bits())
+            .MapNamedBuffer(buffer_name.as_ref().to_u32(), access.bits())
     }
 
     #[inline]
     pub unsafe fn unmap_named_buffer(&self, buffer_name: impl AsRef<BufferName>) {
-        self.gl.UnmapNamedBuffer(buffer_name.as_ref().into_u32());
+        self.gl.UnmapNamedBuffer(buffer_name.as_ref().to_u32());
     }
 
     /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
@@ -1189,7 +1186,7 @@ impl Gl {
         access: MapAccessFlag,
     ) -> *mut c_void {
         self.gl.MapNamedBufferRange(
-            buffer_name.as_ref().into_u32(),
+            buffer_name.as_ref().to_u32(),
             byte_offset as isize,
             byte_count as isize,
             access.bits(),
@@ -1204,7 +1201,7 @@ impl Gl {
         byte_count: usize,
     ) {
         self.gl.FlushMappedNamedBufferRange(
-            buffer_name.as_ref().into_u32(),
+            buffer_name.as_ref().to_u32(),
             byte_offset as isize,
             byte_count as isize,
         );
@@ -1248,12 +1245,12 @@ impl Gl {
     #[inline]
     pub unsafe fn delete_vertex_array(&self, vertex_array_name: VertexArrayName) {
         self.gl
-            .DeleteVertexArrays(1, &ManuallyDrop::new(vertex_array_name).into_u32());
+            .DeleteVertexArrays(1, &ManuallyDrop::new(vertex_array_name).to_u32());
     }
 
     #[inline]
     pub unsafe fn bind_vertex_array(&self, vertex_array_name: VertexArrayName) {
-        self.gl.BindVertexArray(vertex_array_name.into_u32());
+        self.gl.BindVertexArray(vertex_array_name.to_u32());
     }
 
     #[inline]
@@ -1272,7 +1269,7 @@ impl Gl {
     ) {
         self.gl.BindVertexBuffer(
             index.to_u32(),
-            buffer.into_u32(),
+            buffer.to_u32(),
             offset as isize,
             stride as i32,
         );
@@ -1288,9 +1285,9 @@ impl Gl {
         stride: u32,
     ) {
         self.gl.VertexArrayVertexBuffer(
-            vertex_array_name.into_u32(),
+            vertex_array_name.to_u32(),
             index.to_u32(),
-            buffer_name.into_u32(),
+            buffer_name.to_u32(),
             offset as isize,
             stride as i32,
         );
@@ -1309,7 +1306,7 @@ impl Gl {
         assert_eq!(count, offsets.len());
         assert_eq!(count, strides.len());
         self.gl.VertexArrayVertexBuffers(
-            vertex_array_name.into_u32(),
+            vertex_array_name.to_u32(),
             first_vertex_array_buffer_binding_index.to_u32(),
             count as i32,
             buffer_names.as_ptr() as *const u32,
@@ -1325,7 +1322,7 @@ impl Gl {
         element_buffer_name: BufferName,
     ) {
         self.gl
-            .VertexArrayElementBuffer(vertex_array_name.into_u32(), element_buffer_name.into_u32());
+            .VertexArrayElementBuffer(vertex_array_name.to_u32(), element_buffer_name.to_u32());
     }
 
     #[deprecated]
@@ -1336,7 +1333,7 @@ impl Gl {
         divisor: u32,
     ) {
         self.gl
-            .VertexBindingDivisor(attribute_location.into_u32(), divisor);
+            .VertexBindingDivisor(attribute_location.to_u32(), divisor);
     }
 
     #[inline]
@@ -1347,8 +1344,8 @@ impl Gl {
         divisor: u32,
     ) {
         self.gl.VertexArrayBindingDivisor(
-            vertex_array_name.into_u32(),
-            attribute_location.into_u32(),
+            vertex_array_name.to_u32(),
+            attribute_location.to_u32(),
             divisor,
         );
     }
@@ -1366,7 +1363,7 @@ impl Gl {
         T: Into<VertexAttributeType>,
     {
         self.gl.VertexAttribFormat(
-            attribute_location.into_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             normalized as u8,
@@ -1387,8 +1384,8 @@ impl Gl {
         T: Into<VertexAttributeType>,
     {
         self.gl.VertexArrayAttribFormat(
-            vertex_array_name.into_u32(),
-            attribute_location.into_u32(),
+            vertex_array_name.to_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             normalized as u8,
@@ -1408,7 +1405,7 @@ impl Gl {
         T: Into<VertexAttributeIType>,
     {
         self.gl.VertexAttribLFormat(
-            attribute_location.into_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             offset,
@@ -1426,8 +1423,8 @@ impl Gl {
         T: Into<VertexAttributeIType>,
     {
         self.gl.VertexArrayAttribLFormat(
-            vertex_array_name.into_u32(),
-            attribute_location.into_u32(),
+            vertex_array_name.to_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             offset,
@@ -1446,7 +1443,7 @@ impl Gl {
         T: Into<VertexAttributeIType>,
     {
         self.gl.VertexAttribIFormat(
-            attribute_location.into_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             offset,
@@ -1464,8 +1461,8 @@ impl Gl {
         T: Into<VertexAttributeIType>,
     {
         self.gl.VertexArrayAttribIFormat(
-            vertex_array_name.into_u32(),
-            attribute_location.into_u32(),
+            vertex_array_name.to_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             offset,
@@ -1486,7 +1483,7 @@ impl Gl {
         T: Into<VertexAttributeType>,
     {
         self.gl.VertexAttribPointer(
-            attribute_location.into_u32(),
+            attribute_location.to_u32(),
             size as i32,
             ty.into() as u32,
             normalized as u8,
@@ -1503,7 +1500,7 @@ impl Gl {
         vertex_array_buffer_binding_index: VertexArrayBufferBindingIndex,
     ) {
         self.gl.VertexAttribBinding(
-            attribute_location.into_u32(),
+            attribute_location.to_u32(),
             vertex_array_buffer_binding_index.to_u32(),
         );
     }
@@ -1516,8 +1513,8 @@ impl Gl {
         vertex_array_buffer_binding_index: VertexArrayBufferBindingIndex,
     ) {
         self.gl.VertexArrayAttribBinding(
-            vertex_array_name.into_u32(),
-            attribute_location.into_u32(),
+            vertex_array_name.to_u32(),
+            attribute_location.to_u32(),
             vertex_array_buffer_binding_index.to_u32(),
         );
     }
@@ -1525,8 +1522,7 @@ impl Gl {
     #[deprecated]
     #[inline]
     pub unsafe fn enable_vertex_attrib_array(&self, attribute_location: AttributeLocation) {
-        self.gl
-            .EnableVertexAttribArray(attribute_location.into_u32());
+        self.gl.EnableVertexAttribArray(attribute_location.to_u32());
     }
 
     #[inline]
@@ -1536,14 +1532,14 @@ impl Gl {
         attribute_location: AttributeLocation,
     ) {
         self.gl
-            .EnableVertexArrayAttrib(vertex_array_name.into_u32(), attribute_location.into_u32());
+            .EnableVertexArrayAttrib(vertex_array_name.to_u32(), attribute_location.to_u32());
     }
 
     #[deprecated]
     #[inline]
     pub unsafe fn disable_vertex_attrib_array(&self, attribute_location: AttributeLocation) {
         self.gl
-            .DisableVertexAttribArray(attribute_location.into_u32());
+            .DisableVertexAttribArray(attribute_location.to_u32());
     }
 
     #[inline]
@@ -1553,7 +1549,7 @@ impl Gl {
         attribute_location: AttributeLocation,
     ) {
         self.gl
-            .DisableVertexArrayAttrib(vertex_array_name.into_u32(), attribute_location.into_u32());
+            .DisableVertexArrayAttrib(vertex_array_name.to_u32(), attribute_location.to_u32());
     }
 
     // Framebuffer names.
@@ -1589,7 +1585,7 @@ impl Gl {
     #[inline]
     pub unsafe fn delete_framebuffer(&self, name: NonDefaultFramebufferName) {
         self.gl
-            .DeleteFramebuffers(1, &ManuallyDrop::new(name).into_u32());
+            .DeleteFramebuffers(1, &ManuallyDrop::new(name).to_u32());
     }
 
     #[inline]
@@ -1599,7 +1595,7 @@ impl Gl {
         N: Into<FramebufferName>,
     {
         self.gl
-            .BindFramebuffer(target.into() as u32, name.into().into_u32())
+            .BindFramebuffer(target.into() as u32, name.into().to_u32())
     }
 
     #[inline]
@@ -1613,7 +1609,7 @@ impl Gl {
         T: Into<FramebufferTarget>,
     {
         self.gl
-            .CheckNamedFramebufferStatus(name.into().into_u32(), target.into() as u32)
+            .CheckNamedFramebufferStatus(name.into().to_u32(), target.into() as u32)
             .try_into()
             .unwrap()
     }
@@ -1634,9 +1630,9 @@ impl Gl {
     {
         self.gl.FramebufferTexture2D(
             framebuffer_target.into() as u32,
-            framebuffer_attachment.into().into_u32(),
+            framebuffer_attachment.into().to_u32(),
             texture_target.into() as u32,
-            texture_name.into_u32(),
+            texture_name.to_u32(),
             mipmap_level,
         );
     }
@@ -1652,9 +1648,9 @@ impl Gl {
         FA: Into<FramebufferAttachment>,
     {
         self.gl.NamedFramebufferTexture(
-            framebuffer_name.into_u32(),
-            framebuffer_attachment.into().into_u32(),
-            texture_name.into_u32(),
+            framebuffer_name.to_u32(),
+            framebuffer_attachment.into().to_u32(),
+            texture_name.to_u32(),
             level,
         );
     }
@@ -1674,9 +1670,9 @@ impl Gl {
     {
         self.gl.FramebufferRenderbuffer(
             framebuffer_target.into() as u32,
-            framebuffer_attachment.into().into_u32(),
+            framebuffer_attachment.into().to_u32(),
             renderbuffer_target.into() as u32,
-            renderbuffer.into_u32(),
+            renderbuffer.to_u32(),
         );
     }
 
@@ -1692,17 +1688,17 @@ impl Gl {
         RT: Into<RenderbufferTarget>,
     {
         self.gl.NamedFramebufferRenderbuffer(
-            framebuffer_name.into_u32(),
-            framebuffer_attachment.into().into_u32(),
+            framebuffer_name.to_u32(),
+            framebuffer_attachment.into().to_u32(),
             renderbuffer_target.into() as u32,
-            renderbuffer_name.into_u32(),
+            renderbuffer_name.to_u32(),
         );
     }
 
     #[inline]
     pub unsafe fn uniform_1iv(&self, uniform_location: UniformLocation, value: &[i32]) {
         self.gl.Uniform1iv(
-            uniform_location.into_i32(),
+            uniform_location.to_i32(),
             value.len() as i32,
             value.as_ptr(),
         );
@@ -1711,7 +1707,7 @@ impl Gl {
     #[inline]
     pub unsafe fn uniform_1fv(&self, uniform_location: UniformLocation, value: &[f32]) {
         self.gl.Uniform1fv(
-            uniform_location.into_i32(),
+            uniform_location.to_i32(),
             value.len() as i32,
             value.as_ptr(),
         );
@@ -1725,7 +1721,7 @@ impl Gl {
         value: &[[f32; 4]; 4],
     ) {
         self.gl.UniformMatrix4fv(
-            uniform_location.into_i32(),
+            uniform_location.to_i32(),
             1,
             major_axis as u8,
             value.as_ptr() as *const f32,
@@ -1740,7 +1736,7 @@ impl Gl {
         values: &[[[f32; 4]; 4]],
     ) {
         self.gl.UniformMatrix4fv(
-            uniform_location.into_i32(),
+            uniform_location.to_i32(),
             values.len() as i32,
             major_axis as u8,
             values.as_ptr() as *const f32,
@@ -1780,9 +1776,9 @@ impl Gl {
         program_name: ProgramName,
         uniform_block_name: &CStr,
     ) -> OptionUniformBlockIndex {
-        OptionUniformBlockIndex::new(
+        OptionUniformBlockIndex::from_u32(
             self.gl
-                .GetUniformBlockIndex(program_name.into_u32(), uniform_block_name.as_ptr()),
+                .GetUniformBlockIndex(program_name.to_u32(), uniform_block_name.as_ptr()),
         )
     }
 
@@ -1794,8 +1790,8 @@ impl Gl {
         uniform_block_binding: u32,
     ) {
         self.gl.UniformBlockBinding(
-            program_name.into_u32(),
-            uniform_block_index.into_u32(),
+            program_name.to_u32(),
+            uniform_block_index.to_u32(),
             uniform_block_binding,
         );
     }
@@ -1806,7 +1802,7 @@ impl Gl {
         T: Into<BindBufferTarget>,
     {
         self.gl
-            .BindBufferBase(target.into() as u32, index, buffer_name.into_u32());
+            .BindBufferBase(target.into() as u32, index, buffer_name.to_u32());
     }
 
     #[inline]
@@ -1823,7 +1819,7 @@ impl Gl {
         self.gl.BindBufferRange(
             target.into() as u32,
             index,
-            buffer_name.into_u32(),
+            buffer_name.to_u32(),
             offset as isize,
             size as isize,
         );
@@ -1845,13 +1841,12 @@ impl Gl {
 
     #[inline]
     pub unsafe fn delete_sampler(&self, name: SamplerName) {
-        self.gl
-            .DeleteSamplers(1, &ManuallyDrop::new(name).into_u32());
+        self.gl.DeleteSamplers(1, &ManuallyDrop::new(name).to_u32());
     }
 
     #[inline]
     pub unsafe fn bind_sampler(&self, unit: u32, name: SamplerName) {
-        self.gl.BindSampler(unit, name.into_u32());
+        self.gl.BindSampler(unit, name.to_u32());
     }
 
     #[inline]
@@ -1874,11 +1869,8 @@ impl Gl {
         P: sampler_parameteri_param::Variant,
         V: Into<P::Value>,
     {
-        self.gl.SamplerParameteri(
-            sampler.into_u32(),
-            P::VALUE,
-            value.into().into().cast_into(),
-        );
+        self.gl
+            .SamplerParameteri(sampler.to_u32(), P::VALUE, value.into().into().cast_into());
     }
 
     // Queries.
@@ -1930,7 +1922,7 @@ impl Gl {
     #[inline]
     pub unsafe fn delete_query(&self, query_name: QueryName) {
         self.gl
-            .DeleteQueries(1, &ManuallyDrop::new(query_name).into_u32());
+            .DeleteQueries(1, &ManuallyDrop::new(query_name).to_u32());
     }
 
     #[inline]
@@ -1949,7 +1941,7 @@ impl Gl {
         query_name: impl AsRef<QueryName>,
     ) {
         self.gl
-            .BeginQuery(target.into() as u32, query_name.as_ref().into_u32());
+            .BeginQuery(target.into() as u32, query_name.as_ref().to_u32());
     }
 
     #[inline]
@@ -1960,7 +1952,7 @@ impl Gl {
     #[inline]
     pub unsafe fn query_counter(&self, query_name: impl AsRef<QueryName>) {
         self.gl
-            .QueryCounter(query_name.as_ref().into_u32(), gl::TIMESTAMP);
+            .QueryCounter(query_name.as_ref().to_u32(), gl::TIMESTAMP);
     }
 
     /// Blocking.
@@ -1968,7 +1960,7 @@ impl Gl {
     pub unsafe fn query_result_u64(&self, query_name: impl AsRef<QueryName>) -> u64 {
         let mut value = MaybeUninit::<u64>::uninit();
         self.gl.GetQueryObjectui64v(
-            query_name.as_ref().into_u32(),
+            query_name.as_ref().to_u32(),
             gl::QUERY_RESULT,
             value.as_mut_ptr(),
         );
@@ -1983,7 +1975,7 @@ impl Gl {
     ) -> Option<NonZeroU64> {
         let mut value = 0u64;
         self.gl.GetQueryObjectui64v(
-            query_name.as_ref().into_u32(),
+            query_name.as_ref().to_u32(),
             gl::QUERY_RESULT_NO_WAIT,
             &mut value,
         );
@@ -1994,7 +1986,7 @@ impl Gl {
     pub unsafe fn query_result_available(&self, query_name: impl AsRef<QueryName>) -> bool {
         let mut value = MaybeUninit::<i32>::uninit();
         self.gl.GetQueryObjectiv(
-            query_name.as_ref().into_u32(),
+            query_name.as_ref().to_u32(),
             gl::QUERY_RESULT_AVAILABLE,
             value.as_mut_ptr(),
         );

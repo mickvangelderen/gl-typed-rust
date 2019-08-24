@@ -652,7 +652,8 @@ macro_rules! impl_struct_from_symbol {
 pub struct MaxCombinedTextureImageUnits(u32);
 
 impl MaxCombinedTextureImageUnits {
-    fn into_u32(self) -> u32 {
+    #[inline]
+    pub(crate) fn to_u32(self) -> u32 {
         self.0
     }
 }
@@ -664,7 +665,7 @@ pub struct TextureUnit(u32);
 impl TextureUnit {
     #[inline]
     pub fn new(index: u32, max: MaxCombinedTextureImageUnits) -> Option<Self> {
-        if index < max.into_u32() {
+        if index < max.to_u32() {
             Some(TextureUnit(<TEXTURE0 as Symbol<u32>>::VALUE + index))
         } else {
             None
@@ -676,8 +677,14 @@ impl TextureUnit {
         TextureUnit(<TEXTURE0 as Symbol<u32>>::VALUE + index)
     }
 
+    #[deprecated]
     #[inline]
     pub fn into_u32(self) -> u32 {
+        self.0
+    }
+
+    #[inline]
+    pub(crate) fn to_u32(self) -> u32 {
         self.0
     }
 }
@@ -706,7 +713,14 @@ impl_struct_from_symbol! (TextureUnit {
 pub struct MaxColorAttachments(u32);
 
 impl MaxColorAttachments {
-    fn into_u32(self) -> u32 {
+    #[deprecated]
+    #[inline]
+    pub fn into_u32(self) -> u32 {
+        self.0
+    }
+
+    #[inline]
+    pub(crate) fn to_u32(&self) -> u32 {
         self.0
     }
 }
@@ -719,7 +733,7 @@ impl FramebufferAttachment {
     #[inline]
     pub fn new(index: u32, max: MaxColorAttachments) -> Option<Self> {
         unsafe {
-            if index < max.into_u32() {
+            if index < max.to_u32() {
                 Some(FramebufferAttachment::new_unchecked(index))
             } else {
                 None
@@ -732,8 +746,14 @@ impl FramebufferAttachment {
         FramebufferAttachment(<COLOR_ATTACHMENT0 as Symbol<u32>>::VALUE + index)
     }
 
+    #[deprecated]
     #[inline]
     pub fn into_u32(self) -> u32 {
+        self.0
+    }
+
+    #[inline]
+    pub(crate) fn to_u32(&self) -> u32 {
         self.0
     }
 }

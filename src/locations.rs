@@ -1,240 +1,184 @@
-/// Guaranteed to be in range 0..i32::MAX.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct AttributeLocation(u32);
+macro_rules! impl_option_type {
+    (
+        $Name: ident,
+        $OptionName: ident,
+        $Raw: ident,
+        $from_raw: ident,
+        $from_raw_unchecked: ident,
+        $to_raw: ident,
+        $NONE: expr,
+    ) => {
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+        #[repr(transparent)]
+        pub struct $Name($Raw);
+
+        impl $Name {
+            const NONE: $Raw = $NONE;
+
+            #[inline]
+            pub fn $from_raw(val: $Raw) -> Option<Self> {
+                match val {
+                    none if none == Self::NONE => None,
+                    some => Some(Self(some)),
+                }
+            }
+
+            /// You must guarantee val is in range 0..$Raw::MAX.
+            #[inline]
+            pub const unsafe fn $from_raw_unchecked(val: $Raw) -> Self {
+                Self(val)
+            }
+
+            #[inline]
+            pub const fn $to_raw(&self) -> $Raw {
+                self.0
+            }
+        }
+
+        /// A more compact representation of Option<UniformLocation>.
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+        #[repr(transparent)]
+        pub struct $OptionName(pub $Raw);
+
+        impl $OptionName {
+            pub const NONE: Self = Self($NONE);
+
+            #[inline]
+            pub fn is_some(&self) -> bool {
+                self != &Self::NONE
+            }
+
+            #[inline]
+            pub fn is_none(&self) -> bool {
+                self == &Self::NONE
+            }
+
+            #[inline]
+            pub const fn $from_raw(val: $Raw) -> Self {
+                Self(val)
+            }
+
+            #[inline]
+            pub const fn $to_raw(&self) -> $Raw {
+                self.0
+            }
+
+            #[inline]
+            pub fn from_option(val: Option<$Name>) -> Self {
+                match val {
+                    Some(val) => Self::$from_raw(val.$to_raw()),
+                    None => Self::NONE,
+                }
+            }
+
+            #[inline]
+            pub fn to_option(&self) -> Option<$Name> {
+                $Name::$from_raw(self.0)
+            }
+        }
+
+        impl Default for $OptionName {
+            fn default() -> Self {
+                Self::NONE
+            }
+        }
+
+        impl From<Option<$Name>> for $OptionName {
+            #[inline]
+            fn from(val: Option<$Name>) -> Self {
+                Self::from_option(val)
+            }
+        }
+
+        impl From<$OptionName> for Option<$Name> {
+            #[inline]
+            fn from(val: $OptionName) -> Self {
+                val.to_option()
+            }
+        }
+    };
+}
+
+impl_option_type! {
+    AttributeLocation,
+    OptionAttributeLocation,
+    i32,
+    from_i32,
+    from_i32_unchecked,
+    to_i32,
+    -1,
+}
 
 impl AttributeLocation {
-    const NONE: i32 = -1;
-
+    #[deprecated]
     #[inline]
-    fn is_some(val: i32) -> bool {
-        val >= 0
-    }
-
-    #[inline]
-    fn is_none(val: i32) -> bool {
-        !Self::is_some(val)
-    }
-
-    #[inline]
-    pub fn new(val: i32) -> Option<Self> {
-        if Self::is_some(val) {
-            Some(AttributeLocation(val as u32))
-        } else {
-            None
-        }
-    }
-
-    /// You must guarantee val is in range 0..i32::MAX.
-    pub const unsafe fn new_unchecked(val: i32) -> Self {
-        AttributeLocation(val as u32)
-    }
-
-    #[inline]
-    pub fn into_u32(self) -> u32 {
+    pub fn into_i32(self) -> i32 {
         self.0
     }
-}
 
-/// A more compact representation of Option<AttributeLocation>.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct OptionAttributeLocation(pub i32);
+    #[inline]
+    pub(crate) fn to_u32(&self) -> u32 {
+        self.0 as u32
+    }
+}
 
 impl OptionAttributeLocation {
-    pub const NONE: Self = OptionAttributeLocation(AttributeLocation::NONE);
-
-    #[inline]
-    pub fn is_some(&self) -> bool {
-        AttributeLocation::is_some(self.0)
-    }
-
-    #[inline]
-    pub fn is_none(&self) -> bool {
-        AttributeLocation::is_none(self.0)
-    }
-
+    #[deprecated]
     #[inline]
     pub fn new(val: i32) -> Self {
-        OptionAttributeLocation(val)
-    }
-
-    #[inline]
-    pub fn into_option(self) -> Option<AttributeLocation> {
-        AttributeLocation::new(self.0)
+        Self(val)
     }
 }
 
-impl From<OptionAttributeLocation> for Option<AttributeLocation> {
-    #[inline]
-    fn from(val: OptionAttributeLocation) -> Self {
-        val.into_option()
-    }
+impl_option_type! {
+    UniformLocation,
+    OptionUniformLocation,
+    i32,
+    from_i32,
+    from_i32_unchecked,
+    to_i32,
+    -1,
 }
-
-impl Default for OptionAttributeLocation {
-    fn default() -> Self {
-        Self::NONE
-    }
-}
-
-/// Guaranteed to be in range 0..i32::MAX.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct UniformLocation(i32);
 
 impl UniformLocation {
-    const NONE: i32 = -1;
-
-    #[inline]
-    fn is_some(val: i32) -> bool {
-        val >= 0
-    }
-
-    #[inline]
-    fn is_none(val: i32) -> bool {
-        !Self::is_some(val)
-    }
-
-    #[inline]
-    pub fn new(val: i32) -> Option<Self> {
-        if Self::is_some(val) {
-            Some(UniformLocation(val))
-        } else {
-            None
-        }
-    }
-
-    /// You must guarantee val is in range 0..i32::MAX.
-    pub const unsafe fn new_unchecked(val: i32) -> Self {
-        UniformLocation(val)
-    }
-
+    #[deprecated]
     #[inline]
     pub fn into_i32(self) -> i32 {
         self.0
     }
 }
 
-/// A more compact representation of Option<UniformLocation>.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct OptionUniformLocation(pub i32);
-
 impl OptionUniformLocation {
-    pub const NONE: Self = OptionUniformLocation(UniformLocation::NONE);
-
-    #[inline]
-    pub fn is_some(&self) -> bool {
-        UniformLocation::is_some(self.0)
-    }
-
-    #[inline]
-    pub fn is_none(&self) -> bool {
-        UniformLocation::is_none(self.0)
-    }
-
+    #[deprecated]
     #[inline]
     pub fn new(val: i32) -> Self {
-        OptionUniformLocation(val)
-    }
-
-    #[inline]
-    pub fn into_option(self) -> Option<UniformLocation> {
-        UniformLocation::new(self.0)
+        Self(val)
     }
 }
 
-impl From<OptionUniformLocation> for Option<UniformLocation> {
-    #[inline]
-    fn from(val: OptionUniformLocation) -> Self {
-        val.into_option()
-    }
+impl_option_type! {
+    UniformBlockIndex,
+    OptionUniformBlockIndex,
+    u32,
+    from_u32,
+    from_u32_unchecked,
+    to_u32,
+    std::u32::MAX,
 }
-
-impl Default for OptionUniformLocation {
-    fn default() -> Self {
-        Self::NONE
-    }
-}
-
-/// Guaranteed to be in range 0..u32::MAX - 1.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct UniformBlockIndex(u32);
 
 impl UniformBlockIndex {
-    const NONE: u32 = std::u32::MAX;
-
-    #[inline]
-    fn is_some(val: u32) -> bool {
-        val < Self::NONE
-    }
-
-    #[inline]
-    fn is_none(val: u32) -> bool {
-        !Self::is_some(val)
-    }
-
-    #[inline]
-    pub fn new(val: u32) -> Option<Self> {
-        if Self::is_some(val) {
-            Some(UniformBlockIndex(val))
-        } else {
-            None
-        }
-    }
-
-    /// You must guarantee val is in range 0..u32::MAX.
-    pub const unsafe fn new_unchecked(val: u32) -> Self {
-        UniformBlockIndex(val)
-    }
-
+    #[deprecated]
     #[inline]
     pub fn into_u32(self) -> u32 {
         self.0
     }
 }
 
-/// A more compact representation of Option<UniformLocation>.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[repr(transparent)]
-pub struct OptionUniformBlockIndex(pub u32);
-
 impl OptionUniformBlockIndex {
-    pub const NONE: Self = OptionUniformBlockIndex(UniformBlockIndex::NONE);
-
-    #[inline]
-    pub fn is_some(&self) -> bool {
-        UniformBlockIndex::is_some(self.0)
-    }
-
-    #[inline]
-    pub fn is_none(&self) -> bool {
-        UniformBlockIndex::is_none(self.0)
-    }
-
+    #[deprecated]
     #[inline]
     pub fn new(val: u32) -> Self {
-        OptionUniformBlockIndex(val)
-    }
-
-    #[inline]
-    pub fn into_option(self) -> Option<UniformBlockIndex> {
-        UniformBlockIndex::new(self.0)
-    }
-}
-
-impl From<OptionUniformBlockIndex> for Option<UniformBlockIndex> {
-    #[inline]
-    fn from(val: OptionUniformBlockIndex) -> Self {
-        val.into_option()
-    }
-}
-
-impl Default for OptionUniformBlockIndex {
-    fn default() -> Self {
-        Self::NONE
+        Self(val)
     }
 }
 
@@ -246,7 +190,7 @@ impl VertexArrayBufferBindingIndex {
         VertexArrayBufferBindingIndex(value)
     }
 
-    pub const fn to_u32(self) -> u32 {
+    pub const fn to_u32(&self) -> u32 {
         self.0
     }
 }

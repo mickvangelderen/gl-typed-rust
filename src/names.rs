@@ -85,10 +85,19 @@ impl From<NonDefaultFramebufferName> for FramebufferName {
 }
 
 impl FramebufferName {
+    #[deprecated]
     #[inline]
     pub fn into_u32(self) -> u32 {
         match self {
-            FramebufferName::NonDefault(name) => name.into_u32(),
+            FramebufferName::NonDefault(name) => name.to_u32(),
+            FramebufferName::Default => 0,
+        }
+    }
+
+    #[inline]
+    pub fn to_u32(&self) -> u32 {
+        match *self {
+            FramebufferName::NonDefault(ref name) => name.to_u32(),
             FramebufferName::Default => 0,
         }
     }
