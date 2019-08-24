@@ -20,8 +20,14 @@ macro_rules! impl_names {
                     $Name(std::num::NonZeroU32::new_unchecked(name))
                 }
 
+                #[deprecated]
                 #[inline]
                 pub fn into_u32(self) -> u32 {
+                    self.0.get()
+                }
+
+                #[inline]
+                pub fn to_u32(&self) -> u32 {
                     self.0.get()
                 }
             }
