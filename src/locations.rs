@@ -120,6 +120,12 @@ impl AttributeLocation {
     pub(crate) fn to_u32(&self) -> u32 {
         self.0 as u32
     }
+
+    #[deprecated]
+    #[inline]
+    pub unsafe fn new_unchecked(val: i32) -> Self {
+        Self::from_i32_unchecked(val)
+    }
 }
 
 impl OptionAttributeLocation {
@@ -146,6 +152,12 @@ impl UniformLocation {
     pub fn into_i32(self) -> i32 {
         self.0
     }
+
+    #[deprecated]
+    #[inline]
+    pub unsafe fn new_unchecked(val: i32) -> Self {
+        Self::from_i32_unchecked(val)
+    }
 }
 
 impl OptionUniformLocation {
@@ -171,6 +183,12 @@ impl UniformBlockIndex {
     #[inline]
     pub fn into_u32(self) -> u32 {
         self.0
+    }
+
+    #[deprecated]
+    #[inline]
+    pub unsafe fn new_unchecked(val: u32) -> Self {
+        Self::from_u32_unchecked(val)
     }
 }
 
