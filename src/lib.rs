@@ -1036,6 +1036,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn invalidate_buffer_data(&self, name: BufferName) {
+        self.gl.InvalidateBufferData(name.to_u32());
+    }
+
+    #[inline]
     pub unsafe fn named_buffer_data<U>(&self, name: BufferName, bytes: &[u8], usage: U)
     where
         U: Into<BufferUsage>,
