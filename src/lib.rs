@@ -1212,6 +1212,28 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn read_pixels(
+        &self,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        data: *mut c_void,
+    ) {
+        self.gl.ReadPixels(
+            x,
+            y,
+            width,
+            height,
+            format.into() as u32,
+            ty.into() as u32,
+            data,
+        )
+    }
+
     // Vertex array names.
 
     #[deprecated]
