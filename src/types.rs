@@ -819,6 +819,14 @@ bitflags::bitflags! {
 
 bitflags::bitflags! {
     pub struct MapAccessFlag : u32 {
+        const READ_ONLY = crate::gl::READ_ONLY;
+        const WRITE_ONLY = crate::gl::WRITE_ONLY;
+        const READ_WRITE = crate::gl::READ_WRITE;
+    }
+}
+
+bitflags::bitflags! {
+    pub struct MapRangeAccessFlag : u32 {
         const READ = crate::gl::MAP_READ_BIT;
         const WRITE = crate::gl::MAP_WRITE_BIT;
         const PERSISTENT = crate::gl::MAP_PERSISTENT_BIT;

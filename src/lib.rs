@@ -1188,7 +1188,7 @@ impl Gl {
         buffer_name: impl AsRef<BufferName>,
         byte_offset: usize,
         byte_count: usize,
-        access: MapAccessFlag,
+        access: MapRangeAccessFlag,
     ) -> *mut c_void {
         self.gl.MapNamedBufferRange(
             buffer_name.as_ref().to_u32(),
