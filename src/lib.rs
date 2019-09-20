@@ -1154,14 +1154,12 @@ impl Gl {
         &self,
         buffer_name: impl AsRef<BufferName>,
         byte_offset: usize,
-        byte_count: usize,
         bytes: &mut [u8],
     ) {
-        assert!(bytes.len() >= byte_count);
         self.gl.GetNamedBufferSubData(
             buffer_name.as_ref().to_u32(),
             byte_offset as isize,
-            byte_count as isize,
+            bytes.len() as isize,
             bytes.as_ptr() as *mut c_void,
         );
     }
