@@ -2,6 +2,8 @@
 //! have overlapping values. For most enums compile-time variants are provided
 //! through the symbols.
 
+#![allow(non_camel_case_types)]
+
 use crate::*;
 use std::convert::TryFrom;
 
@@ -436,6 +438,11 @@ impl_enums! {
         StencilIndex4 = STENCIL_INDEX4,
         StencilIndex8 = STENCIL_INDEX8,
         StencilIndex16 = STENCIL_INDEX16,
+        // extension.
+        COMPRESSED_RGB_S3TC_DXT1_EXT   = COMPRESSED_RGB_S3TC_DXT1_EXT,
+        COMPRESSED_RGBA_S3TC_DXT1_EXT  = COMPRESSED_RGBA_S3TC_DXT1_EXT,
+        COMPRESSED_RGBA_S3TC_DXT3_EXT  = COMPRESSED_RGBA_S3TC_DXT3_EXT,
+        COMPRESSED_RGBA_S3TC_DXT5_EXT  = COMPRESSED_RGBA_S3TC_DXT5_EXT,
     }
 
     struct ReceivedInvalidFormat(i32);

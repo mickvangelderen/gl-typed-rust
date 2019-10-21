@@ -850,6 +850,28 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn compressed_tex_image_2d(
+        &self,
+        target: impl Into<TextureTarget>,
+        level: i32,
+        internal_format: impl Into<InternalFormat>,
+        width: i32,
+        height: i32,
+        data: &[u8],
+    ) {
+        self.gl.CompressedTexImage2D(
+            target.into() as u32,
+            level,
+            internal_format.into() as u32,
+            width,
+            height,
+            0, // Border must be 0
+            data.len() as i32,
+            data.as_ptr() as *const c_void,
+        );
+    }
+
     // Renderbuffers.
 
     #[inline]
