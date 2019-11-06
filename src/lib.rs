@@ -99,6 +99,20 @@ impl Gl {
         f32
     );
 
+    impl_object_label! {
+        (buffer_label, buffer_name, BufferName, gl::BUFFER),
+        (shader_label, shader_name, ShaderName, gl::SHADER),
+        (program_label, program_name, ProgramName, gl::PROGRAM),
+        (vertex_array_label, vertex_array_name, VertexArrayName, gl::VERTEX_ARRAY),
+        (query_label, query_name, QueryName, gl::QUERY),
+        (program_pipeline_label, program_pipeline_name, ProgramPipelineName, gl::PROGRAM_PIPELINE),
+        (transform_feedback_label, transform_feedback_name, TransformFeedbackName, gl::TRANSFORM_FEEDBACK),
+        (sampler_label, sampler_name, SamplerName, gl::SAMPLER),
+        (texture_label, texture_name, TextureName, gl::TEXTURE),
+        (renderbuffer_label, renderbuffer_name, RenderbufferName, gl::RENDERBUFFER),
+        (framebuffer_label, framebuffer_name, NonDefaultFramebufferName, gl::FRAMEBUFFER),
+    }
+
     #[inline]
     pub unsafe fn load_with<F>(f: F) -> Self
     where
@@ -112,20 +126,6 @@ impl Gl {
     #[inline]
     pub unsafe fn finish(&self) {
         self.gl.Finish();
-    }
-
-    impl_object_label! {
-        (buffer_label, buffer_name, BufferName, gl::BUFFER),
-        (shader_label, shader_name, ShaderName, gl::SHADER),
-        (program_label, program_name, ProgramName, gl::PROGRAM),
-        (vertex_array_label, vertex_array_name, VertexArrayName, gl::VERTEX_ARRAY),
-        (query_label, query_name, QueryName, gl::QUERY),
-        (program_pipeline_label, program_pipeline_name, ProgramPipelineName, gl::PROGRAM_PIPELINE),
-        (transform_feedback_label, transform_feedback_name, TransformFeedbackName, gl::TRANSFORM_FEEDBACK),
-        (sampler_label, sampler_name, SamplerName, gl::SAMPLER),
-        (texture_label, texture_name, TextureName, gl::TEXTURE),
-        (renderbuffer_label, renderbuffer_name, RenderbufferName, gl::RENDERBUFFER),
-        (framebuffer_label, framebuffer_name, NonDefaultFramebufferName, gl::FRAMEBUFFER),
     }
 
     #[inline]
@@ -1390,11 +1390,8 @@ impl Gl {
         index: VertexArrayBufferBindingIndex,
         divisor: u32,
     ) {
-        self.gl.VertexArrayBindingDivisor(
-            vertex_array_name.to_u32(),
-            index.to_u32(),
-            divisor,
-        );
+        self.gl
+            .VertexArrayBindingDivisor(vertex_array_name.to_u32(), index.to_u32(), divisor);
     }
 
     #[deprecated]
