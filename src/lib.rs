@@ -441,6 +441,27 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn multi_draw_elements_indirect<M, T>(
+        &self,
+        mode: M,
+        ty: T,
+        offset: usize,
+        draw_count: i32,
+        stride: i32,
+    ) where
+        M: Into<DrawMode>,
+        T: Into<DrawElementsType>,
+    {
+        self.gl.MultiDrawElementsIndirect(
+            mode.into() as u32,
+            ty.into() as u32,
+            offset as *const c_void,
+            draw_count,
+            stride,
+        );
+    }
+
     // Shaders.
 
     #[inline]
