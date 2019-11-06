@@ -1387,12 +1387,12 @@ impl Gl {
     pub unsafe fn vertex_array_binding_divisor(
         &self,
         vertex_array_name: VertexArrayName,
-        attribute_location: AttributeLocation,
+        index: VertexArrayBufferBindingIndex,
         divisor: u32,
     ) {
         self.gl.VertexArrayBindingDivisor(
             vertex_array_name.to_u32(),
-            attribute_location.to_u32(),
+            index.to_u32(),
             divisor,
         );
     }
