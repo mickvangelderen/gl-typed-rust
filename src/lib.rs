@@ -828,6 +828,26 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn tex_image_2d_multisample(
+        &self,
+        target: impl Into<TextureTarget>,
+        samples: i32,
+        internal_format: impl Into<InternalFormat>,
+        width: i32,
+        height: i32,
+        fixed_sample_locations: bool,
+    ) {
+        self.gl.TexImage2DMultisample(
+            target.into() as u32,
+            samples,
+            internal_format.into() as u32,
+            width,
+            height,
+            fixed_sample_locations as u8,
+        );
+    }
+
+    #[inline]
     pub unsafe fn texture_storage_2d(
         &self,
         texture_name: impl AsRef<TextureName>,
