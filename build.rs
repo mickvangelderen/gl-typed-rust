@@ -14,6 +14,7 @@ fn main() {
             "GL_ARB_texture_filter_anisotropic",
             "GL_NV_shader_thread_group",
             "GL_EXT_texture_compression_s3tc",
+            "GL_EXT_texture_sRGB",
         ],
     );
 
