@@ -160,35 +160,35 @@ impl Gl {
     // to call.
     #[inline]
     pub unsafe fn get_context_flags(&self) -> ContextFlag {
-        let mut values: [i32; 1] = std::mem::uninitialized();
-        self.gl.GetIntegerv(gl::CONTEXT_FLAGS, values.as_mut_ptr());
-        ContextFlag::from_bits_truncate(values[0] as u32)
+        let mut value = MaybeUninit::<i32>::uninit();
+        self.gl.GetIntegerv(gl::CONTEXT_FLAGS, value.as_mut_ptr());
+        ContextFlag::from_bits_truncate(value.assume_init().try_into().unwrap())
     }
 
     #[inline]
     pub unsafe fn get_max_texture_max_anisotropy(&self) -> f32 {
-        let mut values: [f32; 1] = std::mem::uninitialized();
+        let mut value = MaybeUninit::<f32>::uninit();
         self.gl
-            .GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, values.as_mut_ptr());
-        values[0]
+            .GetFloatv(gl::MAX_TEXTURE_MAX_ANISOTROPY, value.as_mut_ptr());
+        value.assume_init()
     }
 
     #[inline]
     pub unsafe fn get_uniform_buffer_offset_alignment(&self) -> i32 {
-        let mut values: [i32; 1] = std::mem::uninitialized();
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl
-            .GetIntegerv(gl::UNIFORM_BUFFER_OFFSET_ALIGNMENT, values.as_mut_ptr());
-        values[0]
+            .GetIntegerv(gl::UNIFORM_BUFFER_OFFSET_ALIGNMENT, value.as_mut_ptr());
+        value.assume_init()
     }
 
     #[inline]
     pub unsafe fn get_shader_storage_buffer_offset_alignment(&self) -> i32 {
-        let mut values: [i32; 1] = std::mem::uninitialized();
+        let mut value = MaybeUninit::<i32>::uninit();
         self.gl.GetIntegerv(
             gl::SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT,
-            values.as_mut_ptr(),
+            value.as_mut_ptr(),
         );
-        values[0]
+        value.assume_init()
     }
 
     #[inline]
