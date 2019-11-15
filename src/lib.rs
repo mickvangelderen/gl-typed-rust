@@ -913,6 +913,25 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn get_texture_image(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        level: i32,
+        format: impl Into<Format>,
+        component_format: impl Into<ComponentFormat>,
+        data: &mut [u8],
+    ) {
+        self.gl.GetTextureImage(
+            texture_name.as_ref().to_u32(),
+            level,
+            format.into() as u32,
+            component_format.into() as u32,
+            data.len() as i32,
+            data.as_mut_ptr() as *mut c_void,
+        );
+    }
+
     // Renderbuffers.
 
     #[inline]
