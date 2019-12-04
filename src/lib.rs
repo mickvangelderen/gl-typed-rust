@@ -2096,4 +2096,26 @@ impl Gl {
         );
         value.assume_init() != 0
     }
+
+
+    // Sync objects
+
+    #[inline]
+    pub unsafe fn fence_sync(&self) -> SyncName {
+        self.try_fence_sync().unwrap()
+    }
+    #[inline]
+    pub unsafe fn try_fence_sync(&self) -> Result<SyncName, ReceivedInvalidSyncName> {
+        SyncName::new(self.gl.FenceSync(gl::SYNC_GPU_COMMANDS_COMPLETE, 0))
+    }
+
+    #[inline]
+    pub unsafe fn delete_sync(&self, name: SyncName) {
+        self.gl.DeleteSync(ManuallyDrop::new(name).to_gl());
+    }
+
+    #[inline]
+    pub unsafe fn wait_sync(&self, name: SyncName) {
+        self.gl.WaitSync(name.to_gl(), 0, gl::TIMEOUT_IGNORED)
+    }
 }

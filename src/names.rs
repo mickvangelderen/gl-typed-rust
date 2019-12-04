@@ -1,3 +1,5 @@
+use super::gl::types::*;
+
 macro_rules! impl_names {
     ($($Name: ident, $Error: ident,)*) => {
         $(
@@ -100,5 +102,25 @@ impl FramebufferName {
             FramebufferName::NonDefault(ref name) => name.to_u32(),
             FramebufferName::Default => 0,
         }
+    }
+}
+
+impl_received_invalid!(ReceivedInvalidSyncName, SyncName);
+
+/// No guarantees are made about the validity of the object this
+/// name represents.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct SyncName(pub ::std::num::NonZeroUsize);
+
+impl SyncName {
+    #[inline]
+    pub fn new(name: GLsync) -> Result<Self, ReceivedInvalidSyncName> {
+        std::num::NonZeroUsize::new(name as _).map(SyncName).ok_or(ReceivedInvalidSyncName)
+    }
+
+    #[inline]
+    pub fn to_gl(&self) -> GLsync {
+        self.0.get() as GLsync
     }
 }
