@@ -307,6 +307,16 @@ impl Gl {
         self.gl.BlendFunc(src.into() as u32, dst.into() as u32);
     }
 
+    #[inline]
+    pub unsafe fn pixel_store_pack_alignment(&self, alignment: PixelAlignment) {
+        self.gl.PixelStorei(gl::PACK_ALIGNMENT, alignment.to_gl())
+    }
+
+    #[inline]
+    pub unsafe fn pixel_store_unpack_alignment(&self, alignment: PixelAlignment) {
+        self.gl.PixelStorei(gl::UNPACK_ALIGNMENT, alignment.to_gl())
+    }
+
     #[deprecated]
     #[inline]
     pub unsafe fn draw_buffers(&self, framebuffer_attachments: &[FramebufferAttachment]) {

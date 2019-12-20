@@ -869,3 +869,22 @@ bitflags::bitflags! {
         const ALL = crate::gl::ALL_BARRIER_BITS;
     }
 }
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum PixelAlignment {
+    P1,
+    P2,
+    P4,
+    P8,
+}
+
+impl PixelAlignment {
+    pub fn to_gl(&self) -> i32 {
+        match *self {
+            Self::P1 => 1,
+            Self::P2 => 2,
+            Self::P4 => 4,
+            Self::P8 => 8,
+        }
+    }
+}
