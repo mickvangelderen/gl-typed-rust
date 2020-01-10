@@ -340,6 +340,73 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn clear_named_framebufferiv(
+        &self,
+        framebuffer_name: FramebufferName,
+        buffer: impl Into<FramebufferBuffer>,
+        draw_buffer: u32,
+        value: [i32; 4],
+    ) {
+        self.gl.ClearNamedFramebufferiv(
+            framebuffer_name.to_u32(),
+            buffer.into() as u32,
+            draw_buffer as i32,
+            value.as_ptr(),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn clear_named_framebufferuiv(
+        &self,
+        framebuffer_name: FramebufferName,
+        buffer: impl Into<FramebufferBuffer>,
+        draw_buffer: u32,
+        value: [u32; 4],
+    ) {
+        self.gl.ClearNamedFramebufferuiv(
+            framebuffer_name.to_u32(),
+            buffer.into() as u32,
+            draw_buffer as i32,
+            value.as_ptr(),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn clear_named_framebufferfv(
+        &self,
+        framebuffer_name: FramebufferName,
+        buffer: impl Into<FramebufferBuffer>,
+        draw_buffer: u32,
+        value: [f32; 4],
+    ) {
+        self.gl.ClearNamedFramebufferfv(
+            framebuffer_name.to_u32(),
+            buffer.into() as u32,
+            draw_buffer as i32,
+            value.as_ptr(),
+        )
+    }
+
+    #[inline]
+    pub unsafe fn clear_named_framebufferfi(
+        &self,
+        framebuffer_name: FramebufferName,
+        buffer: impl Into<FramebufferBuffer>,
+        draw_buffer: u32,
+        depth: f32,
+        stencil: u32,
+    ) {
+        self.gl.ClearNamedFramebufferfi(
+            framebuffer_name.to_u32(),
+            buffer.into() as u32,
+            draw_buffer as i32,
+            depth,
+            stencil as i32,
+        )
+    }
+
+
+    #[inline]
     pub unsafe fn blit_named_framebuffer(
         &self,
         read_framebuffer_name: FramebufferName,

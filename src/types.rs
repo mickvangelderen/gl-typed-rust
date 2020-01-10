@@ -644,6 +644,13 @@ impl_enums! {
         Src1Alpha = SRC1_ALPHA,
         OneMinusSrc1Alpha = ONE_MINUS_SRC1_ALPHA,
     }
+
+    struct ReceivedInvalidFramebufferBuffer(u32);
+    FramebufferBuffer {
+        Color = COLOR,
+        Depth = DEPTH,
+        Stencil = STENCIL,
+    }
 }
 
 macro_rules! impl_struct_from_symbol {
