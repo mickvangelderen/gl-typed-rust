@@ -772,6 +772,7 @@ impl FramebufferAttachment {
 
 impl_struct_from_symbol! (
     FramebufferAttachment {
+        None = NONE,
         DepthStencilAttachment = DEPTH_STENCIL_ATTACHMENT,
         DepthAttachment = DEPTH_ATTACHMENT,
         StencilAttachment = STENCIL_ATTACHMENT,
