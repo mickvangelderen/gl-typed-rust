@@ -308,6 +308,11 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn blend_funci(&self, draw_buffer: u32, src: impl Into<BlendFactor>, dst: impl Into<BlendFactor>) {
+        self.gl.BlendFunci(draw_buffer, src.into() as u32, dst.into() as u32);
+    }
+
+    #[inline]
     pub unsafe fn pixel_store_pack_alignment(&self, alignment: PixelAlignment) {
         self.gl.PixelStorei(gl::PACK_ALIGNMENT, alignment.to_gl())
     }
