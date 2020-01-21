@@ -948,6 +948,26 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn texture_storage_3d(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        levels: i32,
+        internal_format: impl Into<InternalFormat>,
+        width: i32,
+        height: i32,
+        depth: i32,
+    ) {
+        self.gl.TextureStorage3D(
+            texture_name.as_ref().to_u32(),
+            levels,
+            internal_format.into() as u32,
+            width,
+            height,
+            depth,
+        );
+    }
+
+    #[inline]
     pub unsafe fn texture_sub_image_2d(
         &self,
         texture_name: impl AsRef<TextureName>,
