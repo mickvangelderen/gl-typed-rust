@@ -1034,6 +1034,24 @@ impl Gl {
         );
     }
 
+    #[inline]
+    pub unsafe fn clear_tex_image(
+        &self,
+        texture_name: impl AsRef<TextureName>,
+        level: i32,
+        format: impl Into<Format>,
+        ty: impl Into<ComponentFormat>,
+        data: *const c_void,
+    ) {
+        self.gl.ClearTexImage(
+            texture_name.as_ref().to_u32(),
+            level,
+            format.into() as u32,
+            ty.into() as u32,
+            data
+        );
+    }
+
     // Renderbuffers.
 
     #[inline]
