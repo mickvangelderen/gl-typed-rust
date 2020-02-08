@@ -558,6 +558,12 @@ impl_enums! {
         FrontAndBack = FRONT_AND_BACK,
     }
 
+    struct ReceivedInvalidFrontFace(u32);
+    FrontFace {
+        CCW = CCW,
+        CW = CW,
+    }
+
     struct ReceivedInvalidMajorAxis(u32);
     MajorAxis {
         Column = FALSE,

@@ -241,6 +241,14 @@ impl Gl {
     }
 
     #[inline]
+    pub unsafe fn front_face<F>(&self, face: F)
+    where
+        F: Into<FrontFace>,
+    {
+        self.gl.FrontFace(face.into() as u32);
+    }
+
+    #[inline]
     pub unsafe fn viewport(&self, x: i32, y: i32, width: i32, height: i32) {
         self.gl.Viewport(x, y, width, height);
     }
