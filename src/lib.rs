@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod attribute_format;
 pub mod convert;
 pub mod gl;
 pub mod locations;
@@ -11,6 +12,7 @@ pub mod string;
 pub mod symbols;
 pub mod types;
 
+pub use attribute_format::*;
 pub use convert::*;
 pub use locations::*;
 pub use names::*;
@@ -1580,148 +1582,6 @@ impl Gl {
     ) {
         self.gl
             .VertexArrayBindingDivisor(vertex_array_name.to_u32(), index.to_u32(), divisor);
-    }
-
-    #[deprecated]
-    #[inline]
-    pub unsafe fn vertex_attrib_format<T>(
-        &self,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        normalized: bool,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeType>,
-    {
-        self.gl.VertexAttribFormat(
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            normalized as u8,
-            offset,
-        );
-    }
-
-    #[inline]
-    pub unsafe fn vertex_array_attrib_format<T>(
-        &self,
-        vertex_array_name: VertexArrayName,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        normalized: bool,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeType>,
-    {
-        self.gl.VertexArrayAttribFormat(
-            vertex_array_name.to_u32(),
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            normalized as u8,
-            offset,
-        );
-    }
-
-    #[deprecated]
-    #[inline]
-    pub unsafe fn vertex_attrib_l_format<T>(
-        &self,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeLType>,
-    {
-        self.gl.VertexAttribLFormat(
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
-    }
-
-    pub unsafe fn vertex_array_attrib_l_format<T>(
-        &self,
-        vertex_array_name: VertexArrayName,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeLType>,
-    {
-        self.gl.VertexArrayAttribLFormat(
-            vertex_array_name.to_u32(),
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
-    }
-
-    #[deprecated]
-    #[inline]
-    pub unsafe fn vertex_attrib_i_format<T>(
-        &self,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeIType>,
-    {
-        self.gl.VertexAttribIFormat(
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
-    }
-
-    pub unsafe fn vertex_array_attrib_i_format<T>(
-        &self,
-        vertex_array_name: VertexArrayName,
-        attribute_location: AttributeLocation,
-        size: u32,
-        ty: T,
-        offset: u32,
-    ) where
-        T: Into<VertexAttributeIType>,
-    {
-        self.gl.VertexArrayAttribIFormat(
-            vertex_array_name.to_u32(),
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            offset,
-        );
-    }
-
-    #[deprecated]
-    #[inline]
-    pub unsafe fn vertex_attrib_pointer<T>(
-        &self,
-        attribute_location: AttributeLocation,
-        size: usize,
-        ty: T,
-        normalized: bool,
-        stride: usize,
-        offset: usize,
-    ) where
-        T: Into<VertexAttributeType>,
-    {
-        self.gl.VertexAttribPointer(
-            attribute_location.to_u32(),
-            size as i32,
-            ty.into() as u32,
-            normalized as u8,
-            stride as i32,
-            offset as *const c_void,
-        );
     }
 
     #[deprecated]

@@ -297,38 +297,6 @@ impl_enums! {
         DynamicCopy = DYNAMIC_COPY,
     }
 
-    struct ReceivedInvalidVertexAttributeType(u32);
-    VertexAttributeType {
-        Byte = BYTE,
-        UnsignedByte = UNSIGNED_BYTE,
-        Short = SHORT,
-        UnsignedShort = UNSIGNED_SHORT,
-        Int = INT,
-        UnsignedInt = UNSIGNED_INT,
-        HalfFloat = HALF_FLOAT,
-        Float = FLOAT,
-        Fixed = FIXED,
-        Int2101010Rev = INT_2_10_10_10_REV,
-        UnsignedInt2101010Rev = UNSIGNED_INT_2_10_10_10_REV,
-        UnsignedInt10f11f11fRev = UNSIGNED_INT_10F_11F_11F_REV,
-    }
-
-    struct ReceivedInvalidVertexAttributeIType(u32);
-    VertexAttributeIType {
-        Byte = BYTE,
-        UnsignedByte = UNSIGNED_BYTE,
-        Short = SHORT,
-        UnsignedShort = UNSIGNED_SHORT,
-        Int = INT,
-        UnsignedInt = UNSIGNED_INT,
-    }
-
-    struct ReceivedInvalidVertexAttributeLType(u32);
-    VertexAttributeLType {
-        Double = DOUBLE,
-    }
-
-
     struct ReceivedInvalidDrawMode(u32);
     DrawMode {
         Points = POINTS,
