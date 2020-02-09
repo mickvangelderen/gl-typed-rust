@@ -1634,7 +1634,7 @@ impl Gl {
         ty: T,
         offset: u32,
     ) where
-        T: Into<VertexAttributeIType>,
+        T: Into<VertexAttributeLType>,
     {
         self.gl.VertexAttribLFormat(
             attribute_location.to_u32(),
@@ -1652,7 +1652,7 @@ impl Gl {
         ty: T,
         offset: u32,
     ) where
-        T: Into<VertexAttributeIType>,
+        T: Into<VertexAttributeLType>,
     {
         self.gl.VertexArrayAttribLFormat(
             vertex_array_name.to_u32(),
